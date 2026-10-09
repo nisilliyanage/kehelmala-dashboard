@@ -105,8 +105,10 @@ data — never from today's date / when you happened to run the tool:
 - **YouTube** — the "Data as of" column in the combined `.xlsx`.
 - **Facebook / Instagram** — the end date in the export's own filename
   (e.g. `...Sep-28-2026-FB3.csv` → `2026-09-28`).
-- **TikTok** — the CSV's own "Time" column, shown as-is (TikTok's export
-  gives no year, e.g. `"September 28"`).
+- **TikTok** — the CSV's own "Post time" column, formatted as `DD/MM/YYYY`.
+  TikTok's export gives no year, so each TikTok video's year is filled from
+  the matching video's full date on another platform in the same group.
+  The export's `"Time"` value is used for the TikTok "as of" date.
 
 On the dashboard: viewing a specific platform tab shows that platform's
 own latest date. Viewing "All" shows a date only if every platform's

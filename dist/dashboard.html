@@ -165,7 +165,7 @@ const GROUPS = [
           "l": 1552310,
           "c": 18069,
           "s": 241743,
-          "d": "January 17",
+          "d": "2025-01-17",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7460860901613227282",
           "asof": "September 28",
           "label": null
@@ -234,7 +234,7 @@ const GROUPS = [
           "l": 102027,
           "c": 1080,
           "s": 1071,
-          "d": "April 24",
+          "d": "2026-04-24",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7632285912914808085",
           "asof": "September 28",
           "label": null
@@ -303,7 +303,7 @@ const GROUPS = [
           "l": 79990,
           "c": 1024,
           "s": 9206,
-          "d": "November 14",
+          "d": "2025-11-14",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7572496933982309650",
           "asof": "September 28",
           "label": null
@@ -464,7 +464,7 @@ const GROUPS = [
           "l": 18830,
           "c": 361,
           "s": 2154,
-          "d": "October 10",
+          "d": "2025-10-10",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7559567221492682002",
           "asof": "September 28",
           "label": null
@@ -721,7 +721,7 @@ const GROUPS = [
           "l": 29977,
           "c": 300,
           "s": 477,
-          "d": "December 5",
+          "d": "2025-12-05",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7580338112694390036",
           "asof": "September 28",
           "label": null
@@ -978,7 +978,7 @@ const GROUPS = [
           "l": 17366,
           "c": 141,
           "s": 715,
-          "d": "November 7",
+          "d": "2025-11-07",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7569977757468298512",
           "asof": "September 28",
           "label": null
@@ -1211,7 +1211,7 @@ const GROUPS = [
           "l": 20374,
           "c": 40,
           "s": 457,
-          "d": "April 3",
+          "d": "2026-04-03",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7624487707548372231",
           "asof": "September 28",
           "label": null
@@ -1327,7 +1327,7 @@ const GROUPS = [
           "l": 20282,
           "c": 211,
           "s": 910,
-          "d": "March 6",
+          "d": "2026-03-06",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7613718421305429256",
           "asof": "September 28",
           "label": null
@@ -1386,7 +1386,7 @@ const GROUPS = [
           "l": 21748,
           "c": 152,
           "s": 601,
-          "d": "October 17",
+          "d": "2025-10-17",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7562159712012094736",
           "asof": "September 28",
           "label": null
@@ -1455,7 +1455,7 @@ const GROUPS = [
           "l": 28518,
           "c": 90,
           "s": 803,
-          "d": "April 10",
+          "d": "2026-04-10",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7627100112392555793",
           "asof": "September 28",
           "label": null
@@ -1705,7 +1705,7 @@ const GROUPS = [
           "l": 26262,
           "c": 151,
           "s": 842,
-          "d": "January 9",
+          "d": "2026-01-09",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7593328518579162384",
           "asof": "September 28",
           "label": null
@@ -2257,7 +2257,7 @@ const GROUPS = [
           "l": 20091,
           "c": 192,
           "s": 898,
-          "d": "April 30",
+          "d": "2026-04-30",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7634504655640251656",
           "asof": "September 28",
           "label": null
@@ -2520,7 +2520,7 @@ const GROUPS = [
           "l": 11730,
           "c": 110,
           "s": 268,
-          "d": "October 24",
+          "d": "2025-10-24",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7564763113380203784",
           "asof": "September 28",
           "label": null
@@ -2599,7 +2599,7 @@ const GROUPS = [
           "l": 12899,
           "c": 194,
           "s": 1411,
-          "d": "May 22",
+          "d": "2026-05-22",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7642695918747274516",
           "asof": "September 28",
           "label": null
@@ -3027,7 +3027,7 @@ const GROUPS = [
           "l": 12832,
           "c": 92,
           "s": 279,
-          "d": "December 24",
+          "d": "2025-12-24",
           "u": "https://www.tiktok.com/@kehelmalastudios/video/7587390716280671506",
           "asof": "September 28",
           "label": null
@@ -6840,6 +6840,42 @@ let activePlatform='All', search='', sortKey='tot_v', sortDir=-1;
 
 function fmt(n){ return (n||0).toLocaleString('en-US'); }
 
+const ASOF_YEARS = [];
+GROUPS.forEach(g => Object.values(g.platforms || {}).forEach(entries =>
+  (entries || []).forEach(e => {
+    const match = String(e.asof || '').match(/\b(19|20)\d{2}\b/);
+    if (match) ASOF_YEARS.push(Number(match[0]));
+  })
+));
+const DEFAULT_ASOF_YEAR = ASOF_YEARS.length ? Math.max(...ASOF_YEARS) : null;
+
+function dateParts(value, fallbackYear){
+  const text = String(value || '').trim();
+  let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (match) return [Number(match[1]), Number(match[2]), Number(match[3])];
+  match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (match) return [Number(match[3]), Number(match[1]), Number(match[2])];
+  match = text.match(/^([A-Za-z]+)\s+(\d{1,2})(?:,\s*(\d{4})|\s+(\d{4}))?$/);
+  if (match) {
+    const month = new Date(`${match[1]} 1, 2000`).getMonth() + 1;
+    const year = match[3] || match[4] || fallbackYear;
+    return year ? [Number(year), month, Number(match[2])] : null;
+  }
+  return null;
+}
+
+function formatDate(value, fallbackYear){
+  const parts = dateParts(value, fallbackYear);
+  if (!parts) return value || '—';
+  const [year, month, day] = parts;
+  return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+}
+
+function dateSortValue(value){
+  const parts = dateParts(value);
+  return parts ? parts[0] * 10000 + parts[1] * 100 + parts[2] : 0;
+}
+
 // "Data as of" per platform - the most recent date actually present in
 // that platform's own export (never today's date, never a guess: a
 // platform with no determinable date shows "undefined" rather than
@@ -6849,7 +6885,7 @@ const LATEST_BY_PLATFORM = {};
 PLATS.forEach(p=>{
   let latest = null;
   GROUPS.forEach(g=>(g.platforms[p]||[]).forEach(e=>{
-    if(e.asof && (!latest || e.asof > latest)) latest = e.asof;
+    if(e.asof && (!latest || dateSortValue(e.asof) > dateSortValue(latest))) latest = e.asof;
   }));
   LATEST_BY_PLATFORM[p] = latest; // null if this platform has no asof anywhere
 });
@@ -6858,7 +6894,9 @@ function updateAsOf(){
   const el = document.getElementById('asof');
   const scope = document.getElementById('asof-scope');
   if(activePlatform !== 'All'){
-    el.textContent = LATEST_BY_PLATFORM[activePlatform] || 'undefined';
+    el.textContent = LATEST_BY_PLATFORM[activePlatform]
+      ? formatDate(LATEST_BY_PLATFORM[activePlatform], DEFAULT_ASOF_YEAR)
+      : 'undefined';
     scope.textContent = activePlatform + ' export';
     return;
   }
@@ -6871,7 +6909,7 @@ function updateAsOf(){
   const values = PLATS.map(p => LATEST_BY_PLATFORM[p]).filter(v => v !== null);
   const allAgree = values.length > 0 && values.every(v => v === values[0])
                     && values.length === PLATS.filter(p => LATEST_BY_PLATFORM[p] !== null).length;
-  el.textContent = allAgree ? values[0] : 'undefined';
+  el.textContent = allAgree ? formatDate(values[0], DEFAULT_ASOF_YEAR) : 'undefined';
 }
 
 // Per-row metrics for the CURRENTLY ACTIVE platform tab. 'All' sums every
@@ -6928,7 +6966,7 @@ function metricRow(label, m, indent){
   const link = m.u ? `<a class="vlink" href="${m.u}" target="_blank" rel="noopener">view</a>` : '';
   const pad = indent ? 'padding-left:22px;color:var(--sub);font-size:11.5px;' : '';
   return `<tr><td style="${pad}">${label}</td><td class="num">${fmt(m.v)}</td><td class="num">${fmt(m.l)}</td>
-    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td>${m.d||'—'} &nbsp; ${link}</td></tr>`;
+    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td>${formatDate(m.d)} &nbsp; ${link}</td></tr>`;
 }
 
 function breakdownRow(p, entries, rowId){

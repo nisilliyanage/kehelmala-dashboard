@@ -61,7 +61,4 @@ TITLE_RENAMES = {
     'Pinipa pt 2': 'Pinipa',
     "What's with Su Trick or Treat" : "What's with Su (Trick or Treat)",
     "Who s winning": "Who's winning",
-    
-
-    
 }   

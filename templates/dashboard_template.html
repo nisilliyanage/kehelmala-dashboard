@@ -125,6 +125,42 @@ let activePlatform='All', search='', sortKey='tot_v', sortDir=-1;
 
 function fmt(n){ return (n||0).toLocaleString('en-US'); }
 
+const ASOF_YEARS = [];
+GROUPS.forEach(g => Object.values(g.platforms || {}).forEach(entries =>
+  (entries || []).forEach(e => {
+    const match = String(e.asof || '').match(/\b(19|20)\d{2}\b/);
+    if (match) ASOF_YEARS.push(Number(match[0]));
+  })
+));
+const DEFAULT_ASOF_YEAR = ASOF_YEARS.length ? Math.max(...ASOF_YEARS) : null;
+
+function dateParts(value, fallbackYear){
+  const text = String(value || '').trim();
+  let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (match) return [Number(match[1]), Number(match[2]), Number(match[3])];
+  match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (match) return [Number(match[3]), Number(match[1]), Number(match[2])];
+  match = text.match(/^([A-Za-z]+)\s+(\d{1,2})(?:,\s*(\d{4})|\s+(\d{4}))?$/);
+  if (match) {
+    const month = new Date(`${match[1]} 1, 2000`).getMonth() + 1;
+    const year = match[3] || match[4] || fallbackYear;
+    return year ? [Number(year), month, Number(match[2])] : null;
+  }
+  return null;
+}
+
+function formatDate(value, fallbackYear){
+  const parts = dateParts(value, fallbackYear);
+  if (!parts) return value || '—';
+  const [year, month, day] = parts;
+  return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+}
+
+function dateSortValue(value){
+  const parts = dateParts(value);
+  return parts ? parts[0] * 10000 + parts[1] * 100 + parts[2] : 0;
+}
+
 // "Data as of" per platform - the most recent date actually present in
 // that platform's own export (never today's date, never a guess: a
 // platform with no determinable date shows "undefined" rather than
@@ -134,7 +170,7 @@ const LATEST_BY_PLATFORM = {};
 PLATS.forEach(p=>{
   let latest = null;
   GROUPS.forEach(g=>(g.platforms[p]||[]).forEach(e=>{
-    if(e.asof && (!latest || e.asof > latest)) latest = e.asof;
+    if(e.asof && (!latest || dateSortValue(e.asof) > dateSortValue(latest))) latest = e.asof;
   }));
   LATEST_BY_PLATFORM[p] = latest; // null if this platform has no asof anywhere
 });
@@ -143,7 +179,9 @@ function updateAsOf(){
   const el = document.getElementById('asof');
   const scope = document.getElementById('asof-scope');
   if(activePlatform !== 'All'){
-    el.textContent = LATEST_BY_PLATFORM[activePlatform] || 'undefined';
+    el.textContent = LATEST_BY_PLATFORM[activePlatform]
+      ? formatDate(LATEST_BY_PLATFORM[activePlatform], DEFAULT_ASOF_YEAR)
+      : 'undefined';
     scope.textContent = activePlatform + ' export';
     return;
   }
@@ -156,7 +194,7 @@ function updateAsOf(){
   const values = PLATS.map(p => LATEST_BY_PLATFORM[p]).filter(v => v !== null);
   const allAgree = values.length > 0 && values.every(v => v === values[0])
                     && values.length === PLATS.filter(p => LATEST_BY_PLATFORM[p] !== null).length;
-  el.textContent = allAgree ? values[0] : 'undefined';
+  el.textContent = allAgree ? formatDate(values[0], DEFAULT_ASOF_YEAR) : 'undefined';
 }
 
 // Per-row metrics for the CURRENTLY ACTIVE platform tab. 'All' sums every
@@ -213,7 +251,7 @@ function metricRow(label, m, indent){
   const link = m.u ? `<a class="vlink" href="${m.u}" target="_blank" rel="noopener">view</a>` : '';
   const pad = indent ? 'padding-left:22px;color:var(--sub);font-size:11.5px;' : '';
   return `<tr><td style="${pad}">${label}</td><td class="num">${fmt(m.v)}</td><td class="num">${fmt(m.l)}</td>
-    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td>${m.d||'—'} &nbsp; ${link}</td></tr>`;
+    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td>${formatDate(m.d)} &nbsp; ${link}</td></tr>`;
 }
 
 function breakdownRow(p, entries, rowId){

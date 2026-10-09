@@ -13,6 +13,7 @@ import json
 import os
 import re
 import sys
+import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config
@@ -25,6 +26,47 @@ MANUAL_GROUP_MERGES_PATH = os.path.join(BASE, 'data', 'processed', 'manual_group
 HASHTAG_RE = re.compile(r'#\S+')
 LATIN_RE = re.compile(r"[A-Za-z0-9' ]+")
 PART_RE = re.compile(r'\b(?:pt\.?|part)\s*(\d+)\b', re.I)
+
+
+def _date_parts(value):
+    text = str(value or '').strip()
+    for pattern, date_format in (
+        (r'^\d{4}-\d{1,2}-\d{1,2}', '%Y-%m-%d'),
+        (r'^\d{1,2}/\d{1,2}/\d{4}', '%m/%d/%Y'),
+    ):
+        if re.match(pattern, text):
+            try:
+                return datetime.datetime.strptime(text[:10], date_format).date()
+            except ValueError:
+                return None
+    try:
+        return datetime.datetime.strptime(text, '%B %d').date().replace(year=2000)
+    except ValueError:
+        return None
+
+
+def _resolve_tiktok_years(by_platform):
+    """Use the matching platform date to complete TikTok's yearless dates."""
+    other_dates = []
+    for platform, posts in by_platform.items():
+        if platform == 'TikTok':
+            continue
+        for post in posts:
+            date = _date_parts(post.get('date'))
+            if date and date.year != 2000:
+                other_dates.append(date)
+
+    if not other_dates:
+        return
+
+    for post in by_platform.get('TikTok', []):
+        date = _date_parts(post.get('date'))
+        if not date or date.year != 2000:
+            continue
+        years = {candidate.year for candidate in other_dates
+                 if candidate.month == date.month and candidate.day == date.day}
+        if len(years) == 1:
+            post['date'] = date.replace(year=years.pop()).isoformat()
 
 
 def strip_hashtags(text):
@@ -214,6 +256,7 @@ def build_groups(clusters):
         by_platform = {}
         for p in c['posts']:
             by_platform.setdefault(p['platform'], []).append(p)
+        _resolve_tiktok_years(by_platform)
 
         platforms = {}
         for plat, plist in by_platform.items():

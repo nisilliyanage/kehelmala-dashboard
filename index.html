@@ -1,0 +1,7005 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kehelmala Studios — Performance Dashboard</title>
+<style>
+:root{
+  --bg:#f7f5f1; --panel:#ffffff; --ink:#1c1b19; --sub:#6b6560;
+  --line:#e7e2da; --accent:#b8432f; --accent2:#2f4858;
+  --chip:#efe9df; --good:#3c7a52;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15130f; --panel:#1e1b16; --ink:#f1ede5; --sub:#a39d92;
+    --line:#332e26; --chip:#2a2620; --accent:#e2694f; --accent2:#7fa3ba; --good:#6fbf8b;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15130f; --panel:#1e1b16; --ink:#f1ede5; --sub:#a39d92;
+  --line:#332e26; --chip:#2a2620; --accent:#e2694f; --accent2:#7fa3ba; --good:#6fbf8b;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Iowan Old Style','Georgia',serif;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px;}
+header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:22px;border-bottom:2px solid var(--ink);padding-bottom:16px;}
+h1{font-size:clamp(22px,3vw,30px);margin:0;}
+.tag{color:var(--sub);font-size:13px;margin-top:4px;font-family:'Helvetica Neue',Arial,sans-serif;}
+.updated{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12.5px;color:var(--sub);text-align:right;}
+.updated b{color:var(--ink);}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+.card .n{font-size:24px;font-weight:700;font-family:'Helvetica Neue',Arial,sans-serif;}
+.card .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--sub);font-family:'Helvetica Neue',Arial,sans-serif;margin-top:2px;}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;font-family:'Helvetica Neue',Arial,sans-serif;}
+input[type=search]{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13.5px;font-family:inherit;flex:1;min-width:160px;}
+.ptab{padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font-size:12.5px;cursor:pointer;}
+.ptab.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+.ptab .cnt{opacity:.7;margin-left:4px;}
+.list{border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden;}
+.row{border-bottom:1px solid var(--line);}
+.row:last-child{border-bottom:none;}
+.row-head{display:grid;grid-template-columns:28px minmax(160px,2.4fr) repeat(4,minmax(70px,1fr)) 1.3fr;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;}
+.row-head:hover{background:var(--chip);}
+.car{color:var(--sub);transition:transform .15s;font-size:11px;}
+.row.open .car{transform:rotate(90deg);}
+.vtitle{font-family:Georgia,serif;color:var(--ink);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.num{text-align:right;font-variant-numeric:tabular-nums;}
+.plats{display:flex;gap:4px;flex-wrap:wrap;}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:3px;}
+.dot.YouTube{background:#e2694f;} .dot.Facebook{background:#2f4858;} .dot.Instagram{background:#b8432f;} .dot.TikTok{background:#3c7a52;}
+.pchip{font-size:10.5px;background:var(--chip);border-radius:999px;padding:2px 8px;color:var(--sub);}
+.breakdown{display:none;padding:0 14px 14px 50px;font-family:'Helvetica Neue',Arial,sans-serif;}
+.row.open .breakdown{display:block;}
+.bd-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.bd-table th{text-align:right;color:var(--sub);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;padding:6px 8px;}
+.bd-table th:first-child,.bd-table td:first-child{text-align:left;}
+.bd-table td{padding:6px 8px;text-align:right;border-top:1px solid var(--line);}
+a.vlink{color:var(--accent2);text-decoration:none;}
+a.vlink:hover{text-decoration:underline;}
+.empty{padding:40px 20px;text-align:center;color:var(--sub);font-family:'Helvetica Neue',Arial,sans-serif;font-size:13.5px;}
+.colhead{display:grid;grid-template-columns:28px minmax(160px,2.4fr) repeat(4,minmax(70px,1fr)) 1.3fr;gap:8px;padding:9px 14px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);border-bottom:1px solid var(--line);}
+.colhead span:not(:first-child){text-align:right;cursor:pointer;}
+.colhead span.active{color:var(--ink);}
+footer{margin-top:26px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:11.5px;color:var(--sub);text-align:center;}
+@media(max-width:720px){.row-head,.colhead{grid-template-columns:22px 1.6fr repeat(2,1fr) .9fr;}
+  .row-head span:nth-child(5),.row-head span:nth-child(6),.colhead span:nth-child(5),.colhead span:nth-child(6){display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Kehelmala Studios - Performance Dashboard</h1>
+      <div class="tag">Videos combined across platforms — click a row for the breakdown</div>
+    </div>
+    <div class="updated">Data as of <b id="asof">—</b><br><span id="asof-scope">YouTube, Facebook, Instagram &amp; TikTok</span></div>
+  </header>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="controls">
+    <div class="ptab" id="t-All" data-p="All">All <span class="cnt"></span></div>
+    <div class="ptab" id="t-YouTube" data-p="YouTube">YouTube <span class="cnt"></span></div>
+    <div class="ptab" id="t-Facebook" data-p="Facebook">Facebook <span class="cnt"></span></div>
+    <div class="ptab" id="t-Instagram" data-p="Instagram">Instagram <span class="cnt"></span></div>
+    <div class="ptab" id="t-TikTok" data-p="TikTok">TikTok <span class="cnt"></span></div>
+    <input type="search" id="search" placeholder="Search by title...">
+  </div>
+
+  <div class="colhead">
+    <span></span>
+    <span data-k="title">Video</span>
+    <span data-k="tot_v">Views</span>
+    <span data-k="tot_l">Likes</span>
+    <span data-k="tot_c">Comments</span>
+    <span data-k="tot_s">Shares</span>
+    <span>On</span>
+  </div>
+  <div class="list" id="list"></div>
+
+  <footer>Combined by matching titles across YouTube, Facebook, Instagram &amp; TikTok exports (automated title matching — a handful of matches may be imprecise) · Totals sum each platform's own metric definitions, which aren't identical · Re-run exports and resend to refresh</footer>
+</div>
+
+<script>
+const GROUPS = [
+  {
+    "title": "Gratitude",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 30977,
+          "l": 1838,
+          "c": 63,
+          "s": 181,
+          "d": "2025-07-05",
+          "u": "https://www.youtube.com/watch?v=e19au2Y_sRI",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 8274,
+          "l": 983,
+          "c": 76,
+          "s": 343,
+          "d": "2025-01-18",
+          "u": "https://www.youtube.com/watch?v=PF1_Z3APOh0",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1234530,
+          "l": 70968,
+          "c": 3563,
+          "s": 9467,
+          "d": "01/17/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/587864914207715/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 19440579,
+          "l": 3557162,
+          "c": 46463,
+          "s": 813875,
+          "d": "01/17/2025",
+          "u": "https://www.instagram.com/reel/DE7UV-jBBU2/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 6663459,
+          "l": 1552310,
+          "c": 18069,
+          "s": 241743,
+          "d": "January 17",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7460860901613227282",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 27377819,
+    "tot_l": 5183261,
+    "tot_c": 68234,
+    "tot_s": 1065609,
+    "n_platforms": 4
+  },
+  {
+    "title": "Neighbours",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 251531,
+          "l": 5253,
+          "c": 193,
+          "s": 300,
+          "d": "2026-04-24",
+          "u": "https://www.youtube.com/watch?v=0ARfffcK6vQ",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 10681,
+          "l": 718,
+          "c": 11,
+          "s": 13,
+          "d": "2026-04-27",
+          "u": "https://www.youtube.com/watch?v=Nb0GO-6M9l4",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 10089956,
+          "l": 240441,
+          "c": 2287,
+          "s": 2998,
+          "d": "04/24/2026",
+          "u": "https://www.facebook.com/reel/1483100929888863/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 163068,
+          "l": 9939,
+          "c": 151,
+          "s": 502,
+          "d": "04/24/2026",
+          "u": "https://www.instagram.com/reel/DXg5m3rhk8k/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 1592137,
+          "l": 102027,
+          "c": 1080,
+          "s": 1071,
+          "d": "April 24",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7632285912914808085",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 12107373,
+    "tot_l": 358378,
+    "tot_c": 3722,
+    "tot_s": 4884,
+    "n_platforms": 4
+  },
+  {
+    "title": "Fridge",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 87257,
+          "l": 3262,
+          "c": 161,
+          "s": 993,
+          "d": "2025-11-14",
+          "u": "https://www.youtube.com/watch?v=_rFj8AK2_Rk",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 48058,
+          "l": 2519,
+          "c": 51,
+          "s": 178,
+          "d": "2025-12-23",
+          "u": "https://www.youtube.com/watch?v=7aWXLqS1xBc",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 7604444,
+          "l": 221939,
+          "c": 5140,
+          "s": 8451,
+          "d": "11/14/2025",
+          "u": "https://www.facebook.com/reel/1921646571782368/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 1106604,
+          "l": 69590,
+          "c": 820,
+          "s": 33554,
+          "d": "11/14/2025",
+          "u": "https://www.instagram.com/reel/DRCT0_gDaU1/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 1333535,
+          "l": 79990,
+          "c": 1024,
+          "s": 9206,
+          "d": "November 14",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7572496933982309650",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 10179898,
+    "tot_l": 377300,
+    "tot_c": 7196,
+    "tot_s": 52382,
+    "n_platforms": 4
+  },
+  {
+    "title": "Coal",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 3660587,
+          "l": 0,
+          "c": 550,
+          "s": 1842,
+          "d": "2025-01-31",
+          "u": "https://www.youtube.com/watch?v=XT4T7fZm2ng",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 4342461,
+          "l": 80892,
+          "c": 3054,
+          "s": 2253,
+          "d": "01/31/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/588918267350967/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 1637131,
+          "l": 46026,
+          "c": 251,
+          "s": 5946,
+          "d": "01/31/2025",
+          "u": "https://www.instagram.com/reel/DFfZy00Bmx-/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 9640179,
+    "tot_l": 126918,
+    "tot_c": 3855,
+    "tot_s": 10041,
+    "n_platforms": 3
+  },
+  {
+    "title": "Snake Bag (Handbag Problems)",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 5269777,
+          "l": 105687,
+          "c": 358,
+          "s": 1843,
+          "d": "2025-06-30",
+          "u": "https://www.youtube.com/watch?v=h825vwpnyqY",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 3829965,
+          "l": 180046,
+          "c": 1158,
+          "s": 900,
+          "d": "05/11/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/750860973908796/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 7358,
+          "l": 829,
+          "c": 7,
+          "s": 135,
+          "d": "05/11/2024",
+          "u": "https://www.instagram.com/reel/C608U-ChOmS/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 9107100,
+    "tot_l": 286562,
+    "tot_c": 1523,
+    "tot_s": 2878,
+    "n_platforms": 3
+  },
+  {
+    "title": "Sneaking In",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 1539589,
+          "l": 7417,
+          "c": 495,
+          "s": 2774,
+          "d": "2025-10-10",
+          "u": "https://www.youtube.com/watch?v=fzKEH70r5zE",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 664634,
+          "l": 31913,
+          "c": 312,
+          "s": 1401,
+          "d": "2026-01-17",
+          "u": "https://www.youtube.com/watch?v=ao94jY-Fpx4",
+          "asof": "2026-09-28",
+          "label": "Part 2"
+        },
+        {
+          "v": 65536,
+          "l": 3522,
+          "c": 71,
+          "s": 316,
+          "d": "2026-01-16",
+          "u": "https://www.youtube.com/watch?v=dT0zUojcyAA",
+          "asof": "2026-09-28",
+          "label": "Part 1"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 6423896,
+          "l": 95269,
+          "c": 2620,
+          "s": 1549,
+          "d": "10/10/2025",
+          "u": "https://www.facebook.com/reel/1186165956660071/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 257937,
+          "l": 18830,
+          "c": 361,
+          "s": 2154,
+          "d": "October 10",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7559567221492682002",
+          "asof": "September 28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 106447,
+          "l": 4697,
+          "c": 194,
+          "s": 1512,
+          "d": "10/10/2025",
+          "u": "https://www.instagram.com/reel/DPoSXv6k2IU/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 9058039,
+    "tot_l": 161648,
+    "tot_c": 4053,
+    "tot_s": 9706,
+    "n_platforms": 4
+  },
+  {
+    "title": "Frustration",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 2071836,
+          "l": 64310,
+          "c": 4009,
+          "s": 3757,
+          "d": "08/16/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/475761168564984/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 4256289,
+          "l": 213192,
+          "c": 1222,
+          "s": 239251,
+          "d": "08/16/2024",
+          "u": "https://www.instagram.com/reel/C-u0zXFhF8B/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 6328125,
+    "tot_l": 277502,
+    "tot_c": 5231,
+    "tot_s": 243008,
+    "n_platforms": 2
+  },
+  {
+    "title": "Dress",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 76864,
+          "l": 2293,
+          "c": 101,
+          "s": 355,
+          "d": "2025-03-28",
+          "u": "https://www.youtube.com/watch?v=ZNEvzB88jbw",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 3384118,
+          "l": 67034,
+          "c": 859,
+          "s": 925,
+          "d": "03/28/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1178492324072820/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 1808114,
+          "l": 56971,
+          "c": 574,
+          "s": 12874,
+          "d": "03/28/2025",
+          "u": "https://www.instagram.com/reel/DHvkZtzoFVN/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 5269096,
+    "tot_l": 126298,
+    "tot_c": 1534,
+    "tot_s": 14154,
+    "n_platforms": 3
+  },
+  {
+    "title": "Fated",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 862041,
+          "l": 0,
+          "c": 212,
+          "s": 1246,
+          "d": "2025-03-15",
+          "u": "https://www.youtube.com/watch?v=jv1VwDFa-iw",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 3796807,
+          "l": 137804,
+          "c": 2413,
+          "s": 3388,
+          "d": "07/12/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/398525283235860/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 67748,
+          "l": 2335,
+          "c": 50,
+          "s": 222,
+          "d": "07/12/2024",
+          "u": "https://www.instagram.com/reel/C9Uy1jmBsIF/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 4726596,
+    "tot_l": 140139,
+    "tot_c": 2675,
+    "tot_s": 4856,
+    "n_platforms": 3
+  },
+  {
+    "title": "Catfight",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 80856,
+          "l": 1228,
+          "c": 79,
+          "s": 339,
+          "d": "2025-09-12",
+          "u": "https://www.youtube.com/watch?v=7IBaKGO-yJc",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 34127,
+          "l": 1425,
+          "c": 56,
+          "s": 174,
+          "d": "2025-09-12",
+          "u": "https://www.youtube.com/watch?v=xaJQuWZLp20",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2415576,
+          "l": 47004,
+          "c": 2686,
+          "s": 2197,
+          "d": "09/12/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1967063704139492/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 1526088,
+          "l": 32131,
+          "c": 509,
+          "s": 18085,
+          "d": "09/12/2025",
+          "u": "https://www.instagram.com/reel/DOgHP5Hk7ut/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 4056647,
+    "tot_l": 81788,
+    "tot_c": 3330,
+    "tot_s": 20795,
+    "n_platforms": 3
+  },
+  {
+    "title": "Blanket",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 33411,
+          "l": 1984,
+          "c": 76,
+          "s": 150,
+          "d": "2025-12-05",
+          "u": "https://www.youtube.com/watch?v=Hth84PJuK8A",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 3287593,
+          "l": 87195,
+          "c": 888,
+          "s": 1423,
+          "d": "12/05/2025",
+          "u": "https://www.facebook.com/reel/852232157554235/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 99051,
+          "l": 5289,
+          "c": 107,
+          "s": 541,
+          "d": "12/05/2025",
+          "u": "https://www.instagram.com/reel/DR4b-yyE6qD/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 566608,
+          "l": 29977,
+          "c": 300,
+          "s": 477,
+          "d": "December 5",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7580338112694390036",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 3986663,
+    "tot_l": 124445,
+    "tot_c": 1371,
+    "tot_s": 2591,
+    "n_platforms": 4
+  },
+  {
+    "title": "Schooled",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 2404275,
+          "l": 0,
+          "c": 436,
+          "s": 4339,
+          "d": "2025-03-03",
+          "u": "https://www.youtube.com/watch?v=MSpCBHvSZ74",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1553679,
+          "l": 88874,
+          "c": 3241,
+          "s": 1319,
+          "d": "06/20/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/974767791092017/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 7875,
+          "l": 3221,
+          "c": 95,
+          "s": 348,
+          "d": "06/20/2024",
+          "u": "https://www.instagram.com/reel/C8cENDXBO8n/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 3965829,
+    "tot_l": 92095,
+    "tot_c": 3772,
+    "tot_s": 6006,
+    "n_platforms": 3
+  },
+  {
+    "title": "New Boy",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 631913,
+          "l": 15528,
+          "c": 157,
+          "s": 1325,
+          "d": "2025-09-04",
+          "u": "https://www.youtube.com/watch?v=ILxiyS6hXsI",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2826337,
+          "l": 66351,
+          "c": 1455,
+          "s": 1470,
+          "d": "09/04/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1784067732239863/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 302590,
+          "l": 14064,
+          "c": 178,
+          "s": 2464,
+          "d": "09/04/2025",
+          "u": "https://www.instagram.com/reel/DOLi0RTjRap/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 3760840,
+    "tot_l": 95943,
+    "tot_c": 1790,
+    "tot_s": 5259,
+    "n_platforms": 3
+  },
+  {
+    "title": "The Run In",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 37611,
+          "l": 1541,
+          "c": 72,
+          "s": 413,
+          "d": "2024-11-07",
+          "u": "https://www.youtube.com/watch?v=V8g-PEx8Jj4",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 3438442,
+          "l": 74169,
+          "c": 3308,
+          "s": 3737,
+          "d": "11/08/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/581545947606365/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 55642,
+          "l": 2406,
+          "c": 72,
+          "s": 808,
+          "d": "11/08/2024",
+          "u": "https://www.instagram.com/reel/DCHEbudI0Tw/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 3531695,
+    "tot_l": 78116,
+    "tot_c": 3452,
+    "tot_s": 4958,
+    "n_platforms": 3
+  },
+  {
+    "title": "What's with Su (Trick or Treat)",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 3257611,
+          "l": 64274,
+          "c": 9121,
+          "s": 5405,
+          "d": "10/31/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/559337157047611/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 60207,
+          "l": 1790,
+          "c": 64,
+          "s": 1339,
+          "d": "10/31/2024",
+          "u": "https://www.instagram.com/reel/DBymUKjhY14/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "YouTube": [
+        {
+          "v": 58216,
+          "l": 0,
+          "c": 57,
+          "s": 498,
+          "d": "2025-05-14",
+          "u": "https://www.youtube.com/watch?v=sXFNSSJiTIk",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 3376034,
+    "tot_l": 66064,
+    "tot_c": 9242,
+    "tot_s": 7242,
+    "n_platforms": 3
+  },
+  {
+    "title": "Siblings",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 441690,
+          "l": 16934,
+          "c": 78,
+          "s": 405,
+          "d": "2026-01-26",
+          "u": "https://www.youtube.com/watch?v=oobiuR9yAKE",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 336631,
+          "l": 5004,
+          "c": 156,
+          "s": 498,
+          "d": "2025-11-07",
+          "u": "https://www.youtube.com/watch?v=7vQnRaB0b5c",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1977705,
+          "l": 53536,
+          "c": 1071,
+          "s": 1348,
+          "d": "11/07/2025",
+          "u": "https://www.facebook.com/reel/1538875787296903/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 296560,
+          "l": 22274,
+          "c": 202,
+          "s": 2360,
+          "d": "11/07/2025",
+          "u": "https://www.instagram.com/reel/DQwekqVDfTy/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 258736,
+          "l": 17366,
+          "c": 141,
+          "s": 715,
+          "d": "November 7",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7569977757468298512",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 3311322,
+    "tot_l": 115114,
+    "tot_c": 1648,
+    "tot_s": 5326,
+    "n_platforms": 4
+  },
+  {
+    "title": "Dinner",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 139997,
+          "l": 3702,
+          "c": 295,
+          "s": 472,
+          "d": "2025-06-27",
+          "u": "https://www.youtube.com/watch?v=SOcLsA78py4",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 3012384,
+          "l": 60227,
+          "c": 1137,
+          "s": 824,
+          "d": "06/27/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1123086769843766/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 123705,
+          "l": 4444,
+          "c": 80,
+          "s": 735,
+          "d": "06/27/2025",
+          "u": "https://www.instagram.com/reel/DLbmQQvI2it/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 3276086,
+    "tot_l": 68373,
+    "tot_c": 1512,
+    "tot_s": 2031,
+    "n_platforms": 3
+  },
+  {
+    "title": "Gift Box",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 261650,
+          "l": 6742,
+          "c": 45,
+          "s": 158,
+          "d": "2025-10-13",
+          "u": "https://www.youtube.com/watch?v=9L396IAYluQ",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 92078,
+          "l": 2474,
+          "c": 39,
+          "s": 128,
+          "d": "2025-11-10",
+          "u": "https://www.youtube.com/watch?v=Z8u5jYI8dK0",
+          "asof": "2026-09-28",
+          "label": "Part 1"
+        },
+        {
+          "v": 46275,
+          "l": 1487,
+          "c": 23,
+          "s": 39,
+          "d": "2025-11-12",
+          "u": "https://www.youtube.com/watch?v=bKqP3aW5sjo",
+          "asof": "2026-09-28",
+          "label": "Part 2"
+        },
+        {
+          "v": 43762,
+          "l": 1397,
+          "c": 77,
+          "s": 126,
+          "d": "2025-08-01",
+          "u": "https://www.youtube.com/watch?v=2T_r2Up9nSk",
+          "asof": "2026-09-28",
+          "label": "Short"
+        },
+        {
+          "v": 35315,
+          "l": 0,
+          "c": 0,
+          "s": 180,
+          "d": "2024-12-19",
+          "u": "https://www.youtube.com/watch?v=OqTjSpzJM1k",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1958904,
+          "l": 32706,
+          "c": 800,
+          "s": 614,
+          "d": "08/01/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1860956954684658/",
+          "asof": "2026-04-14",
+          "label": "Post 1"
+        },
+        {
+          "v": 230640,
+          "l": 9874,
+          "c": 230,
+          "s": 182,
+          "d": "07/26/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1690457158389748/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        },
+        {
+          "v": 213415,
+          "l": 5795,
+          "c": 250,
+          "s": 466,
+          "d": "12/19/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/688296453766143/",
+          "asof": "2025-04-13",
+          "label": "Post 3"
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 292990,
+          "l": 9202,
+          "c": 257,
+          "s": 1680,
+          "d": "08/01/2025",
+          "u": "https://www.instagram.com/reel/DM0DUOLo8aZ/",
+          "asof": "2026-04-14",
+          "label": "Post 1"
+        },
+        {
+          "v": 64035,
+          "l": 2148,
+          "c": 49,
+          "s": 663,
+          "d": "12/19/2024",
+          "u": "https://www.instagram.com/reel/DDwra8MBs6y/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        },
+        {
+          "v": 31104,
+          "l": 920,
+          "c": 54,
+          "s": 98,
+          "d": "07/26/2024",
+          "u": "https://www.instagram.com/reel/C94xQj5oDA3/",
+          "asof": "2025-04-13",
+          "label": "Post 3"
+        }
+      ]
+    },
+    "tot_v": 3270168,
+    "tot_l": 72745,
+    "tot_c": 1824,
+    "tot_s": 4334,
+    "n_platforms": 3
+  },
+  {
+    "title": "Worsties",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 25400,
+          "l": 627,
+          "c": 17,
+          "s": 66,
+          "d": "2026-04-03",
+          "u": "https://www.youtube.com/watch?v=SPlmkNt6Uks",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2461541,
+          "l": 33184,
+          "c": 330,
+          "s": 576,
+          "d": "04/03/2026",
+          "u": "https://www.facebook.com/reel/1659441508422223/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 211930,
+          "l": 6201,
+          "c": 64,
+          "s": 870,
+          "d": "04/03/2026",
+          "u": "https://www.instagram.com/reel/DWq2k92Bpcf/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 388335,
+          "l": 20374,
+          "c": 40,
+          "s": 457,
+          "d": "April 3",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7624487707548372231",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 3087206,
+    "tot_l": 60386,
+    "tot_c": 451,
+    "tot_s": 1969,
+    "n_platforms": 4
+  },
+  {
+    "title": "Breakup",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 257783,
+          "l": 10267,
+          "c": 69,
+          "s": 302,
+          "d": "2025-09-29",
+          "u": "https://www.youtube.com/watch?v=I_A4J7s05A4",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 69644,
+          "l": 3387,
+          "c": 119,
+          "s": 385,
+          "d": "2025-08-15",
+          "u": "https://www.youtube.com/watch?v=neq3JaQLsHc",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2207031,
+          "l": 58665,
+          "c": 926,
+          "s": 1536,
+          "d": "08/15/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/31882842234636450/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 455846,
+          "l": 28600,
+          "c": 352,
+          "s": 4286,
+          "d": "08/15/2025",
+          "u": "https://www.instagram.com/reel/DNX_aMJTzZ_/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2990304,
+    "tot_l": 100919,
+    "tot_c": 1466,
+    "tot_s": 6509,
+    "n_platforms": 3
+  },
+  {
+    "title": "Approval",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 96848,
+          "l": 3085,
+          "c": 161,
+          "s": 468,
+          "d": "2026-03-06",
+          "u": "https://www.youtube.com/watch?v=qmToU4Zi8CI",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2406074,
+          "l": 61080,
+          "c": 2387,
+          "s": 2883,
+          "d": "03/06/2026",
+          "u": "https://www.facebook.com/reel/1259104949697298/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 73280,
+          "l": 3915,
+          "c": 107,
+          "s": 622,
+          "d": "03/06/2026",
+          "u": "https://www.instagram.com/reel/DViwXsxlYYM/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 332240,
+          "l": 20282,
+          "c": 211,
+          "s": 910,
+          "d": "March 6",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7613718421305429256",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2908442,
+    "tot_l": 88362,
+    "tot_c": 2866,
+    "tot_s": 4883,
+    "n_platforms": 4
+  },
+  {
+    "title": "A Special Day",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 114795,
+          "l": 3232,
+          "c": 153,
+          "s": 368,
+          "d": "2025-10-17",
+          "u": "https://www.youtube.com/watch?v=C5ON9MynOiU",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2336411,
+          "l": 63347,
+          "c": 626,
+          "s": 1056,
+          "d": "10/17/2025",
+          "u": "https://www.facebook.com/reel/1058778389536808/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 83007,
+          "l": 4522,
+          "c": 54,
+          "s": 662,
+          "d": "10/17/2025",
+          "u": "https://www.instagram.com/reel/DP6RFlokx1-/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 348013,
+          "l": 21748,
+          "c": 152,
+          "s": 601,
+          "d": "October 17",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7562159712012094736",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2882226,
+    "tot_l": 92849,
+    "tot_c": 985,
+    "tot_s": 2687,
+    "n_platforms": 4
+  },
+  {
+    "title": "Pani Walalu",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 458172,
+          "l": 14884,
+          "c": 65,
+          "s": 248,
+          "d": "2026-04-13",
+          "u": "https://www.youtube.com/watch?v=SBAvUqcZE0I",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 42676,
+          "l": 1729,
+          "c": 52,
+          "s": 182,
+          "d": "2026-04-10",
+          "u": "https://www.youtube.com/watch?v=8-BqQ1lvQys",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1786180,
+          "l": 57286,
+          "c": 836,
+          "s": 726,
+          "d": "04/10/2026",
+          "u": "https://www.facebook.com/reel/2452337485188645/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 125698,
+          "l": 5896,
+          "c": 66,
+          "s": 559,
+          "d": "04/10/2026",
+          "u": "https://www.instagram.com/reel/DW84tCjh6Xq/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 448473,
+          "l": 28518,
+          "c": 90,
+          "s": 803,
+          "d": "April 10",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7627100112392555793",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2861199,
+    "tot_l": 108313,
+    "tot_c": 1109,
+    "tot_s": 2518,
+    "n_platforms": 4
+  },
+  {
+    "title": "Blessings",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 268804,
+          "l": 0,
+          "c": 94,
+          "s": 689,
+          "d": "2025-04-28",
+          "u": "https://www.youtube.com/watch?v=Vk4IXydGX04",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2339075,
+          "l": 60111,
+          "c": 1401,
+          "s": 3605,
+          "d": "10/18/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1068991814928388/",
+          "asof": "2025-04-13",
+          "label": "Post 1"
+        },
+        {
+          "v": 99753,
+          "l": 528,
+          "c": 7,
+          "s": 3,
+          "d": "10/23/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1074470161003436/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 97304,
+          "l": 3224,
+          "c": 82,
+          "s": 1689,
+          "d": "10/18/2024",
+          "u": "https://www.instagram.com/reel/DBRGIrHBN8c/",
+          "asof": "2025-04-13",
+          "label": "Post 1"
+        },
+        {
+          "v": 15641,
+          "l": 166,
+          "c": 0,
+          "s": 8,
+          "d": "10/23/2024",
+          "u": "https://www.instagram.com/reel/DBeB9eYJj-q/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        }
+      ]
+    },
+    "tot_v": 2820577,
+    "tot_l": 64029,
+    "tot_c": 1584,
+    "tot_s": 5994,
+    "n_platforms": 3
+  },
+  {
+    "title": "The Farewell",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 80861,
+          "l": 2944,
+          "c": 43,
+          "s": 194,
+          "d": "2025-11-18",
+          "u": "https://www.youtube.com/watch?v=gN6_EQ1bSik",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 68781,
+          "l": 1955,
+          "c": 90,
+          "s": 551,
+          "d": "2025-01-27",
+          "u": "https://www.youtube.com/watch?v=gDzeKgUtrHI",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2408505,
+          "l": 50240,
+          "c": 2099,
+          "s": 1757,
+          "d": "12/13/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/2898819543615972/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 163413,
+          "l": 4639,
+          "c": 101,
+          "s": 1949,
+          "d": "12/13/2024",
+          "u": "https://www.instagram.com/reel/DDhNXzMBpcK/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2721560,
+    "tot_l": 59778,
+    "tot_c": 2333,
+    "tot_s": 4451,
+    "n_platforms": 3
+  },
+  {
+    "title": "Happy Birthday",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 61046,
+          "l": 1873,
+          "c": 47,
+          "s": 153,
+          "d": "2024-12-27",
+          "u": "https://www.youtube.com/watch?v=hW39jR_gHsA",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2445177,
+          "l": 50569,
+          "c": 852,
+          "s": 1554,
+          "d": "10/04/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1047498243299091/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 33388,
+          "l": 1584,
+          "c": 29,
+          "s": 257,
+          "d": "10/04/2024",
+          "u": "https://www.instagram.com/reel/DAtDNy-saBc/",
+          "asof": "2025-04-13",
+          "label": "Post 1"
+        },
+        {
+          "v": 24341,
+          "l": 343,
+          "c": 3,
+          "s": 6,
+          "d": "11/11/2024",
+          "u": "https://www.instagram.com/reel/DCPP2d7Pv7b/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        }
+      ]
+    },
+    "tot_v": 2563952,
+    "tot_l": 54369,
+    "tot_c": 931,
+    "tot_s": 1970,
+    "n_platforms": 3
+  },
+  {
+    "title": "Marble",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 67510,
+          "l": 1905,
+          "c": 97,
+          "s": 220,
+          "d": "2026-01-09",
+          "u": "https://www.youtube.com/watch?v=5fztEmSr3hM",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 21651,
+          "l": 838,
+          "c": 10,
+          "s": 42,
+          "d": "2026-02-16",
+          "u": "https://www.youtube.com/watch?v=UDh7Utx1gCo",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1682992,
+          "l": 33663,
+          "c": 464,
+          "s": 691,
+          "d": "01/09/2026",
+          "u": "https://www.facebook.com/reel/1951767215615255/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 270279,
+          "l": 11134,
+          "c": 91,
+          "s": 1983,
+          "d": "01/09/2026",
+          "u": "https://www.instagram.com/reel/DTSjyBGDd7R/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 467748,
+          "l": 26262,
+          "c": 151,
+          "s": 842,
+          "d": "January 9",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7593328518579162384",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2510180,
+    "tot_l": 73802,
+    "tot_c": 813,
+    "tot_s": 3778,
+    "n_platforms": 4
+  },
+  {
+    "title": "Fit On",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 41634,
+          "l": 1534,
+          "c": 123,
+          "s": 142,
+          "d": "2026-06-12",
+          "u": "https://www.youtube.com/watch?v=yoWTN9Ud8SQ",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 32449,
+          "l": 1112,
+          "c": 38,
+          "s": 51,
+          "d": "2025-10-04",
+          "u": "https://www.youtube.com/watch?v=SXXkCW4mlGA",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1197021,
+          "l": 24738,
+          "c": 550,
+          "s": 226,
+          "d": "10/03/2025",
+          "u": "https://www.facebook.com/reel/795265799760426/",
+          "asof": "2026-04-14",
+          "label": "Post 1"
+        },
+        {
+          "v": 925730,
+          "l": 20238,
+          "c": 694,
+          "s": 266,
+          "d": "06/12/2026",
+          "u": "https://www.facebook.com/reel/1905226500191683/",
+          "asof": "2026-09-28",
+          "label": "Post 2"
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 144772,
+          "l": 5860,
+          "c": 76,
+          "s": 782,
+          "d": "10/03/2025",
+          "u": "https://www.instagram.com/reel/DPWN3uMDb60/",
+          "asof": "2026-04-14",
+          "label": "Post 1"
+        },
+        {
+          "v": 73130,
+          "l": 3118,
+          "c": 66,
+          "s": 555,
+          "d": "06/12/2026",
+          "u": "https://www.instagram.com/reel/DZfGPheBnXM/",
+          "asof": "2026-09-28",
+          "label": "Post 2"
+        }
+      ]
+    },
+    "tot_v": 2414736,
+    "tot_l": 56600,
+    "tot_c": 1547,
+    "tot_s": 2022,
+    "n_platforms": 3
+  },
+  {
+    "title": "The Miracle",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 222932,
+          "l": 7751,
+          "c": 106,
+          "s": 547,
+          "d": "2025-11-24",
+          "u": "https://www.youtube.com/watch?v=pxzSzTB4n9M",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 46380,
+          "l": 2207,
+          "c": 121,
+          "s": 562,
+          "d": "2025-02-07",
+          "u": "https://www.youtube.com/watch?v=AMNfa_XQ0j8",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1928577,
+          "l": 45307,
+          "c": 2321,
+          "s": 5504,
+          "d": "02/07/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/850130173878278/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 188370,
+          "l": 5890,
+          "c": 245,
+          "s": 3093,
+          "d": "02/07/2025",
+          "u": "https://www.instagram.com/reel/DFxc1chBVb-/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2386259,
+    "tot_l": 61155,
+    "tot_c": 2793,
+    "tot_s": 9706,
+    "n_platforms": 3
+  },
+  {
+    "title": "Lunchtime",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 175323,
+          "l": 6043,
+          "c": 106,
+          "s": 313,
+          "d": "2025-08-29",
+          "u": "https://www.youtube.com/watch?v=qZj62uNdgRA",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 32335,
+          "l": 862,
+          "c": 51,
+          "s": 121,
+          "d": "2025-08-31",
+          "u": "https://www.youtube.com/watch?v=ZAsDP54iINA",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2010283,
+          "l": 41543,
+          "c": 1246,
+          "s": 1062,
+          "d": "08/29/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1087296073429907/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 158429,
+          "l": 6547,
+          "c": 102,
+          "s": 814,
+          "d": "08/29/2025",
+          "u": "https://www.instagram.com/reel/DN8IXtcApTM/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2376370,
+    "tot_l": 54995,
+    "tot_c": 1505,
+    "tot_s": 2310,
+    "n_platforms": 3
+  },
+  {
+    "title": "Just Right",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 565159,
+          "l": 0,
+          "c": 193,
+          "s": 1088,
+          "d": "2024-12-24",
+          "u": "https://www.youtube.com/watch?v=8Do6GpixsMU",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1562251,
+          "l": 50583,
+          "c": 746,
+          "s": 1530,
+          "d": "12/24/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1687440391802630/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 136116,
+          "l": 5292,
+          "c": 66,
+          "s": 762,
+          "d": "12/24/2024",
+          "u": "https://www.instagram.com/reel/DD9kth1oMmY/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2263526,
+    "tot_l": 55875,
+    "tot_c": 1005,
+    "tot_s": 3380,
+    "n_platforms": 3
+  },
+  {
+    "title": "Giddy Up",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 954828,
+          "l": 24411,
+          "c": 150,
+          "s": 516,
+          "d": "2026-01-05",
+          "u": "https://www.youtube.com/watch?v=1BLEYDZqsjc",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1233977,
+          "l": 51294,
+          "c": 757,
+          "s": 2066,
+          "d": "09/15/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/465729149778126/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 49271,
+          "l": 1544,
+          "c": 31,
+          "s": 114,
+          "d": "09/13/2024",
+          "u": "https://www.instagram.com/reel/C_26Rz-Ik-V/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2238076,
+    "tot_l": 77249,
+    "tot_c": 938,
+    "tot_s": 2696,
+    "n_platforms": 3
+  },
+  {
+    "title": "Binge",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 52557,
+          "l": 1824,
+          "c": 107,
+          "s": 294,
+          "d": "2025-06-06",
+          "u": "https://www.youtube.com/watch?v=JrcHgW5sAGQ",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 2082434,
+          "l": 42952,
+          "c": 723,
+          "s": 794,
+          "d": "06/06/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/4683857951840904/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 95765,
+          "l": 4094,
+          "c": 88,
+          "s": 610,
+          "d": "06/06/2025",
+          "u": "https://www.instagram.com/reel/DKj8OWzhYz6/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2230756,
+    "tot_l": 48870,
+    "tot_c": 918,
+    "tot_s": 1698,
+    "n_platforms": 3
+  },
+  {
+    "title": "Toxic",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 28339,
+          "l": 745,
+          "c": 29,
+          "s": 35,
+          "d": "2026-06-05",
+          "u": "https://www.youtube.com/watch?v=kPjF23DxXI0",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 24346,
+          "l": 637,
+          "c": 7,
+          "s": 14,
+          "d": "2026-07-27",
+          "u": "https://www.youtube.com/watch?v=Aiv5zMGxpZs",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1870509,
+          "l": 15351,
+          "c": 131,
+          "s": 242,
+          "d": "06/05/2026",
+          "u": "https://www.facebook.com/reel/1333427768670194/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 115763,
+          "l": 3186,
+          "c": 38,
+          "s": 458,
+          "d": "06/05/2026",
+          "u": "https://www.instagram.com/reel/DZNEwsiB2r7/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 2038957,
+    "tot_l": 19919,
+    "tot_c": 205,
+    "tot_s": 749,
+    "n_platforms": 3
+  },
+  {
+    "title": "Bro",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 43382,
+          "l": 1713,
+          "c": 22,
+          "s": 54,
+          "d": "2025-11-03",
+          "u": "https://www.youtube.com/watch?v=0qCFDtgYUI8",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 22902,
+          "l": 988,
+          "c": 42,
+          "s": 177,
+          "d": "2025-04-04",
+          "u": "https://www.youtube.com/watch?v=MCy4FjBm5OY",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1422369,
+          "l": 28862,
+          "c": 1497,
+          "s": 679,
+          "d": "04/04/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/678150361230803/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 347794,
+          "l": 16661,
+          "c": 354,
+          "s": 5015,
+          "d": "04/04/2025",
+          "u": "https://www.instagram.com/reel/DIBpo1ABHg9/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1836447,
+    "tot_l": 48224,
+    "tot_c": 1915,
+    "tot_s": 5925,
+    "n_platforms": 3
+  },
+  {
+    "title": "The Cover Up",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 179796,
+          "l": 6277,
+          "c": 130,
+          "s": 111,
+          "d": "2025-07-14",
+          "u": "https://www.youtube.com/watch?v=rW30XPm_UWo",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1536028,
+          "l": 27633,
+          "c": 753,
+          "s": 982,
+          "d": "12/06/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/578994815084465/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 94065,
+          "l": 2755,
+          "c": 59,
+          "s": 506,
+          "d": "12/06/2024",
+          "u": "https://www.instagram.com/reel/DDQz-dAhvxz/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1809889,
+    "tot_l": 36665,
+    "tot_c": 942,
+    "tot_s": 1599,
+    "n_platforms": 3
+  },
+  {
+    "title": "Back To Work",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 91781,
+          "l": 2666,
+          "c": 159,
+          "s": 443,
+          "d": "2026-04-30",
+          "u": "https://www.youtube.com/watch?v=BWJCP9b5XXg",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1234203,
+          "l": 30193,
+          "c": 721,
+          "s": 844,
+          "d": "04/30/2026",
+          "u": "https://www.facebook.com/reel/1599008451161135/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 104414,
+          "l": 5119,
+          "c": 111,
+          "s": 752,
+          "d": "04/30/2026",
+          "u": "https://www.instagram.com/reel/DXwWScHBfyh/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 308122,
+          "l": 20091,
+          "c": 192,
+          "s": 898,
+          "d": "April 30",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7634504655640251656",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1738520,
+    "tot_l": 58069,
+    "tot_c": 1183,
+    "tot_s": 2937,
+    "n_platforms": 4
+  },
+  {
+    "title": "Morning After",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 418289,
+          "l": 2224,
+          "c": 103,
+          "s": 444,
+          "d": "2026-03-20",
+          "u": "https://www.youtube.com/watch?v=5NHfd3RtZBs",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1203119,
+          "l": 14134,
+          "c": 636,
+          "s": 418,
+          "d": "03/20/2026",
+          "u": "https://www.facebook.com/reel/1616043936302234/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 82434,
+          "l": 2547,
+          "c": 49,
+          "s": 336,
+          "d": "03/20/2026",
+          "u": "https://www.instagram.com/reel/DWGzmn4But8/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1703842,
+    "tot_l": 18905,
+    "tot_c": 788,
+    "tot_s": 1198,
+    "n_platforms": 3
+  },
+  {
+    "title": "Memorise",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 53397,
+          "l": 1924,
+          "c": 112,
+          "s": 334,
+          "d": "2025-12-12",
+          "u": "https://www.youtube.com/watch?v=NN_AYJQ2YhU",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1452036,
+          "l": 40562,
+          "c": 1943,
+          "s": 1609,
+          "d": "12/12/2025",
+          "u": "https://www.facebook.com/reel/1567767117975362/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 185629,
+          "l": 11701,
+          "c": 94,
+          "s": 2249,
+          "d": "12/12/2025",
+          "u": "https://www.instagram.com/reel/DSKdjRSk0Z5/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1691062,
+    "tot_l": 54187,
+    "tot_c": 2149,
+    "tot_s": 4192,
+    "n_platforms": 3
+  },
+  {
+    "title": "Granny No",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 67282,
+          "l": 3284,
+          "c": 173,
+          "s": 1073,
+          "d": "2025-04-11",
+          "u": "https://www.youtube.com/watch?v=gOmotuE-6g0",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 48615,
+          "l": 0,
+          "c": 47,
+          "s": 298,
+          "d": "2025-02-19",
+          "u": "https://www.youtube.com/watch?v=5eZEIm5cR-4",
+          "asof": "2026-09-28",
+          "label": "Short"
+        },
+        {
+          "v": 32616,
+          "l": 1097,
+          "c": 14,
+          "s": 53,
+          "d": "2025-04-11",
+          "u": "https://www.youtube.com/watch?v=rKhtcG0JaUM",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1335521,
+          "l": 39192,
+          "c": 1866,
+          "s": 2238,
+          "d": "04/11/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/9792773637446931/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 91275,
+          "l": 4331,
+          "c": 150,
+          "s": 1985,
+          "d": "04/11/2025",
+          "u": "https://www.instagram.com/reel/DIT7C9ShYzg/",
+          "asof": "2025-04-13",
+          "label": "Post 1"
+        },
+        {
+          "v": 47843,
+          "l": 1725,
+          "c": 51,
+          "s": 412,
+          "d": "09/06/2024",
+          "u": "https://www.instagram.com/reel/C_k-UfVovje/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        }
+      ]
+    },
+    "tot_v": 1623152,
+    "tot_l": 49629,
+    "tot_c": 2301,
+    "tot_s": 6059,
+    "n_platforms": 3
+  },
+  {
+    "title": "Caught in the Act",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 1516604,
+          "l": 12465,
+          "c": 396,
+          "s": 3847,
+          "d": "2025-01-29",
+          "u": "https://www.youtube.com/watch?v=kU3PUBraTU4",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 65346,
+          "l": 2512,
+          "c": 36,
+          "s": 273,
+          "d": "2026-01-12",
+          "u": "https://www.youtube.com/watch?v=3HrENukNcEA",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ]
+    },
+    "tot_v": 1581950,
+    "tot_l": 14977,
+    "tot_c": 432,
+    "tot_s": 4120,
+    "n_platforms": 1
+  },
+  {
+    "title": "The Interview",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 52989,
+          "l": 2236,
+          "c": 209,
+          "s": 151,
+          "d": "2025-10-24",
+          "u": "https://www.youtube.com/watch?v=6wIicQN-ePM",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1230358,
+          "l": 28508,
+          "c": 596,
+          "s": 390,
+          "d": "10/24/2025",
+          "u": "https://www.facebook.com/reel/1229103192430073/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 89470,
+          "l": 4013,
+          "c": 67,
+          "s": 410,
+          "d": "10/24/2025",
+          "u": "https://www.instagram.com/reel/DQMRLXEE1Cw/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 204601,
+          "l": 11730,
+          "c": 110,
+          "s": 268,
+          "d": "October 24",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7564763113380203784",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1577418,
+    "tot_l": 46487,
+    "tot_c": 982,
+    "tot_s": 1219,
+    "n_platforms": 4
+  },
+  {
+    "title": "Dodol",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 98422,
+          "l": 3269,
+          "c": 246,
+          "s": 760,
+          "d": "2026-05-22",
+          "u": "https://www.youtube.com/watch?v=i4qp5tkM4Fo",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 4373,
+          "l": 212,
+          "c": 5,
+          "s": 17,
+          "d": "2026-08-10",
+          "u": "https://www.youtube.com/watch?v=BKRAHrJaBWw",
+          "asof": "2026-09-28",
+          "label": "Part 2"
+        },
+        {
+          "v": 3308,
+          "l": 136,
+          "c": 3,
+          "s": 7,
+          "d": "2026-08-03",
+          "u": "https://www.youtube.com/watch?v=F8VE1oAR8P0",
+          "asof": "2026-09-28",
+          "label": "Part 1"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1138676,
+          "l": 30406,
+          "c": 569,
+          "s": 603,
+          "d": "05/22/2026",
+          "u": "https://www.facebook.com/reel/2448273772269609/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 60740,
+          "l": 2528,
+          "c": 90,
+          "s": 745,
+          "d": "05/22/2026",
+          "u": "https://www.instagram.com/reel/DYpB2QiCmwo/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 247107,
+          "l": 12899,
+          "c": 194,
+          "s": 1411,
+          "d": "May 22",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7642695918747274516",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1552626,
+    "tot_l": 49450,
+    "tot_c": 1107,
+    "tot_s": 3543,
+    "n_platforms": 4
+  },
+  {
+    "title": "Prodigy",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 53205,
+          "l": 1919,
+          "c": 97,
+          "s": 417,
+          "d": "2025-03-07",
+          "u": "https://www.youtube.com/watch?v=l0iJ1Q2-pA4",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1075909,
+          "l": 24657,
+          "c": 746,
+          "s": 1311,
+          "d": "03/07/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/454265361102078/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 390963,
+          "l": 18172,
+          "c": 439,
+          "s": 10093,
+          "d": "03/07/2025",
+          "u": "https://www.instagram.com/reel/DG5mpYIhDyU/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1520077,
+    "tot_l": 44748,
+    "tot_c": 1282,
+    "tot_s": 11821,
+    "n_platforms": 3
+  },
+  {
+    "title": "The Room",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 97359,
+          "l": 2870,
+          "c": 33,
+          "s": 159,
+          "d": "2025-09-22",
+          "u": "https://www.youtube.com/watch?v=yeU04ROI2w0",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 41753,
+          "l": 1213,
+          "c": 54,
+          "s": 197,
+          "d": "2025-09-19",
+          "u": "https://www.youtube.com/watch?v=GgLb9OolTiU",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1170215,
+          "l": 21917,
+          "c": 585,
+          "s": 620,
+          "d": "09/19/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1427101415070776/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 131638,
+          "l": 5028,
+          "c": 71,
+          "s": 259,
+          "d": "09/19/2025",
+          "u": "https://www.instagram.com/reel/DOyJWAUDZbk/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1440965,
+    "tot_l": 31028,
+    "tot_c": 743,
+    "tot_s": 1235,
+    "n_platforms": 3
+  },
+  {
+    "title": "Frames",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 17947,
+          "l": 901,
+          "c": 38,
+          "s": 77,
+          "d": "2026-07-17",
+          "u": "https://www.youtube.com/watch?v=fRWT2bYQi_I",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 4157,
+          "l": 243,
+          "c": 6,
+          "s": 5,
+          "d": "2026-08-17",
+          "u": "https://www.youtube.com/watch?v=oXCsfQo52MY",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1283474,
+          "l": 31088,
+          "c": 355,
+          "s": 478,
+          "d": "07/17/2026",
+          "u": "https://www.facebook.com/reel/3962093987428314/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 124562,
+          "l": 7052,
+          "c": 122,
+          "s": 446,
+          "d": "07/17/2026",
+          "u": "https://www.instagram.com/reel/Da5Ko7oAFOm/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1430140,
+    "tot_l": 39284,
+    "tot_c": 521,
+    "tot_s": 1006,
+    "n_platforms": 3
+  },
+  {
+    "title": "The Fault in our Prints",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 95035,
+          "l": 3569,
+          "c": 129,
+          "s": 946,
+          "d": "2025-08-26",
+          "u": "https://www.youtube.com/watch?v=62FuL9l-E-c",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1274201,
+          "l": 68032,
+          "c": 7324,
+          "s": 3672,
+          "d": "07/19/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/2558946880945118/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 30336,
+          "l": 1164,
+          "c": 49,
+          "s": 312,
+          "d": "07/19/2024",
+          "u": "https://www.instagram.com/reel/C9m1A2qhNXc/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1399572,
+    "tot_l": 72765,
+    "tot_c": 7502,
+    "tot_s": 4930,
+    "n_platforms": 3
+  },
+  {
+    "title": "A Fertile Mystery",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 417803,
+          "l": 0,
+          "c": 139,
+          "s": 458,
+          "d": "2025-02-17",
+          "u": "https://www.youtube.com/watch?v=ADfNVfgoR3s",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 34586,
+          "l": 925,
+          "c": 25,
+          "s": 46,
+          "d": "07/05/2024",
+          "u": "https://www.instagram.com/reel/C9CrlUHhws0/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 939982,
+          "l": 33115,
+          "c": 751,
+          "s": 589,
+          "d": "07/05/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1124846235483380/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1392371,
+    "tot_l": 34040,
+    "tot_c": 915,
+    "tot_s": 1093,
+    "n_platforms": 3
+  },
+  {
+    "title": "Daylight",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 34329,
+          "l": 1150,
+          "c": 20,
+          "s": 21,
+          "d": "2025-08-07",
+          "u": "https://www.youtube.com/watch?v=HiRrwtQnsNw",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 33727,
+          "l": 918,
+          "c": 100,
+          "s": 85,
+          "d": "2025-08-07",
+          "u": "https://www.youtube.com/watch?v=voCMcnk64y8",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1137508,
+          "l": 20941,
+          "c": 385,
+          "s": 214,
+          "d": "08/07/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/636309239502676/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 157504,
+          "l": 5236,
+          "c": 82,
+          "s": 592,
+          "d": "08/07/2025",
+          "u": "https://www.instagram.com/reel/DNDcpIgBILB/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1363068,
+    "tot_l": 28245,
+    "tot_c": 587,
+    "tot_s": 912,
+    "n_platforms": 3
+  },
+  {
+    "title": "Spittoon",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 27029,
+          "l": 981,
+          "c": 35,
+          "s": 45,
+          "d": "2025-08-22",
+          "u": "https://www.youtube.com/watch?v=QrSsQ-MBD6k",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 22698,
+          "l": 1128,
+          "c": 46,
+          "s": 128,
+          "d": "2025-08-23",
+          "u": "https://www.youtube.com/watch?v=tWkTsSEFuO4",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 1081559,
+          "l": 31647,
+          "c": 525,
+          "s": 701,
+          "d": "08/22/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/974342491456192/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 147882,
+          "l": 7747,
+          "c": 111,
+          "s": 979,
+          "d": "08/22/2025",
+          "u": "https://www.instagram.com/reel/DNqBKL2h8e4/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1279168,
+    "tot_l": 41503,
+    "tot_c": 717,
+    "tot_s": 1853,
+    "n_platforms": 3
+  },
+  {
+    "title": "Christmas Kiribath",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 67201,
+          "l": 2442,
+          "c": 96,
+          "s": 173,
+          "d": "2025-12-24",
+          "u": "https://www.youtube.com/watch?v=i1D0wyY2cUM",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 860116,
+          "l": 26174,
+          "c": 369,
+          "s": 519,
+          "d": "12/24/2025",
+          "u": "https://www.facebook.com/reel/1585095829167236/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 80158,
+          "l": 3877,
+          "c": 39,
+          "s": 328,
+          "d": "12/24/2025",
+          "u": "https://www.instagram.com/reel/DSpcYwmETV8/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "TikTok": [
+        {
+          "v": 186127,
+          "l": 12832,
+          "c": 92,
+          "s": 279,
+          "d": "December 24",
+          "u": "https://www.tiktok.com/@kehelmalastudios/video/7587390716280671506",
+          "asof": "September 28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1193602,
+    "tot_l": 45325,
+    "tot_c": 596,
+    "tot_s": 1299,
+    "n_platforms": 4
+  },
+  {
+    "title": "Chocolate final episode",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 40535,
+          "l": 909,
+          "c": 33,
+          "s": 324,
+          "d": "2024-12-31",
+          "u": "https://www.youtube.com/watch?v=ePn2obtYNCc",
+          "asof": "2026-09-28",
+          "label": "Part 1"
+        },
+        {
+          "v": 37535,
+          "l": 815,
+          "c": 46,
+          "s": 139,
+          "d": "2025-03-18",
+          "u": "https://www.youtube.com/watch?v=mzUqLeKBveg",
+          "asof": "2026-09-28",
+          "label": "Part 2"
+        },
+        {
+          "v": 33665,
+          "l": 721,
+          "c": 16,
+          "s": 99,
+          "d": "2025-04-23",
+          "u": "https://www.youtube.com/watch?v=L5GJXaCaSsY",
+          "asof": "2026-09-28",
+          "label": "Part 3"
+        },
+        {
+          "v": 24691,
+          "l": 598,
+          "c": 38,
+          "s": 66,
+          "d": "2025-06-17",
+          "u": "https://www.youtube.com/watch?v=2q-6p5zQgIY",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 589954,
+          "l": 8751,
+          "c": 55,
+          "s": 105,
+          "d": "08/27/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/365398919949960/",
+          "asof": "2025-04-13",
+          "label": "Post 1"
+        },
+        {
+          "v": 319691,
+          "l": 5342,
+          "c": 118,
+          "s": 80,
+          "d": "07/30/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/491639536903811/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        },
+        {
+          "v": 114716,
+          "l": 2218,
+          "c": 107,
+          "s": 53,
+          "d": "05/16/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1085626612500709/",
+          "asof": "2025-04-13",
+          "label": "Post 3"
+        }
+      ]
+    },
+    "tot_v": 1160787,
+    "tot_l": 19354,
+    "tot_c": 413,
+    "tot_s": 866,
+    "n_platforms": 2
+  },
+  {
+    "title": "Separation",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 105361,
+          "l": 3032,
+          "c": 115,
+          "s": 225,
+          "d": "2025-02-27",
+          "u": "https://www.youtube.com/watch?v=Azm8OtyO8-8",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 893255,
+          "l": 20249,
+          "c": 372,
+          "s": 427,
+          "d": "02/28/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/887579970029013/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 119026,
+          "l": 4144,
+          "c": 76,
+          "s": 556,
+          "d": "02/28/2025",
+          "u": "https://www.instagram.com/reel/DGnZ-02oKQn/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1117642,
+    "tot_l": 27425,
+    "tot_c": 563,
+    "tot_s": 1208,
+    "n_platforms": 3
+  },
+  {
+    "title": "Argument",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 172335,
+          "l": 4794,
+          "c": 42,
+          "s": 391,
+          "d": "2026-09-07",
+          "u": "https://www.youtube.com/watch?v=_mCxXbRFXtg",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 23369,
+          "l": 916,
+          "c": 51,
+          "s": 243,
+          "d": "2026-07-31",
+          "u": "https://www.youtube.com/watch?v=DmUYCL9oyTM",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 702948,
+          "l": 19347,
+          "c": 532,
+          "s": 504,
+          "d": "07/31/2026",
+          "u": "https://www.facebook.com/reel/4587372248159422/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 216373,
+          "l": 7952,
+          "c": 144,
+          "s": 1969,
+          "d": "07/31/2026",
+          "u": "https://www.instagram.com/reel/DbdRMLhBnTy/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1115025,
+    "tot_l": 33009,
+    "tot_c": 769,
+    "tot_s": 3107,
+    "n_platforms": 3
+  },
+  {
+    "title": "Oops",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 33636,
+          "l": 571,
+          "c": 53,
+          "s": 47,
+          "d": "2026-09-04",
+          "u": "https://www.youtube.com/watch?v=t5fV_nQrxeg",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 977258,
+          "l": 13873,
+          "c": 281,
+          "s": 351,
+          "d": "09/04/2026",
+          "u": "https://www.facebook.com/reel/28176791595314100/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 99389,
+          "l": 3441,
+          "c": 46,
+          "s": 449,
+          "d": "09/04/2026",
+          "u": "https://www.instagram.com/reel/Dc3VogaAnpj/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1110283,
+    "tot_l": 17885,
+    "tot_c": 380,
+    "tot_s": 847,
+    "n_platforms": 3
+  },
+  {
+    "title": "Lantern",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 192611,
+          "l": 9505,
+          "c": 42,
+          "s": 75,
+          "d": "2026-05-25",
+          "u": "https://www.youtube.com/watch?v=piRznLbX7NU",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 104862,
+          "l": 2812,
+          "c": 75,
+          "s": 116,
+          "d": "2025-05-09",
+          "u": "https://www.youtube.com/watch?v=yw24uG89uDw",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 679334,
+          "l": 21599,
+          "c": 260,
+          "s": 340,
+          "d": "05/09/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1394704905206861/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 96746,
+          "l": 5357,
+          "c": 58,
+          "s": 357,
+          "d": "05/09/2025",
+          "u": "https://www.instagram.com/reel/DJbkuZQIhVX/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1073553,
+    "tot_l": 39273,
+    "tot_c": 435,
+    "tot_s": 888,
+    "n_platforms": 3
+  },
+  {
+    "title": "You And I",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 109126,
+          "l": 1427,
+          "c": 101,
+          "s": 332,
+          "d": "2026-02-13",
+          "u": "https://www.youtube.com/watch?v=gfsFfqhW3o8",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 21199,
+          "l": 564,
+          "c": 12,
+          "s": 41,
+          "d": "2026-02-13",
+          "u": "https://www.youtube.com/watch?v=BgDDrx7zTmE",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 493230,
+          "l": 7497,
+          "c": 304,
+          "s": 203,
+          "d": "02/13/2026",
+          "u": "https://www.facebook.com/reel/894450520106321/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 401648,
+          "l": 6711,
+          "c": 158,
+          "s": 3796,
+          "d": "02/13/2026",
+          "u": "https://www.instagram.com/reel/DUsrl7cEl72/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1025203,
+    "tot_l": 16199,
+    "tot_c": 575,
+    "tot_s": 4372,
+    "n_platforms": 3
+  },
+  {
+    "title": "Day Out",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 56329,
+          "l": 2114,
+          "c": 96,
+          "s": 132,
+          "d": "2025-12-19",
+          "u": "https://www.youtube.com/watch?v=dNhEe7LuOGQ",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 896929,
+          "l": 23392,
+          "c": 243,
+          "s": 273,
+          "d": "12/19/2025",
+          "u": "https://www.facebook.com/reel/25238020579159204/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 69697,
+          "l": 3539,
+          "c": 50,
+          "s": 210,
+          "d": "12/19/2025",
+          "u": "https://www.instagram.com/reel/DSckhPKE0GN/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1022955,
+    "tot_l": 29045,
+    "tot_c": 389,
+    "tot_s": 615,
+    "n_platforms": 3
+  },
+  {
+    "title": "Internship",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 63775,
+          "l": 2059,
+          "c": 87,
+          "s": 237,
+          "d": "2026-07-10",
+          "u": "https://www.youtube.com/watch?v=OzqupDTHzKY",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 8971,
+          "l": 358,
+          "c": 5,
+          "s": 11,
+          "d": "2026-08-31",
+          "u": "https://www.youtube.com/watch?v=B7PH4ox-JgA",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 861018,
+          "l": 16539,
+          "c": 461,
+          "s": 500,
+          "d": "07/10/2026",
+          "u": "https://www.facebook.com/reel/2962260657460383/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 88719,
+          "l": 4413,
+          "c": 90,
+          "s": 450,
+          "d": "07/10/2026",
+          "u": "https://www.instagram.com/reel/DanMePKhkOh/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1022483,
+    "tot_l": 23369,
+    "tot_c": 643,
+    "tot_s": 1198,
+    "n_platforms": 3
+  },
+  {
+    "title": "Tea Time",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 44091,
+          "l": 1669,
+          "c": 76,
+          "s": 308,
+          "d": "2025-05-30",
+          "u": "https://www.youtube.com/watch?v=7BLJzZx6wcc",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 36301,
+          "l": 1222,
+          "c": 24,
+          "s": 115,
+          "d": "2025-06-01",
+          "u": "https://www.youtube.com/watch?v=wgFbT9uiyA8",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 827754,
+          "l": 16544,
+          "c": 989,
+          "s": 393,
+          "d": "05/30/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1745175206091012/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 114004,
+          "l": 4691,
+          "c": 141,
+          "s": 1814,
+          "d": "05/30/2025",
+          "u": "https://www.instagram.com/reel/DKTgU7folWa/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1022150,
+    "tot_l": 24126,
+    "tot_c": 1230,
+    "tot_s": 2630,
+    "n_platforms": 3
+  },
+  {
+    "title": "Loser",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 50774,
+          "l": 2709,
+          "c": 198,
+          "s": 544,
+          "d": "2025-07-04",
+          "u": "https://www.youtube.com/watch?v=mPLK87JG7Ww",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 891692,
+          "l": 19401,
+          "c": 1599,
+          "s": 1712,
+          "d": "07/04/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/737827712071826/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 75303,
+          "l": 3461,
+          "c": 126,
+          "s": 719,
+          "d": "07/04/2025",
+          "u": "https://www.instagram.com/reel/DLr2IMyI5Yv/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1017769,
+    "tot_l": 25571,
+    "tot_c": 1923,
+    "tot_s": 2975,
+    "n_platforms": 3
+  },
+  {
+    "title": "Eat Cake Spill Tea",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 993424,
+          "l": 62898,
+          "c": 2047,
+          "s": 1962,
+          "d": "06/14/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1796260347528443/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 8215,
+          "l": 2167,
+          "c": 51,
+          "s": 195,
+          "d": "06/14/2024",
+          "u": "https://www.instagram.com/reel/C8MjFpHBmy-/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1001639,
+    "tot_l": 65065,
+    "tot_c": 2098,
+    "tot_s": 2157,
+    "n_platforms": 2
+  },
+  {
+    "title": "Tastiest",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 62934,
+          "l": 0,
+          "c": 36,
+          "s": 110,
+          "d": "2025-04-18",
+          "u": "https://www.youtube.com/watch?v=Rs4Nc1YMqYs",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 832598,
+          "l": 19345,
+          "c": 303,
+          "s": 301,
+          "d": "04/18/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1842095006637305/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 89527,
+          "l": 3183,
+          "c": 53,
+          "s": 461,
+          "d": "04/18/2025",
+          "u": "https://www.instagram.com/reel/DIlhcuAIyu8/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 985059,
+    "tot_l": 22528,
+    "tot_c": 392,
+    "tot_s": 872,
+    "n_platforms": 3
+  },
+  {
+    "title": "Human Resources",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 49837,
+          "l": 1762,
+          "c": 77,
+          "s": 294,
+          "d": "2025-04-25",
+          "u": "https://www.youtube.com/watch?v=THj3sE6hO68",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 26351,
+          "l": 841,
+          "c": 14,
+          "s": 32,
+          "d": "2025-08-11",
+          "u": "https://www.youtube.com/watch?v=zvjOBpSaWjk",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 763791,
+          "l": 12714,
+          "c": 560,
+          "s": 918,
+          "d": "04/25/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1375582486981675/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 130446,
+          "l": 4030,
+          "c": 76,
+          "s": 587,
+          "d": "04/25/2025",
+          "u": "https://www.instagram.com/reel/DI3mdukhz2E/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 970425,
+    "tot_l": 19347,
+    "tot_c": 727,
+    "tot_s": 1831,
+    "n_platforms": 3
+  },
+  {
+    "title": "Behave",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 37331,
+          "l": 0,
+          "c": 38,
+          "s": 71,
+          "d": "2025-02-22",
+          "u": "https://www.youtube.com/watch?v=KERym5Lr3VI",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 35521,
+          "l": 1612,
+          "c": 98,
+          "s": 364,
+          "d": "2025-02-21",
+          "u": "https://www.youtube.com/watch?v=InxbgPajh3k",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 699633,
+          "l": 16433,
+          "c": 882,
+          "s": 1926,
+          "d": "02/21/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/979841780335578/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 180876,
+          "l": 6784,
+          "c": 159,
+          "s": 1903,
+          "d": "02/21/2025",
+          "u": "https://www.instagram.com/reel/DGVb1ymo3z0/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 953361,
+    "tot_l": 24829,
+    "tot_c": 1177,
+    "tot_s": 4264,
+    "n_platforms": 3
+  },
+  {
+    "title": "Sneak",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 49692,
+          "l": 1385,
+          "c": 83,
+          "s": 318,
+          "d": "2025-06-23",
+          "u": "https://www.youtube.com/watch?v=SsligsV8cgo",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 689769,
+          "l": 16657,
+          "c": 1426,
+          "s": 462,
+          "d": "10/25/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1143870944124399/",
+          "asof": "2025-04-13",
+          "label": "Post 1"
+        },
+        {
+          "v": 131145,
+          "l": 1276,
+          "c": 11,
+          "s": 4,
+          "d": "10/28/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/564666692612035/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 60870,
+          "l": 2175,
+          "c": 93,
+          "s": 2320,
+          "d": "10/25/2024",
+          "u": "https://www.instagram.com/reel/DBjBv5cBVoE/",
+          "asof": "2025-04-13",
+          "label": "Post 1"
+        },
+        {
+          "v": 20278,
+          "l": 372,
+          "c": 0,
+          "s": 13,
+          "d": "10/28/2024",
+          "u": "https://www.instagram.com/reel/DBrCFgFtlyI/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        }
+      ]
+    },
+    "tot_v": 951754,
+    "tot_l": 21865,
+    "tot_c": 1613,
+    "tot_s": 3117,
+    "n_platforms": 3
+  },
+  {
+    "title": "Granny's Story",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 946281,
+          "l": 47842,
+          "c": 2312,
+          "s": 1881,
+          "d": "09/06/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/747346660822782/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 946281,
+    "tot_l": 47842,
+    "tot_c": 2312,
+    "tot_s": 1881,
+    "n_platforms": 1
+  },
+  {
+    "title": "Sensational",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 42467,
+          "l": 1506,
+          "c": 42,
+          "s": 113,
+          "d": "2025-02-05",
+          "u": "https://www.youtube.com/watch?v=yE9p4Qk8mOU",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 779765,
+          "l": 14329,
+          "c": 415,
+          "s": 645,
+          "d": "01/03/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/2786233861583368/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 119660,
+          "l": 3399,
+          "c": 68,
+          "s": 602,
+          "d": "01/03/2025",
+          "u": "https://www.instagram.com/reel/DEXTUp-onlk/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 941892,
+    "tot_l": 19234,
+    "tot_c": 525,
+    "tot_s": 1360,
+    "n_platforms": 3
+  },
+  {
+    "title": "Family Portrait",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 43799,
+          "l": 0,
+          "c": 10,
+          "s": 121,
+          "d": "2025-02-12",
+          "u": "https://www.youtube.com/watch?v=BuRSR_SaxyQ",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 834477,
+          "l": 14774,
+          "c": 255,
+          "s": 627,
+          "d": "10/11/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1094434522344803/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 35790,
+          "l": 1315,
+          "c": 28,
+          "s": 237,
+          "d": "10/11/2024",
+          "u": "https://www.instagram.com/reel/DA_CJz9BBcg/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 914066,
+    "tot_l": 16089,
+    "tot_c": 293,
+    "tot_s": 985,
+    "n_platforms": 3
+  },
+  {
+    "title": "Embers",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 44748,
+          "l": 1726,
+          "c": 92,
+          "s": 304,
+          "d": "2026-01-23",
+          "u": "https://www.youtube.com/watch?v=r2xrR2OEH6Q",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 781390,
+          "l": 20453,
+          "c": 577,
+          "s": 506,
+          "d": "01/23/2026",
+          "u": "https://www.facebook.com/reel/1166060648668367/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 63939,
+          "l": 2959,
+          "c": 69,
+          "s": 377,
+          "d": "01/23/2026",
+          "u": "https://www.instagram.com/reel/DT2m8t8EyzJ/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 890077,
+    "tot_l": 25138,
+    "tot_c": 738,
+    "tot_s": 1187,
+    "n_platforms": 3
+  },
+  {
+    "title": "Miss",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 46393,
+          "l": 1689,
+          "c": 55,
+          "s": 309,
+          "d": "2025-03-21",
+          "u": "https://www.youtube.com/watch?v=do-ZESm909s",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 31335,
+          "l": 898,
+          "c": 20,
+          "s": 73,
+          "d": "2025-10-21",
+          "u": "https://www.youtube.com/watch?v=fFzt_MZ2zhE",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 625552,
+          "l": 16066,
+          "c": 606,
+          "s": 485,
+          "d": "03/21/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1323011272311366/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 182180,
+          "l": 10328,
+          "c": 118,
+          "s": 5423,
+          "d": "03/21/2025",
+          "u": "https://www.instagram.com/reel/DHdqNKMoYEt/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 885460,
+    "tot_l": 28981,
+    "tot_c": 799,
+    "tot_s": 6290,
+    "n_platforms": 3
+  },
+  {
+    "title": "Dream Home",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 822615,
+          "l": 21946,
+          "c": 538,
+          "s": 419,
+          "d": "08/30/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1037472511037191/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 27927,
+          "l": 905,
+          "c": 18,
+          "s": 68,
+          "d": "08/30/2024",
+          "u": "https://www.instagram.com/reel/C_S07HBI2Yr/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 850542,
+    "tot_l": 22851,
+    "tot_c": 556,
+    "tot_s": 487,
+    "n_platforms": 2
+  },
+  {
+    "title": "45 Minutes",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 37694,
+          "l": 1740,
+          "c": 94,
+          "s": 586,
+          "d": "2026-02-20",
+          "u": "https://www.youtube.com/watch?v=WvHJmnGZHso",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 667024,
+          "l": 19626,
+          "c": 1104,
+          "s": 475,
+          "d": "02/20/2026",
+          "u": "https://www.facebook.com/reel/1415398069603447/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 141599,
+          "l": 8449,
+          "c": 185,
+          "s": 3442,
+          "d": "02/20/2026",
+          "u": "https://www.instagram.com/reel/DU-tJ50Eues/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 846317,
+    "tot_l": 29815,
+    "tot_c": 1383,
+    "tot_s": 4503,
+    "n_platforms": 3
+  },
+  {
+    "title": "Fleeting",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 46148,
+          "l": 3219,
+          "c": 111,
+          "s": 361,
+          "d": "2026-05-29",
+          "u": "https://www.youtube.com/watch?v=pnN6dEUsEoQ",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 690856,
+          "l": 25640,
+          "c": 745,
+          "s": 2007,
+          "d": "05/29/2026",
+          "u": "https://www.facebook.com/reel/1299179442380389/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 54511,
+          "l": 3208,
+          "c": 64,
+          "s": 272,
+          "d": "05/29/2026",
+          "u": "https://www.instagram.com/reel/DY7GfmdTpAl/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 791515,
+    "tot_l": 32067,
+    "tot_c": 920,
+    "tot_s": 2640,
+    "n_platforms": 3
+  },
+  {
+    "title": "Remains",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 61814,
+          "l": 2361,
+          "c": 31,
+          "s": 28,
+          "d": "2025-10-06",
+          "u": "https://www.youtube.com/watch?v=W-SnG21a0uQ",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 29616,
+          "l": 999,
+          "c": 30,
+          "s": 44,
+          "d": "2025-06-13",
+          "u": "https://www.youtube.com/watch?v=pSS5j1rmZqs",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 597867,
+          "l": 8582,
+          "c": 142,
+          "s": 250,
+          "d": "06/13/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/2287440634986282/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 73207,
+          "l": 2446,
+          "c": 18,
+          "s": 106,
+          "d": "06/13/2025",
+          "u": "https://www.instagram.com/reel/DK164bjIR47/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 762504,
+    "tot_l": 14388,
+    "tot_c": 221,
+    "tot_s": 428,
+    "n_platforms": 3
+  },
+  {
+    "title": "Last Round",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 7979,
+          "l": 351,
+          "c": 18,
+          "s": 69,
+          "d": "2025-05-16",
+          "u": "https://www.youtube.com/watch?v=pF5apad_JIM",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 508009,
+          "l": 10359,
+          "c": 291,
+          "s": 329,
+          "d": "05/16/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1210035030786839/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 242723,
+          "l": 9997,
+          "c": 97,
+          "s": 2107,
+          "d": "05/16/2025",
+          "u": "https://www.instagram.com/reel/DJt7VY8hoJS/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 758711,
+    "tot_l": 20707,
+    "tot_c": 406,
+    "tot_s": 2505,
+    "n_platforms": 3
+  },
+  {
+    "title": "Cooked",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 46541,
+          "l": 1542,
+          "c": 21,
+          "s": 69,
+          "d": "2025-06-09",
+          "u": "https://www.youtube.com/watch?v=iv5CUzrzhA0",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 666937,
+          "l": 28977,
+          "c": 553,
+          "s": 366,
+          "d": "08/23/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/978575594027965/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 31991,
+          "l": 883,
+          "c": 25,
+          "s": 27,
+          "d": "08/23/2024",
+          "u": "https://www.instagram.com/reel/C_A0eIqI7Rp/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 745469,
+    "tot_l": 31402,
+    "tot_c": 599,
+    "tot_s": 462,
+    "n_platforms": 3
+  },
+  {
+    "title": "Date Night",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 32194,
+          "l": 1251,
+          "c": 57,
+          "s": 250,
+          "d": "2025-11-21",
+          "u": "https://www.youtube.com/watch?v=Qokuxm_8sDM",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 609165,
+          "l": 14121,
+          "c": 338,
+          "s": 752,
+          "d": "11/21/2025",
+          "u": "https://www.facebook.com/reel/1881069935817241/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 97992,
+          "l": 4059,
+          "c": 115,
+          "s": 700,
+          "d": "11/21/2025",
+          "u": "https://www.instagram.com/reel/DRUY1UXE12Y/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 739351,
+    "tot_l": 19431,
+    "tot_c": 510,
+    "tot_s": 1702,
+    "n_platforms": 3
+  },
+  {
+    "title": "Moving Out",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 46411,
+          "l": 1818,
+          "c": 78,
+          "s": 97,
+          "d": "2025-07-18",
+          "u": "https://www.youtube.com/watch?v=wPSXmYztLDo",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 556461,
+          "l": 12079,
+          "c": 217,
+          "s": 322,
+          "d": "07/18/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/610109275485617/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 69539,
+          "l": 2996,
+          "c": 56,
+          "s": 293,
+          "d": "07/18/2025",
+          "u": "https://www.instagram.com/reel/DMP8RRZMF1_/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 672411,
+    "tot_l": 16893,
+    "tot_c": 351,
+    "tot_s": 712,
+    "n_platforms": 3
+  },
+  {
+    "title": "Graduation",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 31044,
+          "l": 1281,
+          "c": 156,
+          "s": 143,
+          "d": "2025-07-25",
+          "u": "https://www.youtube.com/watch?v=LzwM6HpIPFI",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 28858,
+          "l": 917,
+          "c": 22,
+          "s": 28,
+          "d": "2025-10-27",
+          "u": "https://www.youtube.com/watch?v=fC36tKy3LdM",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 492286,
+          "l": 9940,
+          "c": 516,
+          "s": 290,
+          "d": "07/25/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/4051220651762680/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 97215,
+          "l": 3573,
+          "c": 93,
+          "s": 264,
+          "d": "07/25/2025",
+          "u": "https://www.instagram.com/reel/DMh-OFPBhkf/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 649403,
+    "tot_l": 15711,
+    "tot_c": 787,
+    "tot_s": 725,
+    "n_platforms": 3
+  },
+  {
+    "title": "2 Interrogation Caller Unknown 2",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 424145,
+          "l": 7207,
+          "c": 597,
+          "s": 462,
+          "d": "09/27/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/402190649368753/",
+          "asof": "2025-04-13",
+          "label": "Post 1"
+        },
+        {
+          "v": 148877,
+          "l": 4282,
+          "c": 68,
+          "s": 34,
+          "d": "08/02/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1954290738344028/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 32080,
+          "l": 829,
+          "c": 31,
+          "s": 197,
+          "d": "09/27/2024",
+          "u": "https://www.instagram.com/reel/DAa-9tFonBi/",
+          "asof": "2025-04-13",
+          "label": "Post 1"
+        },
+        {
+          "v": 24226,
+          "l": 615,
+          "c": 15,
+          "s": 29,
+          "d": "08/02/2024",
+          "u": "https://www.instagram.com/reel/C-K34INoWUs/",
+          "asof": "2025-04-13",
+          "label": "Post 2"
+        }
+      ]
+    },
+    "tot_v": 629328,
+    "tot_l": 12933,
+    "tot_c": 711,
+    "tot_s": 722,
+    "n_platforms": 2
+  },
+  {
+    "title": "Flying Visit",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 16401,
+          "l": 725,
+          "c": 29,
+          "s": 95,
+          "d": "2026-03-27",
+          "u": "https://www.youtube.com/watch?v=2FozUnAIL0A",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 462836,
+          "l": 10112,
+          "c": 198,
+          "s": 187,
+          "d": "03/27/2026",
+          "u": "https://www.facebook.com/reel/846179048508113/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 144652,
+          "l": 6554,
+          "c": 138,
+          "s": 1763,
+          "d": "03/27/2026",
+          "u": "https://www.instagram.com/reel/DWY1AQjhTUV/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 623889,
+    "tot_l": 17391,
+    "tot_c": 365,
+    "tot_s": 2045,
+    "n_platforms": 3
+  },
+  {
+    "title": "Bookworms",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 607051,
+          "l": 26709,
+          "c": 1154,
+          "s": 623,
+          "d": "06/28/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/410757355283685/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 7912,
+          "l": 864,
+          "c": 31,
+          "s": 176,
+          "d": "06/28/2024",
+          "u": "https://www.instagram.com/reel/C8wqyVtBW01/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 614963,
+    "tot_l": 27573,
+    "tot_c": 1185,
+    "tot_s": 799,
+    "n_platforms": 2
+  },
+  {
+    "title": "The Lion",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 34705,
+          "l": 0,
+          "c": 23,
+          "s": 71,
+          "d": "2025-03-15",
+          "u": "https://www.youtube.com/watch?v=FaqTYCaZd8E",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 476397,
+          "l": 13624,
+          "c": 288,
+          "s": 235,
+          "d": "11/29/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/545850278337644/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 58574,
+          "l": 1832,
+          "c": 44,
+          "s": 595,
+          "d": "11/29/2024",
+          "u": "https://www.instagram.com/reel/DC9MixVhdM8/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 569676,
+    "tot_l": 15456,
+    "tot_c": 355,
+    "tot_s": 901,
+    "n_platforms": 3
+  },
+  {
+    "title": "Breakdown",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 42569,
+          "l": 1461,
+          "c": 15,
+          "s": 16,
+          "d": "2026-01-30",
+          "u": "https://www.youtube.com/watch?v=lnV1QCNwcig",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 13611,
+          "l": 531,
+          "c": 20,
+          "s": 65,
+          "d": "2026-01-30",
+          "u": "https://www.youtube.com/watch?v=J7M7G0DwXOE",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 447853,
+          "l": 7721,
+          "c": 244,
+          "s": 178,
+          "d": "01/30/2026",
+          "u": "https://www.facebook.com/reel/709515895430277/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 54580,
+          "l": 2119,
+          "c": 24,
+          "s": 177,
+          "d": "01/30/2026",
+          "u": "https://www.instagram.com/reel/DUIuwPzjZrK/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 558613,
+    "tot_l": 11832,
+    "tot_c": 303,
+    "tot_s": 436,
+    "n_platforms": 3
+  },
+  {
+    "title": "White Lies",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 50260,
+          "l": 637,
+          "c": 57,
+          "s": 48,
+          "d": "2026-09-18",
+          "u": "https://www.youtube.com/watch?v=Drkc_uw2YKo",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 405006,
+          "l": 8742,
+          "c": 196,
+          "s": 187,
+          "d": "09/18/2026",
+          "u": "https://www.facebook.com/reel/1891339901830073/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 88670,
+          "l": 3113,
+          "c": 36,
+          "s": 212,
+          "d": "09/18/2026",
+          "u": "https://www.instagram.com/reel/DdbYzaHDUge/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 543936,
+    "tot_l": 12492,
+    "tot_c": 289,
+    "tot_s": 447,
+    "n_platforms": 3
+  },
+  {
+    "title": "Thorn Bush",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 23914,
+          "l": 900,
+          "c": 76,
+          "s": 85,
+          "d": "2026-04-17",
+          "u": "https://www.youtube.com/watch?v=QlzOpLNdJ-o",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 423789,
+          "l": 9672,
+          "c": 644,
+          "s": 150,
+          "d": "04/17/2026",
+          "u": "https://www.facebook.com/reel/1548991030217525/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 95290,
+          "l": 3352,
+          "c": 53,
+          "s": 472,
+          "d": "04/17/2026",
+          "u": "https://www.instagram.com/reel/DXO70qCE1Ka/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 542993,
+    "tot_l": 13924,
+    "tot_c": 773,
+    "tot_s": 707,
+    "n_platforms": 3
+  },
+  {
+    "title": "Besties",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 63030,
+          "l": 3127,
+          "c": 204,
+          "s": 1297,
+          "d": "2026-01-01",
+          "u": "https://www.youtube.com/watch?v=mG3G8cgt-P4",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 364556,
+          "l": 8609,
+          "c": 453,
+          "s": 279,
+          "d": "01/02/2026",
+          "u": "https://www.facebook.com/reel/1452087599673550/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 100550,
+          "l": 4454,
+          "c": 38,
+          "s": 640,
+          "d": "01/02/2026",
+          "u": "https://www.instagram.com/reel/DTAiTN6jVyp/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 528136,
+    "tot_l": 16190,
+    "tot_c": 695,
+    "tot_s": 2216,
+    "n_platforms": 3
+  },
+  {
+    "title": "Preparations",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 25694,
+          "l": 1276,
+          "c": 47,
+          "s": 48,
+          "d": "2025-05-02",
+          "u": "https://www.youtube.com/watch?v=RO7feWGO4PM",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 411966,
+          "l": 8081,
+          "c": 170,
+          "s": 173,
+          "d": "05/02/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/976032691012897/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 66423,
+          "l": 2450,
+          "c": 26,
+          "s": 151,
+          "d": "05/02/2025",
+          "u": "https://www.instagram.com/reel/DJJk5DTBK_7/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 504083,
+    "tot_l": 11807,
+    "tot_c": 243,
+    "tot_s": 372,
+    "n_platforms": 3
+  },
+  {
+    "title": "Pinipa",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 46362,
+          "l": 1762,
+          "c": 250,
+          "s": 526,
+          "d": "2025-10-31",
+          "u": "https://www.youtube.com/watch?v=_TFswkXklpQ",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 4008,
+          "l": 112,
+          "c": 8,
+          "s": 2,
+          "d": "2026-07-20",
+          "u": "https://www.youtube.com/watch?v=7KarzpIG5JA",
+          "asof": "2026-09-28",
+          "label": "Part 2"
+        },
+        {
+          "v": 3883,
+          "l": 94,
+          "c": 6,
+          "s": 10,
+          "d": "2026-07-14",
+          "u": "https://www.youtube.com/watch?v=US2fTK1mEGE",
+          "asof": "2026-09-28",
+          "label": "Part 1"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 366802,
+          "l": 5828,
+          "c": 541,
+          "s": 242,
+          "d": "10/31/2025",
+          "u": "https://www.facebook.com/reel/1537390300952013/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 68787,
+          "l": 1897,
+          "c": 77,
+          "s": 491,
+          "d": "10/31/2025",
+          "u": "https://www.instagram.com/reel/DQeUOOAjbT-/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 489842,
+    "tot_l": 9693,
+    "tot_c": 882,
+    "tot_s": 1271,
+    "n_platforms": 3
+  },
+  {
+    "title": "Kolam",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 15768,
+          "l": 669,
+          "c": 63,
+          "s": 47,
+          "d": "2026-01-15",
+          "u": "https://www.youtube.com/watch?v=Eo8rWy4epyA",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 409047,
+          "l": 8258,
+          "c": 387,
+          "s": 124,
+          "d": "01/14/2026",
+          "u": "https://www.facebook.com/reel/1851768755501456/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 55653,
+          "l": 2016,
+          "c": 23,
+          "s": 191,
+          "d": "01/14/2026",
+          "u": "https://www.instagram.com/reel/DThJok7E6wP/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 480468,
+    "tot_l": 10943,
+    "tot_c": 473,
+    "tot_s": 362,
+    "n_platforms": 3
+  },
+  {
+    "title": "Screwdriver",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 39515,
+          "l": 1557,
+          "c": 67,
+          "s": 182,
+          "d": "2026-03-13",
+          "u": "https://www.youtube.com/watch?v=vd-bZRa32yY",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 378365,
+          "l": 8162,
+          "c": 125,
+          "s": 124,
+          "d": "03/13/2026",
+          "u": "https://www.facebook.com/reel/799935832610020/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 54554,
+          "l": 1589,
+          "c": 49,
+          "s": 156,
+          "d": "03/13/2026",
+          "u": "https://www.instagram.com/reel/DV04kpUkxXd/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 472434,
+    "tot_l": 11308,
+    "tot_c": 241,
+    "tot_s": 462,
+    "n_platforms": 3
+  },
+  {
+    "title": "Voice Note",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 22558,
+          "l": 867,
+          "c": 32,
+          "s": 74,
+          "d": "2026-05-08",
+          "u": "https://www.youtube.com/watch?v=riarzQ34SXM",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 375706,
+          "l": 5860,
+          "c": 151,
+          "s": 119,
+          "d": "05/08/2026",
+          "u": "https://www.facebook.com/reel/1929730947825987/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 65629,
+          "l": 2125,
+          "c": 29,
+          "s": 196,
+          "d": "05/08/2026",
+          "u": "https://www.instagram.com/reel/DYE-hdFBCW8/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 463893,
+    "tot_l": 8852,
+    "tot_c": 212,
+    "tot_s": 389,
+    "n_platforms": 3
+  },
+  {
+    "title": "Night Shift",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 42892,
+          "l": 0,
+          "c": 27,
+          "s": 139,
+          "d": "2025-03-09",
+          "u": "https://www.youtube.com/watch?v=u0Fo0l6cczQ",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 372183,
+          "l": 9194,
+          "c": 1410,
+          "s": 607,
+          "d": "11/19/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/571624835242922/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 39807,
+          "l": 1129,
+          "c": 15,
+          "s": 288,
+          "d": "11/19/2024",
+          "u": "https://www.instagram.com/reel/DCjb1cYBi0y/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 454882,
+    "tot_l": 10323,
+    "tot_c": 1452,
+    "tot_s": 1034,
+    "n_platforms": 3
+  },
+  {
+    "title": "The Pill",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 30936,
+          "l": 844,
+          "c": 155,
+          "s": 152,
+          "d": "2026-08-07",
+          "u": "https://www.youtube.com/watch?v=006hHubla6g",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 338421,
+          "l": 4755,
+          "c": 212,
+          "s": 73,
+          "d": "08/07/2026",
+          "u": "https://www.facebook.com/reel/1066378642516896/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 81624,
+          "l": 2731,
+          "c": 158,
+          "s": 433,
+          "d": "08/07/2026",
+          "u": "https://www.instagram.com/reel/DbvRamGNDp_/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 450981,
+    "tot_l": 8330,
+    "tot_c": 525,
+    "tot_s": 658,
+    "n_platforms": 3
+  },
+  {
+    "title": "Two Guys One Cup",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 100937,
+          "l": 0,
+          "c": 40,
+          "s": 191,
+          "d": "2025-04-15",
+          "u": "https://www.youtube.com/watch?v=Gt6EfBUbj48",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 330855,
+          "l": 12852,
+          "c": 367,
+          "s": 236,
+          "d": "05/24/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/480552514536848/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 6011,
+          "l": 848,
+          "c": 82,
+          "s": 96,
+          "d": "05/24/2024",
+          "u": "https://www.instagram.com/reel/C7WmONGB4JC/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 437803,
+    "tot_l": 13700,
+    "tot_c": 489,
+    "tot_s": 523,
+    "n_platforms": 3
+  },
+  {
+    "title": "Reunion",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 21974,
+          "l": 587,
+          "c": 38,
+          "s": 14,
+          "d": "2026-08-14",
+          "u": "https://www.youtube.com/watch?v=9aZXdQlFNZk",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 345598,
+          "l": 7206,
+          "c": 79,
+          "s": 65,
+          "d": "08/14/2026",
+          "u": "https://www.facebook.com/reel/2771177143275958/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 62624,
+          "l": 2478,
+          "c": 31,
+          "s": 164,
+          "d": "08/14/2026",
+          "u": "https://www.instagram.com/reel/DcBToAmzyfT/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 430196,
+    "tot_l": 10271,
+    "tot_c": 148,
+    "tot_s": 243,
+    "n_platforms": 3
+  },
+  {
+    "title": "Cards",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 22972,
+          "l": 924,
+          "c": 32,
+          "s": 125,
+          "d": "2026-06-26",
+          "u": "https://www.youtube.com/watch?v=4G-3_S0xa6E",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 333908,
+          "l": 6640,
+          "c": 109,
+          "s": 258,
+          "d": "06/26/2026",
+          "u": "https://www.facebook.com/reel/994762786876911/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 53988,
+          "l": 2329,
+          "c": 59,
+          "s": 244,
+          "d": "06/26/2026",
+          "u": "https://www.instagram.com/reel/DaDF46AgbjH/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 410868,
+    "tot_l": 9893,
+    "tot_c": 200,
+    "tot_s": 627,
+    "n_platforms": 3
+  },
+  {
+    "title": "Eat",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 26744,
+          "l": 1217,
+          "c": 50,
+          "s": 73,
+          "d": "2025-11-28",
+          "u": "https://www.youtube.com/watch?v=AAHUJX3rk6I",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 313453,
+          "l": 6112,
+          "c": 92,
+          "s": 79,
+          "d": "11/28/2025",
+          "u": "https://www.facebook.com/reel/863029659525757/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 69140,
+          "l": 3119,
+          "c": 19,
+          "s": 297,
+          "d": "11/28/2025",
+          "u": "https://www.instagram.com/reel/DRmW9VOk6QS/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 409337,
+    "tot_l": 10448,
+    "tot_c": 161,
+    "tot_s": 449,
+    "n_platforms": 3
+  },
+  {
+    "title": "Custodians",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 131379,
+          "l": 3989,
+          "c": 17,
+          "s": 100,
+          "d": "2024-11-13",
+          "u": "https://www.youtube.com/watch?v=q_92yFyv1_4",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 190836,
+          "l": 4790,
+          "c": 134,
+          "s": 86,
+          "d": "11/13/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/554122954031207/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 81041,
+          "l": 1871,
+          "c": 48,
+          "s": 282,
+          "d": "11/13/2024",
+          "u": "https://www.instagram.com/reel/DCUBoGsBDGU/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 403256,
+    "tot_l": 10650,
+    "tot_c": 199,
+    "tot_s": 468,
+    "n_platforms": 3
+  },
+  {
+    "title": "Bodhi Pooja",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 42884,
+          "l": 716,
+          "c": 20,
+          "s": 55,
+          "d": "2026-09-11",
+          "u": "https://www.youtube.com/watch?v=dBEzCbsGgCA",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 322124,
+          "l": 6880,
+          "c": 204,
+          "s": 173,
+          "d": "09/11/2026",
+          "u": "https://www.facebook.com/reel/4540610869547373/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 32172,
+          "l": 1571,
+          "c": 32,
+          "s": 120,
+          "d": "09/11/2026",
+          "u": "https://www.instagram.com/reel/DdJXYTwkZoV/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 397180,
+    "tot_l": 9167,
+    "tot_c": 256,
+    "tot_s": 348,
+    "n_platforms": 3
+  },
+  {
+    "title": "Misfire",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 17401,
+          "l": 617,
+          "c": 47,
+          "s": 40,
+          "d": "2026-02-27",
+          "u": "https://www.youtube.com/watch?v=Ema-Xi8aoNU",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 327960,
+          "l": 4866,
+          "c": 175,
+          "s": 95,
+          "d": "02/27/2026",
+          "u": "https://www.facebook.com/reel/809156294813858/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 39480,
+          "l": 1176,
+          "c": 21,
+          "s": 96,
+          "d": "02/27/2026",
+          "u": "https://www.instagram.com/reel/DVQybP0jRSG/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 384841,
+    "tot_l": 6659,
+    "tot_c": 243,
+    "tot_s": 231,
+    "n_platforms": 3
+  },
+  {
+    "title": "Mummy loves you",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 74826,
+          "l": 0,
+          "c": 34,
+          "s": 74,
+          "d": "2025-02-25",
+          "u": "https://www.youtube.com/watch?v=asY3Oh-H6XA",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 268762,
+          "l": 7800,
+          "c": 76,
+          "s": 113,
+          "d": "08/09/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/818595030083324/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 30717,
+          "l": 817,
+          "c": 14,
+          "s": 46,
+          "d": "08/09/2024",
+          "u": "https://www.instagram.com/reel/C-cuBGVhycr/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 374305,
+    "tot_l": 8617,
+    "tot_c": 124,
+    "tot_s": 233,
+    "n_platforms": 3
+  },
+  {
+    "title": "Virtually Perfect",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 50105,
+          "l": 1354,
+          "c": 105,
+          "s": 294,
+          "d": "2026-08-21",
+          "u": "https://www.youtube.com/watch?v=wVFPcnljNsA",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 253100,
+          "l": 3816,
+          "c": 149,
+          "s": 111,
+          "d": "08/21/2026",
+          "u": "https://www.facebook.com/reel/4523713747883723/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 70334,
+          "l": 3039,
+          "c": 75,
+          "s": 680,
+          "d": "08/21/2026",
+          "u": "https://www.instagram.com/reel/DcTSecthw7x/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 373539,
+    "tot_l": 8209,
+    "tot_c": 329,
+    "tot_s": 1085,
+    "n_platforms": 3
+  },
+  {
+    "title": "Talk",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 33125,
+          "l": 1713,
+          "c": 17,
+          "s": 91,
+          "d": "2024-11-26",
+          "u": "https://www.youtube.com/watch?v=gOs5gEGGOxI",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 24510,
+          "l": 832,
+          "c": 40,
+          "s": 54,
+          "d": "2025-06-20",
+          "u": "https://www.youtube.com/watch?v=nTNdrzP8CS0",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 236769,
+          "l": 4060,
+          "c": 80,
+          "s": 137,
+          "d": "06/20/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/719304537496027/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 78433,
+          "l": 1717,
+          "c": 73,
+          "s": 193,
+          "d": "06/20/2025",
+          "u": "https://www.instagram.com/reel/DLJczpwo4NL/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 372837,
+    "tot_l": 8322,
+    "tot_c": 210,
+    "tot_s": 475,
+    "n_platforms": 3
+  },
+  {
+    "title": "In Charge",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 83811,
+          "l": 1654,
+          "c": 73,
+          "s": 142,
+          "d": "2026-02-06",
+          "u": "https://www.youtube.com/watch?v=WGsDxdXDlOs",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 240143,
+          "l": 4663,
+          "c": 82,
+          "s": 62,
+          "d": "02/06/2026",
+          "u": "https://www.facebook.com/reel/2117768022391533/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 41546,
+          "l": 1023,
+          "c": 4,
+          "s": 38,
+          "d": "02/06/2026",
+          "u": "https://www.instagram.com/reel/DUardy3E69k/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 365500,
+    "tot_l": 7340,
+    "tot_c": 159,
+    "tot_s": 242,
+    "n_platforms": 3
+  },
+  {
+    "title": "Dreams",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 32556,
+          "l": 569,
+          "c": 94,
+          "s": 116,
+          "d": "2026-09-25",
+          "u": "https://www.youtube.com/watch?v=N88snzX_pVk",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 296707,
+          "l": 7535,
+          "c": 521,
+          "s": 131,
+          "d": "09/25/2026",
+          "u": "https://www.facebook.com/reel/1531843342291771/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 34107,
+          "l": 1480,
+          "c": 31,
+          "s": 139,
+          "d": "09/25/2026",
+          "u": "https://www.instagram.com/reel/DdtaklyDPuJ/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 363370,
+    "tot_l": 9584,
+    "tot_c": 646,
+    "tot_s": 386,
+    "n_platforms": 3
+  },
+  {
+    "title": "Visitor",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 26035,
+          "l": 577,
+          "c": 10,
+          "s": 18,
+          "d": "2025-09-27",
+          "u": "https://www.youtube.com/watch?v=NNQ1-mpjdKE",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 11863,
+          "l": 463,
+          "c": 27,
+          "s": 53,
+          "d": "2025-09-26",
+          "u": "https://www.youtube.com/watch?v=JQmaV-i4W7M",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 248724,
+          "l": 3768,
+          "c": 161,
+          "s": 55,
+          "d": "09/26/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1307479797778179/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 49474,
+          "l": 1423,
+          "c": 15,
+          "s": 146,
+          "d": "09/26/2025",
+          "u": "https://www.instagram.com/reel/DPEHU1cjQ51/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 336096,
+    "tot_l": 6231,
+    "tot_c": 213,
+    "tot_s": 272,
+    "n_platforms": 3
+  },
+  {
+    "title": "The Statement",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 21424,
+          "l": 920,
+          "c": 72,
+          "s": 112,
+          "d": "2026-07-03",
+          "u": "https://www.youtube.com/watch?v=0fb8WusWAE8",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 268488,
+          "l": 4957,
+          "c": 312,
+          "s": 140,
+          "d": "07/03/2026",
+          "u": "https://www.facebook.com/reel/1016785814536185/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 44853,
+          "l": 1768,
+          "c": 75,
+          "s": 356,
+          "d": "07/03/2026",
+          "u": "https://www.instagram.com/reel/DaVK8gKBfLa/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 334765,
+    "tot_l": 7645,
+    "tot_c": 459,
+    "tot_s": 608,
+    "n_platforms": 3
+  },
+  {
+    "title": "The Artiste",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 47799,
+          "l": 1274,
+          "c": 15,
+          "s": 29,
+          "d": "2025-12-29",
+          "u": "https://www.youtube.com/watch?v=yqSxcVZAsuo",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 18123,
+          "l": 990,
+          "c": 73,
+          "s": 123,
+          "d": "2025-03-13",
+          "u": "https://www.youtube.com/watch?v=fAPE5hedU7s",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 202517,
+          "l": 4496,
+          "c": 300,
+          "s": 202,
+          "d": "03/14/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1336007271006219/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 65251,
+          "l": 1954,
+          "c": 51,
+          "s": 215,
+          "d": "03/14/2025",
+          "u": "https://www.instagram.com/reel/DHLeySTBcZW/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 333690,
+    "tot_l": 8714,
+    "tot_c": 439,
+    "tot_s": 569,
+    "n_platforms": 3
+  },
+  {
+    "title": "Sambol",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 25408,
+          "l": 956,
+          "c": 30,
+          "s": 58,
+          "d": "2025-07-11",
+          "u": "https://www.youtube.com/watch?v=MoESShHCAe4",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 236387,
+          "l": 4225,
+          "c": 141,
+          "s": 75,
+          "d": "07/11/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1244903364039107/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 65671,
+          "l": 2148,
+          "c": 33,
+          "s": 304,
+          "d": "07/11/2025",
+          "u": "https://www.instagram.com/reel/DL94maUIYfT/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 327466,
+    "tot_l": 7329,
+    "tot_c": 204,
+    "tot_s": 437,
+    "n_platforms": 3
+  },
+  {
+    "title": "Chocolate last episode",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 322035,
+          "l": 3793,
+          "c": 83,
+          "s": 45,
+          "d": "11/05/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/546004551405302/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 322035,
+    "tot_l": 3793,
+    "tot_c": 83,
+    "tot_s": 45,
+    "n_platforms": 1
+  },
+  {
+    "title": "Demonic",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 41098,
+          "l": 1512,
+          "c": 16,
+          "s": 43,
+          "d": "2025-01-24",
+          "u": "https://www.youtube.com/watch?v=3txvdWHR6Qw",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 210738,
+          "l": 4742,
+          "c": 157,
+          "s": 111,
+          "d": "01/24/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1008751964409015/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 69055,
+          "l": 1697,
+          "c": 33,
+          "s": 268,
+          "d": "01/24/2025",
+          "u": "https://www.instagram.com/reel/DFNWp5yoBMb/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 320891,
+    "tot_l": 7951,
+    "tot_c": 206,
+    "tot_s": 422,
+    "n_platforms": 3
+  },
+  {
+    "title": "Happy New Year",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 317373,
+          "l": 16359,
+          "c": 119,
+          "s": 201,
+          "d": "04/13/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1435598624011079/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 317373,
+    "tot_l": 16359,
+    "tot_c": 119,
+    "tot_s": 201,
+    "n_platforms": 1
+  },
+  {
+    "title": "The Long Goodbye",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 42836,
+          "l": 0,
+          "c": 21,
+          "s": 97,
+          "d": "2025-04-08",
+          "u": "https://www.youtube.com/watch?v=REQIVUWJIBY",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 257150,
+          "l": 8680,
+          "c": 463,
+          "s": 303,
+          "d": "09/03/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1182492426340644/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 7500,
+          "l": 548,
+          "c": 25,
+          "s": 44,
+          "d": "05/03/2024",
+          "u": "https://www.instagram.com/reel/C6iP9OcBY89/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 307486,
+    "tot_l": 9228,
+    "tot_c": 509,
+    "tot_s": 444,
+    "n_platforms": 3
+  },
+  {
+    "title": "My Mother is Dead and I Have Work Tomorrow",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 15954,
+          "l": 612,
+          "c": 30,
+          "s": 58,
+          "d": "2026-07-24",
+          "u": "https://www.youtube.com/watch?v=CE0v1jyOpI0",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 238469,
+          "l": 3714,
+          "c": 74,
+          "s": 108,
+          "d": "07/24/2026",
+          "u": "https://www.facebook.com/reel/1255543983263476/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 47074,
+          "l": 1933,
+          "c": 29,
+          "s": 218,
+          "d": "07/24/2026",
+          "u": "https://www.instagram.com/reel/DbLMMO8BSTO/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 301497,
+    "tot_l": 6259,
+    "tot_c": 133,
+    "tot_s": 384,
+    "n_platforms": 3
+  },
+  {
+    "title": "Braids",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 26615,
+          "l": 1102,
+          "c": 40,
+          "s": 59,
+          "d": "2026-06-19",
+          "u": "https://www.youtube.com/watch?v=7ec_SAu2-Js",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 214133,
+          "l": 4852,
+          "c": 96,
+          "s": 99,
+          "d": "06/19/2026",
+          "u": "https://www.facebook.com/reel/2083782809226483/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 47927,
+          "l": 2243,
+          "c": 54,
+          "s": 197,
+          "d": "06/19/2026",
+          "u": "https://www.instagram.com/reel/DZxEW9Ahsze/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 288675,
+    "tot_l": 8197,
+    "tot_c": 190,
+    "tot_s": 355,
+    "n_platforms": 3
+  },
+  {
+    "title": "Procrastinator",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 183910,
+          "l": 4584,
+          "c": 132,
+          "s": 310,
+          "d": "01/10/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1372477077349823/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 90205,
+          "l": 2590,
+          "c": 28,
+          "s": 370,
+          "d": "01/10/2025",
+          "u": "https://www.instagram.com/reel/DEpWeSAhrdF/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 274115,
+    "tot_l": 7174,
+    "tot_c": 160,
+    "tot_s": 680,
+    "n_platforms": 2
+  },
+  {
+    "title": "The Drink",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 211219,
+          "l": 5314,
+          "c": 359,
+          "s": 210,
+          "d": "11/22/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/542077645287398/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 40336,
+          "l": 1232,
+          "c": 16,
+          "s": 239,
+          "d": "11/22/2024",
+          "u": "https://www.instagram.com/reel/DCrJRRohy7C/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 251555,
+    "tot_l": 6546,
+    "tot_c": 375,
+    "tot_s": 449,
+    "n_platforms": 2
+  },
+  {
+    "title": "The Gaze",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 34270,
+          "l": 0,
+          "c": 16,
+          "s": 25,
+          "d": "2025-02-14",
+          "u": "https://www.youtube.com/watch?v=vu5S6wfxf4E",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 28045,
+          "l": 1051,
+          "c": 65,
+          "s": 91,
+          "d": "2025-02-14",
+          "u": "https://www.youtube.com/watch?v=Jj4s5r__GeI",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 180451,
+          "l": 4711,
+          "c": 163,
+          "s": 158,
+          "d": "02/14/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/600421749466228/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 242766,
+    "tot_l": 5762,
+    "tot_c": 244,
+    "tot_s": 274,
+    "n_platforms": 2
+  },
+  {
+    "title": "Purpose",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 18786,
+          "l": 828,
+          "c": 37,
+          "s": 80,
+          "d": "2025-05-23",
+          "u": "https://www.youtube.com/watch?v=ahiKDKpgrns",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 170135,
+          "l": 3012,
+          "c": 110,
+          "s": 141,
+          "d": "05/23/2025",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1001388128772416/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 45881,
+          "l": 1422,
+          "c": 17,
+          "s": 118,
+          "d": "05/23/2025",
+          "u": "https://www.instagram.com/reel/DJ_8la6hoID/",
+          "asof": "2026-04-14",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 234802,
+    "tot_l": 5262,
+    "tot_c": 164,
+    "tot_s": 339,
+    "n_platforms": 3
+  },
+  {
+    "title": "Mansions",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 35090,
+          "l": 634,
+          "c": 22,
+          "s": 55,
+          "d": "2026-08-28",
+          "u": "https://www.youtube.com/watch?v=oeU2Qqf_hCE",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 5451,
+          "l": 238,
+          "c": 7,
+          "s": 12,
+          "d": "2026-09-14",
+          "u": "https://www.youtube.com/watch?v=95c_ZDWHCUk",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 173964,
+          "l": 4145,
+          "c": 177,
+          "s": 148,
+          "d": "08/28/2026",
+          "u": "https://www.facebook.com/reel/2094107117876296/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 214505,
+    "tot_l": 5017,
+    "tot_c": 206,
+    "tot_s": 215,
+    "n_platforms": 2
+  },
+  {
+    "title": "The Bungalow",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 10986,
+          "l": 736,
+          "c": 69,
+          "s": 92,
+          "d": "2026-05-15",
+          "u": "https://www.youtube.com/watch?v=oILdWIfY0h0",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Facebook": [
+        {
+          "v": 146967,
+          "l": 2433,
+          "c": 54,
+          "s": 53,
+          "d": "05/15/2026",
+          "u": "https://www.facebook.com/reel/1557633252448480/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 34573,
+          "l": 1211,
+          "c": 41,
+          "s": 189,
+          "d": "05/15/2026",
+          "u": "https://www.instagram.com/reel/DYW_9wqBd3w/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 192526,
+    "tot_l": 4380,
+    "tot_c": 164,
+    "tot_s": 334,
+    "n_platforms": 3
+  },
+  {
+    "title": "Who's winning",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 154420,
+          "l": 6301,
+          "c": 151,
+          "s": 256,
+          "d": "09/20/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1207704133872580/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 154420,
+    "tot_l": 6301,
+    "tot_c": 151,
+    "tot_s": 256,
+    "n_platforms": 1
+  },
+  {
+    "title": "Welcome to my home",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 114016,
+          "l": 4781,
+          "c": 46,
+          "s": 223,
+          "d": "2024-11-24",
+          "u": "https://www.youtube.com/watch?v=CtAsNCNce1c",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 114016,
+    "tot_l": 4781,
+    "tot_c": 46,
+    "tot_s": 223,
+    "n_platforms": 1
+  },
+  {
+    "title": "Interrogation Wrong Number 2",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 38881,
+          "l": 1143,
+          "c": 25,
+          "s": 35,
+          "d": "2025-07-22",
+          "u": "https://www.youtube.com/watch?v=_3RQJLLPwy0",
+          "asof": "2026-09-28",
+          "label": "Standard"
+        },
+        {
+          "v": 29151,
+          "l": 736,
+          "c": 30,
+          "s": 63,
+          "d": "2025-07-28",
+          "u": "https://www.youtube.com/watch?v=zA_EGZgvpoA",
+          "asof": "2026-09-28",
+          "label": "Short"
+        }
+      ]
+    },
+    "tot_v": 68032,
+    "tot_l": 1879,
+    "tot_c": 55,
+    "tot_s": 98,
+    "n_platforms": 1
+  },
+  {
+    "title": "Who Will Win",
+    "genre": "Untagged",
+    "platforms": {
+      "Instagram": [
+        {
+          "v": 64469,
+          "l": 1842,
+          "c": 48,
+          "s": 61,
+          "d": "09/19/2024",
+          "u": "https://www.instagram.com/reel/DAGZdYYoN5D/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 64469,
+    "tot_l": 1842,
+    "tot_c": 48,
+    "tot_s": 61,
+    "n_platforms": 1
+  },
+  {
+    "title": "Hope",
+    "genre": "Untagged",
+    "platforms": {
+      "Instagram": [
+        {
+          "v": 64136,
+          "l": 1977,
+          "c": 32,
+          "s": 272,
+          "d": "02/14/2025",
+          "u": "https://www.instagram.com/reel/DGDaUHfhrZs/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 64136,
+    "tot_l": 1977,
+    "tot_c": 32,
+    "tot_s": 272,
+    "n_platforms": 1
+  },
+  {
+    "title": "GROWTHesque This Sunday 30th March at 12 30pm at the Kolamba Kamatha Festival Tickets at www kolambakamatha com",
+    "genre": "Untagged",
+    "platforms": {
+      "Instagram": [
+        {
+          "v": 55737,
+          "l": 552,
+          "c": 2,
+          "s": 35,
+          "d": "03/27/2025",
+          "u": "https://www.instagram.com/reel/DHtILZqokSF/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 55737,
+    "tot_l": 552,
+    "tot_c": 2,
+    "tot_s": 35,
+    "n_platforms": 1
+  },
+  {
+    "title": "Wedding Cake",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 51172,
+          "l": 0,
+          "c": 32,
+          "s": 309,
+          "d": "2025-03-31",
+          "u": "https://www.youtube.com/watch?v=-6O-5wtU9Vg",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 51172,
+    "tot_l": 0,
+    "tot_c": 32,
+    "tot_s": 309,
+    "n_platforms": 1
+  },
+  {
+    "title": "Sisters",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 42606,
+          "l": 1701,
+          "c": 23,
+          "s": 58,
+          "d": "2025-06-07",
+          "u": "https://www.youtube.com/watch?v=8qLwDbhhFyg",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 42606,
+    "tot_l": 1701,
+    "tot_c": 23,
+    "tot_s": 58,
+    "n_platforms": 1
+  },
+  {
+    "title": "Drug Money",
+    "genre": "Untagged",
+    "platforms": {
+      "Instagram": [
+        {
+          "v": 39823,
+          "l": 1608,
+          "c": 29,
+          "s": 185,
+          "d": "08/28/2026",
+          "u": "https://www.instagram.com/reel/DclXgEAgfp2/",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 39823,
+    "tot_l": 1608,
+    "tot_c": 29,
+    "tot_s": 185,
+    "n_platforms": 1
+  },
+  {
+    "title": "Kalumini",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 38900,
+          "l": 0,
+          "c": 42,
+          "s": 141,
+          "d": "2025-03-24",
+          "u": "https://www.youtube.com/watch?v=Dgu-jqXT6_o",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 38900,
+    "tot_l": 0,
+    "tot_c": 42,
+    "tot_s": 141,
+    "n_platforms": 1
+  },
+  {
+    "title": "Winners",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 34992,
+          "l": 0,
+          "c": 26,
+          "s": 48,
+          "d": "2025-05-04",
+          "u": "https://www.youtube.com/watch?v=xJtPcXLg1PA",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 34992,
+    "tot_l": 0,
+    "tot_c": 26,
+    "tot_s": 48,
+    "n_platforms": 1
+  },
+  {
+    "title": "Kehelmala Showreel 2024",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 23983,
+          "l": 666,
+          "c": 27,
+          "s": 31,
+          "d": "2024-05-22",
+          "u": "https://www.youtube.com/watch?v=aYpfa00zmzs",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 23983,
+    "tot_l": 666,
+    "tot_c": 27,
+    "tot_s": 31,
+    "n_platforms": 1
+  },
+  {
+    "title": "GROWTHesque Trailer for United Solo New York City 2022",
+    "genre": "Untagged",
+    "platforms": {
+      "YouTube": [
+        {
+          "v": 4598,
+          "l": 193,
+          "c": 5,
+          "s": 52,
+          "d": "2022-10-04",
+          "u": "https://www.youtube.com/watch?v=vft92uJp_LI",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 4598,
+    "tot_l": 193,
+    "tot_c": 5,
+    "tot_s": 52,
+    "n_platforms": 1
+  }
+];
+function stripHashtags(t){
+  if (!t) return '';
+  // Remove hashtags and any trailing punctuation/whitespace
+  let cleaned = t.replace(/#\S+/g, '').trim();
+  // Collapse multiple spaces and trim trailing punctuation
+  cleaned = cleaned.replace(/[-:|;,._\s]+$/g, '').replace(/\s+/g, ' ').trim();
+  return cleaned;
+}
+GROUPS.forEach(g => {
+  if (g.title) g.title = stripHashtags(g.title);
+});
+const PLATS = ['YouTube','Facebook','Instagram','TikTok'];
+let activePlatform='All', search='', sortKey='tot_v', sortDir=-1;
+
+function fmt(n){ return (n||0).toLocaleString('en-US'); }
+
+// "Data as of" per platform - the most recent date actually present in
+// that platform's own export (never today's date, never a guess: a
+// platform with no determinable date shows "undefined" rather than
+// inventing one). Computed once since the underlying data doesn't
+// change at runtime; re-read on each tab switch by updateAsOf().
+const LATEST_BY_PLATFORM = {};
+PLATS.forEach(p=>{
+  let latest = null;
+  GROUPS.forEach(g=>(g.platforms[p]||[]).forEach(e=>{
+    if(e.asof && (!latest || e.asof > latest)) latest = e.asof;
+  }));
+  LATEST_BY_PLATFORM[p] = latest; // null if this platform has no asof anywhere
+});
+
+function updateAsOf(){
+  const el = document.getElementById('asof');
+  const scope = document.getElementById('asof-scope');
+  if(activePlatform !== 'All'){
+    el.textContent = LATEST_BY_PLATFORM[activePlatform] || 'undefined';
+    scope.textContent = activePlatform + ' export';
+    return;
+  }
+  scope.textContent = 'YouTube, Facebook, Instagram & TikTok';
+  // "All": only show one date if every platform that has data agrees on
+  // the same date. Platforms genuinely export on different days (e.g.
+  // Facebook/Instagram exports often lag YouTube's), so showing one
+  // blended "latest" would misrepresent platforms that are actually
+  // older - "undefined" is the honest answer when they disagree.
+  const values = PLATS.map(p => LATEST_BY_PLATFORM[p]).filter(v => v !== null);
+  const allAgree = values.length > 0 && values.every(v => v === values[0])
+                    && values.length === PLATS.filter(p => LATEST_BY_PLATFORM[p] !== null).length;
+  el.textContent = allAgree ? values[0] : 'undefined';
+}
+
+// Per-row metrics for the CURRENTLY ACTIVE platform tab. 'All' sums every
+// platform; a specific platform sums only that platform's own entries
+// (e.g. YouTube's Standard + Short + Part N all count as YouTube).
+function platMetrics(g, p){
+  if(p === 'All') return {v:g.tot_v, l:g.tot_l, c:g.tot_c, s:g.tot_s};
+  const entries = g.platforms[p] || [];
+  return entries.reduce((a,e)=>({v:a.v+e.v,l:a.l+e.l,c:a.c+e.c,s:a.s+e.s}), {v:0,l:0,c:0,s:0});
+}
+
+function visibleGroups(){
+  let rows = GROUPS;
+  if(activePlatform!=='All') rows = rows.filter(g => g.platforms[activePlatform] && g.platforms[activePlatform].length);
+  if(search){
+    const q = search.replace(/#\S+/g, '').trim().toLowerCase() || search.trim().toLowerCase();
+    rows = rows.filter(g => g.title.toLowerCase().includes(q));
+  }
+  rows = [...rows].sort((a,b)=>{
+    if(sortKey === 'title') return a.title.localeCompare(b.title)*sortDir;
+    const mkey = sortKey.replace('tot_', ''); // tot_v -> v, tot_l -> l, ...
+    const x = platMetrics(a, activePlatform)[mkey];
+    const y = platMetrics(b, activePlatform)[mkey];
+    return (x-y)*sortDir;
+  });
+  return rows;
+}
+
+function renderCards(){
+  const rows = visibleGroups();
+  const t = rows.reduce((a,g)=>{
+    const m = platMetrics(g, activePlatform);
+    a.v+=m.v; a.l+=m.l; a.c+=m.c; a.s+=m.s; return a;
+  },{v:0,l:0,c:0,s:0});
+  const cards = [['Videos', rows.length],['Total views', fmt(t.v)],['Total likes', fmt(t.l)],
+                 ['Total comments', fmt(t.c)],['Total shares', fmt(t.s)]];
+  document.getElementById('cards').innerHTML = cards.map(([l,n])=>
+    `<div class="card"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+}
+
+function renderTabs(){
+  PLATS.forEach(p=>{
+    const n = GROUPS.filter(g=>g.platforms[p]).length;
+    document.querySelector(`#t-${p} .cnt`).textContent = n;
+  });
+  document.querySelector('#t-All .cnt').textContent = GROUPS.length;
+  [...document.querySelectorAll('.ptab')].forEach(el=>{
+    el.classList.toggle('active', el.dataset.p===activePlatform);
+    el.onclick = ()=>{ activePlatform = el.dataset.p; render(); };
+  });
+}
+
+function metricRow(label, m, indent){
+  const link = m.u ? `<a class="vlink" href="${m.u}" target="_blank" rel="noopener">view</a>` : '';
+  const pad = indent ? 'padding-left:22px;color:var(--sub);font-size:11.5px;' : '';
+  return `<tr><td style="${pad}">${label}</td><td class="num">${fmt(m.v)}</td><td class="num">${fmt(m.l)}</td>
+    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td>${m.d||'—'} &nbsp; ${link}</td></tr>`;
+}
+
+function breakdownRow(p, entries, rowId){
+  if(!entries || entries.length===0) return `<tr><td>${p}</td><td colspan="5" style="text-align:left;color:var(--sub)">not posted here</td></tr>`;
+  if(entries.length === 1){
+    return metricRow(p, entries[0]);
+  }
+  const tot = entries.reduce((a,e)=>({v:a.v+e.v,l:a.l+e.l,c:a.c+e.c,s:a.s+e.s}),{v:0,l:0,c:0,s:0});
+  const subId = `sub-${p}-${rowId}`;
+  const head = `<tr class="yt-toggle" data-target="${subId}" style="cursor:pointer">
+      <td><span class="car" style="display:inline-block;width:10px">▶</span>${p} — ${entries.length} versions</td>
+      <td class="num">${fmt(tot.v)}</td><td class="num">${fmt(tot.l)}</td>
+      <td class="num">${fmt(tot.c)}</td><td class="num">${fmt(tot.s)}</td><td></td></tr>`;
+  const subRows = entries.map(e => metricRow(e.label || p, e, true)).join('');
+  return head + `<tbody class="${subId}" style="display:none">${subRows}</tbody>`;
+}
+
+function renderList(){
+  const rows = visibleGroups();
+  const list = document.getElementById('list');
+  if(rows.length===0){ list.innerHTML = `<div class="empty">No videos match these filters.</div>`; return; }
+  list.innerHTML = rows.map((g,i)=>{
+    const dots = PLATS.filter(p=>g.platforms[p]).map(p=>`<span class="dot ${p}" title="${p}"></span>`).join('');
+    const bd = PLATS.map(p=>breakdownRow(p, g.platforms[p], i)).join('');
+    const m = platMetrics(g, activePlatform); // reflects the active tab, not always the combined total
+    return `<div class="row" id="row${i}">
+      <div class="row-head" onclick="toggle(${i})">
+        <span class="car">▶</span>
+        <span class="vtitle">${g.title}</span>
+        <span class="num">${fmt(m.v)}</span>
+        <span class="num">${fmt(m.l)}</span>
+        <span class="num">${fmt(m.c)}</span>
+        <span class="num">${fmt(m.s)}</span>
+        <span class="plats">${dots}<span class="pchip">${g.n_platforms} platform${g.n_platforms>1?'s':''}</span></span>
+      </div>
+      <div class="breakdown"><table class="bd-table">
+        <tr><th style="text-align:left">Platform</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th style="text-align:left">Published</th></tr>
+        ${bd}
+      </table></div>
+    </div>`;
+  }).join('');
+  [...document.querySelectorAll('.yt-toggle')].forEach(el=>{
+    el.onclick = (e)=>{
+      e.stopPropagation();
+      const sub = document.querySelector('.' + el.dataset.target);
+      const car = el.querySelector('.car');
+      const open = sub.style.display !== 'none';
+      sub.style.display = open ? 'none' : 'table-row-group';
+      car.style.transform = open ? '' : 'rotate(90deg)';
+    };
+  });
+}
+
+function toggle(i){ document.getElementById('row'+i).classList.toggle('open'); }
+
+function render(){ renderTabs(); renderCards(); renderList(); updateAsOf(); }
+
+[...document.querySelectorAll('.colhead span[data-k]')].forEach(el=>{
+  el.onclick = ()=>{
+    const k = el.dataset.k;
+    if(sortKey===k) sortDir*=-1; else {sortKey=k; sortDir = k==='title'?1:-1;}
+    [...document.querySelectorAll('.colhead span')].forEach(s=>s.classList.remove('active'));
+    el.classList.add('active');
+    renderList();
+  };
+});
+document.getElementById('search').addEventListener('input', e=>{ search=e.target.value; render(); });
+
+render();
+</script>
+</body>
+</html>
+
+</body></html>

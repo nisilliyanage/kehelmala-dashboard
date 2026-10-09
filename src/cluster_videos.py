@@ -8,6 +8,11 @@ After automatic clustering + the static MANUAL_TITLE_MERGES (config.py) are appl
 any merges recorded via `python src/merge_videos_cli.py` (data/processed/manual_group_merges.json)
 are applied as a final pass, so merges made through the CLI survive future re-runs on
 fresh weekly exports without having to redo them by hand.
+
+Any splits recorded via `python src/unmerge_videos_cli.py` (data/processed/manual_group_splits.json)
+are treated as a block-list DURING clustering itself: two posts named on opposite sides
+of a recorded split are never clustered together again, however similar or identical
+their titles score, so an unmerge made today survives next week's fresh exports too.
 """
 import json
 import os
@@ -22,6 +27,7 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IN_PATH = os.path.join(BASE, 'data', 'processed', 'all_posts.json')
 OUT_PATH = os.path.join(BASE, 'data', 'processed', 'grouped.json')
 MANUAL_GROUP_MERGES_PATH = os.path.join(BASE, 'data', 'processed', 'manual_group_merges.json')
+MANUAL_GROUP_SPLITS_PATH = os.path.join(BASE, 'data', 'processed', 'manual_group_splits.json')
 
 HASHTAG_RE = re.compile(r'#\S+')
 LATIN_RE = re.compile(r"[A-Za-z0-9' ]+")
@@ -159,7 +165,49 @@ def _manual_merge_title(raw_title):
     return None
 
 
+# --- Unmerge support: a block-list of posts that must never be re-clustered together,
+# written by src/unmerge_videos_cli.py whenever you split a wrongly-merged group. ---
+
+def post_identity(post):
+    """A stable identity for a raw post (from all_posts.json), used only to check
+    the unmerge block-list during clustering. Prefers the permalink (always unique
+    when present); falls back to platform+date+views for the rare entry with no
+    permalink (e.g. the YouTube Studio-CSV-only fallback)."""
+    return post.get('permalink') or f"{post.get('platform')}|{post.get('date')}|{post.get('views')}"
+
+
+def entry_identity(platform, entry):
+    """Same identity scheme as post_identity(), but for a built group's entry dict
+    (from grouped.json — keys 'u'/'d'/'v' instead of 'permalink'/'date'/'views').
+    Used by src/unmerge_videos_cli.py so a split it records lines up with what
+    cluster() checks on the next pipeline run."""
+    return entry.get('u') or f"{platform}|{entry.get('d')}|{entry.get('v')}"
+
+
+def _load_splits():
+    if not os.path.exists(MANUAL_GROUP_SPLITS_PATH):
+        return []
+    with open(MANUAL_GROUP_SPLITS_PATH, encoding='utf-8') as f:
+        return json.load(f)
+
+
+def _is_blocked(id_a, id_b, splits):
+    """True if id_a and id_b were put on opposite sides of a recorded unmerge."""
+    for s in splits:
+        side_a, side_b = s.get('side_a', []), s.get('side_b', [])
+        if (id_a in side_a and id_b in side_b) or (id_a in side_b and id_b in side_a):
+            return True
+    return False
+
+
+def _cluster_blocked(post, c, splits):
+    pid = post_identity(post)
+    return any(_is_blocked(pid, post_identity(op), splits) for op in c['posts'])
+
+
 def cluster(posts):
+    splits = _load_splits()
+
     youtube = [p for p in posts if p['platform'] == 'YouTube']
     others = [p for p in posts if p['platform'] != 'YouTube']
 
@@ -170,6 +218,8 @@ def cluster(posts):
         words = norm_words(p['title'])
         placed = False
         for c in clusters:
+            if _cluster_blocked(p, c, splits):
+                continue
             if c_title and c['title'].strip().lower() == c_title.strip().lower():
                 c['posts'].append(p)
                 c['words'] |= words
@@ -190,6 +240,8 @@ def cluster(posts):
         exact_match = None
         if c_title:
             for c in clusters:
+                if _cluster_blocked(p, c, splits):
+                    continue
                 if c['title'].strip().lower() == c_title.strip().lower():
                     exact_match = c
                     break
@@ -200,6 +252,8 @@ def cluster(posts):
         else:
             best, best_score = None, 0.0
             for c in clusters:
+                if _cluster_blocked(p, c, splits):
+                    continue
                 score = match_score(words, c['words'])
                 if score > best_score:
                     best, best_score = c, score
@@ -220,6 +274,10 @@ def cluster(posts):
             clusters.append(target)
         home = next(c for c in clusters if p in c['posts'])
         if home is not target:
+            if any(_is_blocked(post_identity(p), post_identity(op), splits) for op in target['posts']):
+                print(f"NOTE: skipped forcing \"{p['title']}\" into the MANUAL_TITLE_MERGES "
+                      f"group \"{forced_title}\" — blocked by a previous unmerge.")
+                continue
             home['posts'].remove(p)
             target['posts'].append(p)
             target['title'] = forced_title
@@ -233,17 +291,23 @@ def cluster(posts):
                     c['title'] = ft
                     break
 
-    # Merge any clusters that have identical clean display titles
+    # Merge any clusters that have identical clean display titles — unless every
+    # cross-pair between them is blocked by a recorded unmerge, in which case they're
+    # deliberately kept apart (they'll show up with the same title; give one a distinct
+    # name via MANUAL_TITLE_TEXT_FIXES/TITLE_RENAMES in config.py if that's confusing).
     merged_clusters = []
     by_title = {}
     for c in clusters:
         t_key = c['title'].strip().lower()
-        if t_key and t_key in by_title:
-            existing = by_title[t_key]
+        existing = by_title.get(t_key) if t_key else None
+        if existing is not None and not any(
+            _is_blocked(post_identity(pa), post_identity(pb), splits)
+            for pa in existing['posts'] for pb in c['posts']
+        ):
             existing['posts'].extend(c['posts'])
             existing['words'] |= c['words']
         else:
-            if t_key:
+            if t_key and existing is None:
                 by_title[t_key] = c
             merged_clusters.append(c)
 
@@ -328,6 +392,80 @@ def _merge_two_groups(groups, title_a, title_b, result_title):
 
     groups.remove(gb)
     return groups
+
+
+def _recompute_totals(g):
+    g['tot_v'] = sum(e['v'] for es in g['platforms'].values() for e in es)
+    g['tot_l'] = sum(e['l'] for es in g['platforms'].values() for e in es)
+    g['tot_c'] = sum(e['c'] for es in g['platforms'].values() for e in es)
+    g['tot_s'] = sum(e['s'] for es in g['platforms'].values() for e in es)
+    g['n_platforms'] = len(g['platforms'])
+
+
+def _relabel_platform_entries(platforms):
+    """Re-derive Standard/Short/Post-N labels after entries move between groups.
+    A 'Part N' label (multi-part Shorts) is left alone — it's tied to the video's own
+    title, not to how many siblings it currently has. Mirrors the labeling rule in
+    build_groups()."""
+    for plat, plist in platforms.items():
+        plist.sort(key=lambda x: -(x.get('v') or 0))
+        for i, e in enumerate(plist):
+            if e.get('label') and e['label'].lower().startswith('part'):
+                continue
+            if plat == 'YouTube':
+                e['label'] = ('Standard' if i == 0 else 'Short') if len(plist) > 1 else None
+            else:
+                e['label'] = f'Post {i + 1}' if len(plist) > 1 else None
+
+
+def split_group(groups, source_title, moves):
+    """Pulls specific entries out of the group named `source_title` into a new,
+    separate group. `moves` is a list of (platform, entry_dict) pairs — the exact
+    entry objects (as found in that group's platforms dict) to move out.
+
+    Returns (groups, source_group, new_group). The caller (src/unmerge_videos_cli.py)
+    is responsible for titling the new group and recording the split in
+    data/processed/manual_group_splits.json so it survives future pipeline runs."""
+    def find(t):
+        tl = (t or '').strip().lower()
+        for g in groups:
+            if g['title'].strip().lower() == tl:
+                return g
+        return None
+
+    src = find(source_title)
+    if src is None:
+        raise ValueError(f'No group titled "{source_title}"')
+
+    moved_by_plat = {}
+    for plat, entry in moves:
+        src['platforms'][plat].remove(entry)
+        if not src['platforms'][plat]:
+            del src['platforms'][plat]
+        moved_by_plat.setdefault(plat, []).append(entry)
+
+    new_group = {
+        'title': source_title,  # caller renames this
+        'genre': src.get('genre', 'Untagged'),
+        'platforms': moved_by_plat,
+        'tot_v': 0, 'tot_l': 0, 'tot_c': 0, 'tot_s': 0, 'n_platforms': 0,
+    }
+
+    _relabel_platform_entries(src['platforms'])
+    _relabel_platform_entries(new_group['platforms'])
+    _recompute_totals(src)
+    _recompute_totals(new_group)
+
+    if src['platforms']:
+        groups.append(new_group)
+    else:
+        # every entry was moved out — the "source" group is now empty; the moved
+        # entries simply become the (renamed) group instead of creating an empty one.
+        groups.remove(src)
+        new_group['title'] = source_title
+        groups.append(new_group)
+
+    return groups, src, new_group
 
 
 def apply_manual_group_merges(groups):

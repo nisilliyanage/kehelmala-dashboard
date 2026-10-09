@@ -76,7 +76,7 @@ footer{margin-top:26px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:1
 <div class="wrap">
   <header>
     <div>
-      <h1>Kehelmala Studios - Performance Dashboard</h1>
+      <h1>Kehelmala Studios</h1>
       <div class="tag">Videos combined across platforms — click a row for the breakdown</div>
     </div>
     <div class="updated">Data as of <b id="asof">—</b><br><span id="asof-scope">YouTube, Facebook, Instagram &amp; TikTok</span></div>
@@ -6840,6 +6840,45 @@ let activePlatform='All', search='', sortKey='tot_v', sortDir=-1;
 
 function fmt(n){ return (n||0).toLocaleString('en-US'); }
 
+// Source exports use ISO, US numeric, and month-name dates. Keep the source
+// values unchanged, but present every date consistently in the dashboard.
+const KNOWN_DATE_YEARS = [];
+GROUPS.forEach(g => Object.values(g.platforms || {}).forEach(entries =>
+  (entries || []).forEach(e => {
+    const match = String(e.d || '').match(/\b(19|20)\d{2}\b/);
+    if (match) KNOWN_DATE_YEARS.push(Number(match[0]));
+  })
+));
+const DEFAULT_DATE_YEAR = KNOWN_DATE_YEARS.length
+  ? Math.max(...KNOWN_DATE_YEARS)
+  : new Date().getFullYear();
+
+function dateParts(value){
+  const text = String(value || '').trim();
+  let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (match) return [Number(match[1]), Number(match[2]), Number(match[3])];
+  match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (match) return [Number(match[3]), Number(match[1]), Number(match[2])];
+  match = text.match(/^([A-Za-z]+)\s+(\d{1,2})(?:,\s*(\d{4})|\s+(\d{4}))?$/);
+  if (match) {
+    const month = new Date(`${match[1]} 1, 2000`).getMonth() + 1;
+    return [Number(match[3] || match[4] || DEFAULT_DATE_YEAR), month, Number(match[2])];
+  }
+  return null;
+}
+
+function formatDate(value){
+  const parts = dateParts(value);
+  if (!parts) return value || '—';
+  const [year, month, day] = parts;
+  return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+}
+
+function dateSortValue(value){
+  const parts = dateParts(value);
+  return parts ? parts[0] * 10000 + parts[1] * 100 + parts[2] : 0;
+}
+
 // "Data as of" per platform - the most recent date actually present in
 // that platform's own export (never today's date, never a guess: a
 // platform with no determinable date shows "undefined" rather than
@@ -6849,7 +6888,7 @@ const LATEST_BY_PLATFORM = {};
 PLATS.forEach(p=>{
   let latest = null;
   GROUPS.forEach(g=>(g.platforms[p]||[]).forEach(e=>{
-    if(e.asof && (!latest || e.asof > latest)) latest = e.asof;
+    if(e.asof && (!latest || dateSortValue(e.asof) > dateSortValue(latest))) latest = e.asof;
   }));
   LATEST_BY_PLATFORM[p] = latest; // null if this platform has no asof anywhere
 });
@@ -6858,7 +6897,9 @@ function updateAsOf(){
   const el = document.getElementById('asof');
   const scope = document.getElementById('asof-scope');
   if(activePlatform !== 'All'){
-    el.textContent = LATEST_BY_PLATFORM[activePlatform] || 'undefined';
+    el.textContent = LATEST_BY_PLATFORM[activePlatform]
+      ? formatDate(LATEST_BY_PLATFORM[activePlatform])
+      : 'undefined';
     scope.textContent = activePlatform + ' export';
     return;
   }
@@ -6871,7 +6912,7 @@ function updateAsOf(){
   const values = PLATS.map(p => LATEST_BY_PLATFORM[p]).filter(v => v !== null);
   const allAgree = values.length > 0 && values.every(v => v === values[0])
                     && values.length === PLATS.filter(p => LATEST_BY_PLATFORM[p] !== null).length;
-  el.textContent = allAgree ? values[0] : 'undefined';
+  el.textContent = allAgree ? formatDate(values[0]) : 'undefined';
 }
 
 // Per-row metrics for the CURRENTLY ACTIVE platform tab. 'All' sums every
@@ -6928,7 +6969,7 @@ function metricRow(label, m, indent){
   const link = m.u ? `<a class="vlink" href="${m.u}" target="_blank" rel="noopener">view</a>` : '';
   const pad = indent ? 'padding-left:22px;color:var(--sub);font-size:11.5px;' : '';
   return `<tr><td style="${pad}">${label}</td><td class="num">${fmt(m.v)}</td><td class="num">${fmt(m.l)}</td>
-    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td>${m.d||'—'} &nbsp; ${link}</td></tr>`;
+    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td>${formatDate(m.d)} &nbsp; ${link}</td></tr>`;
 }
 
 function breakdownRow(p, entries, rowId){

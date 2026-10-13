@@ -4,7 +4,7 @@ import sys
 import os
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-STEPS = ['src/merge_platforms.py', 'src/cluster_videos.py', 'src/build_dashboard.py']
+STEPS = ['src/merge_platforms.py', 'src/cluster_videos.py', 'src/build_dashboard.py', 'src/build_analytics.py']
 
 for step in STEPS:
     print(f'\n=== {step} ===')

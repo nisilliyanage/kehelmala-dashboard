@@ -1,114 +1,437 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Kehelmala Studios — Performance Dashboard</title>
-<style>
-:root{
-  --bg:#f7f5f1; --panel:#ffffff; --ink:#1c1b19; --sub:#6b6560;
-  --line:#e7e2da; --accent:#b8432f; --accent2:#2f4858;
-  --chip:#efe9df; --good:#3c7a52;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: dark){
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font:
+          14px -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: #faf9f5;
+        color: #141413;
+      }
+      img {
+        max-width: 100%;
+      }
+      [hidden]:not([hidden="until-found" i]) {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
+        <title>Kehelmala Studios — Performance Dashboard</title>
+        <style>
+          :root {
+            --bg: #fafaf8;
+            --panel: #ffffff;
+            --ink: #181816;
+            --sub: #8c8884;
+            --line: #ececea;
+            --accent: #b8432f;
+            --accent2: #2f4858;
+            --chip: #f3f2ef;
+            --good: #3c7a52;
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+          }
+          /* @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#15130f; --panel:#1e1b16; --ink:#f1ede5; --sub:#a39d92;
     --line:#332e26; --chip:#2a2620; --accent:#e2694f; --accent2:#7fa3ba; --good:#6fbf8b;
   }
-}
-:root[data-theme="dark"]{
+} */
+          /* :root[data-theme="dark"]{
   --bg:#15130f; --panel:#1e1b16; --ink:#f1ede5; --sub:#a39d92;
   --line:#332e26; --chip:#2a2620; --accent:#e2694f; --accent2:#7fa3ba; --good:#6fbf8b;
-}
-html{scroll-padding-top:env(safe-area-inset-top,0px);}
-*{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Iowan Old Style','Georgia',serif;-webkit-font-smoothing:antialiased;}
-.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px;}
-header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:22px;border-bottom:2px solid var(--ink);padding-bottom:16px;}
-h1{font-size:clamp(22px,3vw,30px);margin:0;}
-.tag{color:var(--sub);font-size:13px;margin-top:4px;font-family:'Helvetica Neue',Arial,sans-serif;}
-.updated{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12.5px;color:var(--sub);text-align:right;}
-.updated b{color:var(--ink);}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
-.card .n{font-size:24px;font-weight:700;font-family:'Helvetica Neue',Arial,sans-serif;}
-.card .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--sub);font-family:'Helvetica Neue',Arial,sans-serif;margin-top:2px;}
-.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;font-family:'Helvetica Neue',Arial,sans-serif;}
-input[type=search]{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13.5px;font-family:inherit;flex:1;min-width:160px;}
-.ptab{padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font-size:12.5px;cursor:pointer;}
-.ptab.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
-.ptab .cnt{opacity:.7;margin-left:4px;}
-.list{border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden;}
-.row{border-bottom:1px solid var(--line);}
-.row:last-child{border-bottom:none;}
-.row-head{display:grid;grid-template-columns:28px minmax(160px,2.4fr) repeat(4,minmax(70px,1fr)) 1.3fr;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;}
-.row-head:hover{background:var(--chip);}
-.car{color:var(--sub);transition:transform .15s;font-size:11px;}
-.row.open .car{transform:rotate(90deg);}
-.vtitle{font-family:Georgia,serif;color:var(--ink);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.num{text-align:right;font-variant-numeric:tabular-nums;}
-.plats{display:flex;gap:4px;flex-wrap:wrap;}
-.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:3px;}
-.dot.YouTube{background:#e2694f;} .dot.Facebook{background:#2f4858;} .dot.Instagram{background:#b8432f;} .dot.TikTok{background:#3c7a52;}
-.pchip{font-size:10.5px;background:var(--chip);border-radius:999px;padding:2px 8px;color:var(--sub);}
-.breakdown{display:none;padding:0 14px 14px 50px;font-family:'Helvetica Neue',Arial,sans-serif;}
-.row.open .breakdown{display:block;}
-.bd-table{width:100%;border-collapse:collapse;font-size:12.5px;}
-.bd-table th{text-align:right;color:var(--sub);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;padding:6px 8px;}
-.bd-table th:first-child,.bd-table td:first-child{text-align:left;}
-.bd-table td{padding:6px 8px;text-align:right;border-top:1px solid var(--line);}
-a.vlink{color:var(--accent2);text-decoration:none;}
-a.vlink:hover{text-decoration:underline;}
-.empty{padding:40px 20px;text-align:center;color:var(--sub);font-family:'Helvetica Neue',Arial,sans-serif;font-size:13.5px;}
-.colhead{display:grid;grid-template-columns:28px minmax(160px,2.4fr) repeat(4,minmax(70px,1fr)) 1.3fr;gap:8px;padding:9px 14px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);border-bottom:1px solid var(--line);}
-.colhead span:not(:first-child){text-align:right;cursor:pointer;}
-.colhead span.active{color:var(--ink);}
-footer{margin-top:26px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:11.5px;color:var(--sub);text-align:center;}
-@media(max-width:720px){.row-head,.colhead{grid-template-columns:22px 1.6fr repeat(2,1fr) .9fr;}
-  .row-head span:nth-child(5),.row-head span:nth-child(6),.colhead span:nth-child(5),.colhead span:nth-child(6){display:none;}}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>Kehelmala Studios</h1>
-      <div class="tag">Videos combined across platforms — click a row for the breakdown</div>
-    </div>
-    <div class="updated">Data as of <b id="asof">—</b><br><span id="asof-scope">YouTube, Facebook, Instagram &amp; TikTok</span></div>
-  </header>
+} */
+          html {
+            scroll-padding-top: env(safe-area-inset-top, 0px);
+          }
+          * {
+            box-sizing: border-box;
+          }
+          body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family:
+              -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial,
+              sans-serif;
+            -webkit-font-smoothing: antialiased;
+          }
+          .wrap {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 44px 24px 64px;
+          }
+          header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 36px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--line);
+          }
+          h1 {
+            /* font-size: clamp(20px, 2.6vw, 26px);
+            margin: 0;
+            font-weight: 700; */
+            letter-spacing: -0.01em;
+            font-size: 5rem !important;
+            color: #17223a !important;
+            font-weight: 800 !important;
+          }
+          h2 {
+            font-size: 1.5rem !important;
+            color: #17223a !important;
+            font-weight: 600 !important;
+            margin-top: 0.5rem !important;
+          }
+          .tag {
+            color: var(--sub);
+            font-size: 13px;
+            margin-top: 5px;
+            font-weight: 400;
+          }
+          .updated {
+            font-size: 12px;
+            color: var(--sub);
+            text-align: right;
+          }
+          .updated b {
+            color: var(--ink);
+            font-weight: 600;
+          }
+          .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1px;
+            margin-bottom: 32px;
+            background: var(--line);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden;
+          }
+          .card {
+            background: var(--panel);
+            padding: 22px 20px;
+          }
+          .card .n {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+          }
+          .card .l {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--sub);
+            font-weight: 600;
+            margin-top: 6px;
+          }
+          .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 18px;
+          }
+          input[type="search"] {
+            background: var(--panel);
+            color: var(--ink);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 13.5px;
+            font-family: inherit;
+            flex: 1;
+            min-width: 160px;
+          }
+          input[type="search"]:focus {
+            outline: none;
+            border-color: var(--sub);
+          }
+          .ptab {
+            padding: 7px 14px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            background: var(--chip);
+            color: var(--sub);
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition:
+              background 0.12s,
+              color 0.12s;
+          }
+          .ptab:hover {
+            background: var(--line);
+          }
+          .ptab.active {
+            background: var(--ink);
+            color: var(--bg);
+          }
+          .ptab .cnt {
+            opacity: 0.65;
+            margin-left: 4px;
+          }
+          .list {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--panel);
+            overflow: hidden;
+          }
+          .row {
+            border-bottom: 1px solid var(--line);
+          }
+          .row:last-child {
+            border-bottom: none;
+          }
+          .row-head {
+            display: grid;
+            grid-template-columns:
+              28px minmax(160px, 2.4fr) repeat(5, minmax(70px, 1fr))
+              1.3fr;
+            align-items: center;
+            gap: 8px;
+            padding: 14px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.12s;
+          }
+          .row-head:hover {
+            background: var(--chip);
+          }
+          .car {
+            color: var(--sub);
+            transition: transform 0.15s;
+            font-size: 10px;
+          }
+          .row.open .car {
+            transform: rotate(90deg);
+          }
+          .vtitle {
+            color: var(--ink);
+            font-size: 13.5px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+          }
+          .plats {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+          }
+          .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 3px;
+          }
+          .dot.YouTube {
+            background: #e2694f;
+          }
+          .dot.Facebook {
+            background: #2f4858;
+          }
+          .dot.Instagram {
+            background: #b8432f;
+          }
+          .dot.TikTok {
+            background: #3c7a52;
+          }
+          .pchip {
+            font-size: 10.5px;
+            background: var(--chip);
+            border-radius: 999px;
+            padding: 3px 9px;
+            color: var(--sub);
+            font-weight: 500;
+          }
+          .breakdown {
+            display: none;
+            padding: 2px 14px 18px 50px;
+          }
+          .row.open .breakdown {
+            display: block;
+          }
+          .bd-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+          }
+          .bd-table th {
+            text-align: right;
+            color: var(--sub);
+            font-weight: 600;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 8px;
+          }
+          .bd-table th:first-child,
+          .bd-table td:first-child {
+            text-align: left;
+          }
+          .bd-table td {
+            padding: 8px;
+            text-align: right;
+            border-top: 1px solid var(--line);
+          }
+          a.vlink {
+            color: var(--accent2);
+            text-decoration: none;
+            font-weight: 500;
+          }
+          a.vlink:hover {
+            text-decoration: underline;
+          }
+          .empty {
+            padding: 48px 20px;
+            text-align: center;
+            color: var(--sub);
+            font-size: 13.5px;
+          }
+          .colhead {
+            display: grid;
+            grid-template-columns:
+              28px minmax(160px, 2.4fr) repeat(5, minmax(70px, 1fr))
+              1.3fr;
+            gap: 8px;
+            padding: 10px 14px;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--sub);
+            font-weight: 600;
+            border-bottom: 1px solid var(--line);
+          }
+          .colhead span:not(:first-child) {
+            text-align: right;
+            cursor: pointer;
+          }
+          .colhead span.active {
+            color: var(--ink);
+          }
+          footer {
+            margin-top: 32px;
+            font-size: 11.5px;
+            color: var(--sub);
+            text-align: center;
+            line-height: 1.6;
+          }
+          @media (max-width: 720px) {
+            .row-head,
+            .colhead {
+              grid-template-columns: 22px 1.6fr repeat(2, 1fr) 0.9fr;
+            }
+            .row-head span:nth-child(5),
+            .row-head span:nth-child(6),
+            .row-head span:nth-child(7),
+            .colhead span:nth-child(5),
+            .colhead span:nth-child(6),
+            .colhead span:nth-child(7) {
+              display: none;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="wrap">
+          <header>
+            <div>
+              <h1>Kehelmala Studios</h1>
+              <h2>Performance Dashboard</h2>
+              <div class="tag">
+                Videos combined across platforms — click a row for the breakdown
+              </div>
+            </div>
+            <div class="updated">
+              Data as of <b id="asof">—</b><br /><span id="asof-scope"
+                >YouTube, Facebook, Instagram &amp; TikTok</span
+              ><br /><a href="analytics.html" style="color:var(--accent2);font-size:12px;">View charts dashboard →</a>
+            </div>
+          </header>
 
-  <div class="cards" id="cards"></div>
+          <div class="cards" id="cards"></div>
 
-  <div class="controls">
-    <div class="ptab" id="t-All" data-p="All">All <span class="cnt"></span></div>
-    <div class="ptab" id="t-YouTube" data-p="YouTube">YouTube <span class="cnt"></span></div>
-    <div class="ptab" id="t-Facebook" data-p="Facebook">Facebook <span class="cnt"></span></div>
-    <div class="ptab" id="t-Instagram" data-p="Instagram">Instagram <span class="cnt"></span></div>
-    <div class="ptab" id="t-TikTok" data-p="TikTok">TikTok <span class="cnt"></span></div>
-    <input type="search" id="search" placeholder="Search by title...">
-  </div>
+          <div class="controls">
+            <div class="ptab" id="t-All" data-p="All">
+              All <span class="cnt"></span>
+            </div>
+            <div class="ptab" id="t-YouTube" data-p="YouTube">
+              YouTube <span class="cnt"></span>
+            </div>
+            <div class="ptab" id="t-Facebook" data-p="Facebook">
+              Facebook <span class="cnt"></span>
+            </div>
+            <div class="ptab" id="t-Instagram" data-p="Instagram">
+              Instagram <span class="cnt"></span>
+            </div>
+            <div class="ptab" id="t-TikTok" data-p="TikTok">
+              TikTok <span class="cnt"></span>
+            </div>
+            <input type="search" id="search" placeholder="Search by title..." />
+          </div>
 
-  <div class="colhead">
-    <span></span>
-    <span data-k="title">Video</span>
-    <span data-k="tot_v">Views</span>
-    <span data-k="tot_l">Likes</span>
-    <span data-k="tot_c">Comments</span>
-    <span data-k="tot_s">Shares</span>
-    <span>On</span>
-  </div>
-  <div class="list" id="list"></div>
+          <div class="colhead">
+            <span></span>
+            <span data-k="title">Video</span>
+            <span data-k="tot_v">Views</span>
+            <span data-k="tot_l">Likes</span>
+            <span data-k="tot_c">Comments</span>
+            <span data-k="tot_s">Shares</span>
+            <span data-k="er">Eng. rate</span>
+            <span>On</span>
+          </div>
+          <div class="list" id="list"></div>
 
-  <footer>Combined by matching titles across YouTube, Facebook, Instagram &amp; TikTok exports (automated title matching — a handful of matches may be imprecise) · Totals sum each platform's own metric definitions, which aren't identical · Re-run exports and resend to refresh</footer>
-</div>
+          <footer>
+            Combined by matching titles across YouTube, Facebook, Instagram
+            &amp; TikTok exports (automated title matching — a handful of
+            matches may be imprecise) · Totals sum each platform's own metric
+            definitions, which aren't identical · Eng. rate = (likes +
+            comments + shares) ÷ views, computed the same way for every
+            platform · Re-run exports and resend to refresh
+          </footer>
+        </div>
 
-<script>
-const GROUPS = [
+        <script>
+          const GROUPS = [
   {
     "title": "Gratitude",
     "genre": "Untagged",
@@ -3334,6 +3657,53 @@ const GROUPS = [
     "n_platforms": 3
   },
   {
+    "title": "Eat Cake Spill Tea",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 993424,
+          "l": 62898,
+          "c": 2047,
+          "s": 1962,
+          "d": "06/14/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1796260347528443/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 8215,
+          "l": 2167,
+          "c": 51,
+          "s": 195,
+          "d": "06/14/2024",
+          "u": "https://www.instagram.com/reel/C8MjFpHBmy-/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "YouTube": [
+        {
+          "v": 51172,
+          "l": 0,
+          "c": 32,
+          "s": 309,
+          "d": "2025-03-31",
+          "u": "https://www.youtube.com/watch?v=-6O-5wtU9Vg",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1052811,
+    "tot_l": 65065,
+    "tot_c": 2130,
+    "tot_s": 2466,
+    "n_platforms": 3
+  },
+  {
     "title": "You And I",
     "genre": "Untagged",
     "platforms": {
@@ -3597,41 +3967,6 @@ const GROUPS = [
     "tot_c": 1923,
     "tot_s": 2975,
     "n_platforms": 3
-  },
-  {
-    "title": "Eat Cake Spill Tea",
-    "genre": "Untagged",
-    "platforms": {
-      "Facebook": [
-        {
-          "v": 993424,
-          "l": 62898,
-          "c": 2047,
-          "s": 1962,
-          "d": "06/14/2024",
-          "u": "https://www.facebook.com/kehelmalastudios/videos/1796260347528443/",
-          "asof": "2025-04-13",
-          "label": null
-        }
-      ],
-      "Instagram": [
-        {
-          "v": 8215,
-          "l": 2167,
-          "c": 51,
-          "s": 195,
-          "d": "06/14/2024",
-          "u": "https://www.instagram.com/reel/C8MjFpHBmy-/",
-          "asof": "2025-04-13",
-          "label": null
-        }
-      ]
-    },
-    "tot_v": 1001639,
-    "tot_l": 65065,
-    "tot_c": 2098,
-    "tot_s": 2157,
-    "n_platforms": 2
   },
   {
     "title": "Tastiest",
@@ -6663,29 +6998,6 @@ const GROUPS = [
     "n_platforms": 1
   },
   {
-    "title": "Wedding Cake",
-    "genre": "Untagged",
-    "platforms": {
-      "YouTube": [
-        {
-          "v": 51172,
-          "l": 0,
-          "c": 32,
-          "s": 309,
-          "d": "2025-03-31",
-          "u": "https://www.youtube.com/watch?v=-6O-5wtU9Vg",
-          "asof": "2026-09-28",
-          "label": null
-        }
-      ]
-    },
-    "tot_v": 51172,
-    "tot_l": 0,
-    "tot_c": 32,
-    "tot_s": 309,
-    "n_platforms": 1
-  },
-  {
     "title": "Sisters",
     "genre": "Untagged",
     "platforms": {
@@ -6824,175 +7136,219 @@ const GROUPS = [
     "n_platforms": 1
   }
 ];
-function stripHashtags(t){
-  if (!t) return '';
-  // Remove hashtags and any trailing punctuation/whitespace
-  let cleaned = t.replace(/#\S+/g, '').trim();
-  // Collapse multiple spaces and trim trailing punctuation
-  cleaned = cleaned.replace(/[-:|;,._\s]+$/g, '').replace(/\s+/g, ' ').trim();
-  return cleaned;
-}
-GROUPS.forEach(g => {
-  if (g.title) g.title = stripHashtags(g.title);
-});
-const PLATS = ['YouTube','Facebook','Instagram','TikTok'];
-let activePlatform='All', search='', sortKey='tot_v', sortDir=-1;
+          const PLATS = ["YouTube", "Facebook", "Instagram", "TikTok"];
+          let activePlatform = "All",
+            search = "",
+            sortKey = "tot_v",
+            sortDir = -1;
 
-function fmt(n){ return (n||0).toLocaleString('en-US'); }
+          function fmt(n) {
+            return (n || 0).toLocaleString("en-US");
+          }
 
-const ASOF_YEARS = [];
-GROUPS.forEach(g => Object.values(g.platforms || {}).forEach(entries =>
-  (entries || []).forEach(e => {
-    const match = String(e.asof || '').match(/\b(19|20)\d{2}\b/);
-    if (match) ASOF_YEARS.push(Number(match[0]));
-  })
-));
-const DEFAULT_ASOF_YEAR = ASOF_YEARS.length ? Math.max(...ASOF_YEARS) : null;
+          // Engagement rate = (likes + comments + shares) / views * 100.
+          // Computed the same way for every platform (rather than trusting
+          // each platform's own self-reported "engagement" figure, which
+          // isn't defined the same way twice) so it's actually comparable
+          // across YouTube/Facebook/Instagram/TikTok. Views dominate raw
+          // totals for some platforms simply because they reach more
+          // people, not because the content lands better there - this is
+          // the number that isn't skewed by that.
+          function engRate(m) {
+            return m.v > 0 ? ((m.l + m.c + m.s) / m.v) * 100 : 0;
+          }
+          function fmtPct(n) {
+            return n.toFixed(n >= 10 ? 1 : 2) + "%";
+          }
 
-function dateParts(value, fallbackYear){
-  const text = String(value || '').trim();
-  let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (match) return [Number(match[1]), Number(match[2]), Number(match[3])];
-  match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (match) return [Number(match[3]), Number(match[1]), Number(match[2])];
-  match = text.match(/^([A-Za-z]+)\s+(\d{1,2})(?:,\s*(\d{4})|\s+(\d{4}))?$/);
-  if (match) {
-    const month = new Date(`${match[1]} 1, 2000`).getMonth() + 1;
-    const year = match[3] || match[4] || fallbackYear;
-    return year ? [Number(year), month, Number(match[2])] : null;
-  }
-  return null;
-}
+          // "Data as of" per platform - the most recent date actually present in
+          // that platform's own export (never today's date, never a guess: a
+          // platform with no determinable date shows "undefined" rather than
+          // inventing one). Computed once since the underlying data doesn't
+          // change at runtime; re-read on each tab switch by updateAsOf().
+          const LATEST_BY_PLATFORM = {};
+          PLATS.forEach((p) => {
+            let latest = null;
+            GROUPS.forEach((g) =>
+              (g.platforms[p] || []).forEach((e) => {
+                if (e.asof && (!latest || e.asof > latest)) latest = e.asof;
+              }),
+            );
+            LATEST_BY_PLATFORM[p] = latest; // null if this platform has no asof anywhere
+          });
 
-function formatDate(value, fallbackYear){
-  const parts = dateParts(value, fallbackYear);
-  if (!parts) return value || '—';
-  const [year, month, day] = parts;
-  return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
-}
+          function updateAsOf() {
+            const el = document.getElementById("asof");
+            const scope = document.getElementById("asof-scope");
+            if (activePlatform !== "All") {
+              el.textContent =
+                LATEST_BY_PLATFORM[activePlatform] || "undefined";
+              scope.textContent = activePlatform + " export";
+              return;
+            }
+            scope.textContent = "YouTube, Facebook, Instagram & TikTok";
+            // "All": only show one date if every platform that has data agrees on
+            // the same date. Platforms genuinely export on different days (e.g.
+            // Facebook/Instagram exports often lag YouTube's), so showing one
+            // blended "latest" would misrepresent platforms that are actually
+            // older - "undefined" is the honest answer when they disagree.
+            const values = PLATS.map((p) => LATEST_BY_PLATFORM[p]).filter(
+              (v) => v !== null,
+            );
+            const allAgree =
+              values.length > 0 &&
+              values.every((v) => v === values[0]) &&
+              values.length ===
+                PLATS.filter((p) => LATEST_BY_PLATFORM[p] !== null).length;
+            el.textContent = allAgree ? values[0] : "undefined";
+          }
 
-function dateSortValue(value){
-  const parts = dateParts(value);
-  return parts ? parts[0] * 10000 + parts[1] * 100 + parts[2] : 0;
-}
+          // Per-row metrics for the CURRENTLY ACTIVE platform tab. 'All' sums every
+          // platform; a specific platform sums only that platform's own entries
+          // (e.g. YouTube's Standard + Short + Part N all count as YouTube).
+          function platMetrics(g, p) {
+            let m;
+            if (p === "All") m = { v: g.tot_v, l: g.tot_l, c: g.tot_c, s: g.tot_s };
+            else {
+              const entries = g.platforms[p] || [];
+              m = entries.reduce(
+                (a, e) => ({
+                  v: a.v + e.v,
+                  l: a.l + e.l,
+                  c: a.c + e.c,
+                  s: a.s + e.s,
+                }),
+                { v: 0, l: 0, c: 0, s: 0 },
+              );
+            }
+            m.er = engRate(m);
+            return m;
+          }
 
-// "Data as of" per platform - the most recent date actually present in
-// that platform's own export (never today's date, never a guess: a
-// platform with no determinable date shows "undefined" rather than
-// inventing one). Computed once since the underlying data doesn't
-// change at runtime; re-read on each tab switch by updateAsOf().
-const LATEST_BY_PLATFORM = {};
-PLATS.forEach(p=>{
-  let latest = null;
-  GROUPS.forEach(g=>(g.platforms[p]||[]).forEach(e=>{
-    if(e.asof && (!latest || dateSortValue(e.asof) > dateSortValue(latest))) latest = e.asof;
-  }));
-  LATEST_BY_PLATFORM[p] = latest; // null if this platform has no asof anywhere
-});
+          function visibleGroups() {
+            let rows = GROUPS;
+            if (activePlatform !== "All")
+              rows = rows.filter(
+                (g) =>
+                  g.platforms[activePlatform] &&
+                  g.platforms[activePlatform].length,
+              );
+            if (search)
+              rows = rows.filter((g) =>
+                g.title.toLowerCase().includes(search.toLowerCase()),
+              );
+            rows = [...rows].sort((a, b) => {
+              if (sortKey === "title")
+                return a.title.localeCompare(b.title) * sortDir;
+              const mkey = sortKey.replace("tot_", ""); // tot_v -> v, tot_l -> l, ...
+              const x = platMetrics(a, activePlatform)[mkey];
+              const y = platMetrics(b, activePlatform)[mkey];
+              return (x - y) * sortDir;
+            });
+            return rows;
+          }
 
-function updateAsOf(){
-  const el = document.getElementById('asof');
-  const scope = document.getElementById('asof-scope');
-  if(activePlatform !== 'All'){
-    el.textContent = LATEST_BY_PLATFORM[activePlatform]
-      ? formatDate(LATEST_BY_PLATFORM[activePlatform], DEFAULT_ASOF_YEAR)
-      : 'undefined';
-    scope.textContent = activePlatform + ' export';
-    return;
-  }
-  scope.textContent = 'YouTube, Facebook, Instagram & TikTok';
-  // "All": only show one date if every platform that has data agrees on
-  // the same date. Platforms genuinely export on different days (e.g.
-  // Facebook/Instagram exports often lag YouTube's), so showing one
-  // blended "latest" would misrepresent platforms that are actually
-  // older - "undefined" is the honest answer when they disagree.
-  const values = PLATS.map(p => LATEST_BY_PLATFORM[p]).filter(v => v !== null);
-  const allAgree = values.length > 0 && values.every(v => v === values[0])
-                    && values.length === PLATS.filter(p => LATEST_BY_PLATFORM[p] !== null).length;
-  el.textContent = allAgree ? formatDate(values[0], DEFAULT_ASOF_YEAR) : 'undefined';
-}
+          function renderCards() {
+            const rows = visibleGroups();
+            const t = rows.reduce(
+              (a, g) => {
+                const m = platMetrics(g, activePlatform);
+                a.v += m.v;
+                a.l += m.l;
+                a.c += m.c;
+                a.s += m.s;
+                return a;
+              },
+              { v: 0, l: 0, c: 0, s: 0 },
+            );
+            const cards = [
+              ["Videos", rows.length],
+              ["Total views", fmt(t.v)],
+              ["Total likes", fmt(t.l)],
+              ["Total comments", fmt(t.c)],
+              ["Total shares", fmt(t.s)],
+              ["Eng. rate", fmtPct(engRate(t))],
+            ];
+            document.getElementById("cards").innerHTML = cards
+              .map(
+                ([l, n]) =>
+                  `<div class="card"><div class="n">${n}</div><div class="l">${l}</div></div>`,
+              )
+              .join("");
+          }
 
-// Per-row metrics for the CURRENTLY ACTIVE platform tab. 'All' sums every
-// platform; a specific platform sums only that platform's own entries
-// (e.g. YouTube's Standard + Short + Part N all count as YouTube).
-function platMetrics(g, p){
-  if(p === 'All') return {v:g.tot_v, l:g.tot_l, c:g.tot_c, s:g.tot_s};
-  const entries = g.platforms[p] || [];
-  return entries.reduce((a,e)=>({v:a.v+e.v,l:a.l+e.l,c:a.c+e.c,s:a.s+e.s}), {v:0,l:0,c:0,s:0});
-}
+          function renderTabs() {
+            PLATS.forEach((p) => {
+              const n = GROUPS.filter((g) => g.platforms[p]).length;
+              document.querySelector(`#t-${p} .cnt`).textContent = n;
+            });
+            document.querySelector("#t-All .cnt").textContent = GROUPS.length;
+            [...document.querySelectorAll(".ptab")].forEach((el) => {
+              el.classList.toggle("active", el.dataset.p === activePlatform);
+              el.onclick = () => {
+                activePlatform = el.dataset.p;
+                render();
+              };
+            });
+          }
 
-function visibleGroups(){
-  let rows = GROUPS;
-  if(activePlatform!=='All') rows = rows.filter(g => g.platforms[activePlatform] && g.platforms[activePlatform].length);
-  if(search){
-    const q = search.replace(/#\S+/g, '').trim().toLowerCase() || search.trim().toLowerCase();
-    rows = rows.filter(g => g.title.toLowerCase().includes(q));
-  }
-  rows = [...rows].sort((a,b)=>{
-    if(sortKey === 'title') return a.title.localeCompare(b.title)*sortDir;
-    const mkey = sortKey.replace('tot_', ''); // tot_v -> v, tot_l -> l, ...
-    const x = platMetrics(a, activePlatform)[mkey];
-    const y = platMetrics(b, activePlatform)[mkey];
-    return (x-y)*sortDir;
-  });
-  return rows;
-}
+          function metricRow(label, m, indent) {
+            const link = m.u
+              ? `<a class="vlink" href="${m.u}" target="_blank" rel="noopener">view</a>`
+              : "";
+            const pad = indent
+              ? "padding-left:22px;color:var(--sub);font-size:11.5px;"
+              : "";
+            return `<tr><td style="${pad}">${label}</td><td class="num">${fmt(m.v)}</td><td class="num">${fmt(m.l)}</td>
+    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td class="num">${fmtPct(engRate(m))}</td><td>${m.d || "—"} &nbsp; ${link}</td></tr>`;
+          }
 
-function renderCards(){
-  const rows = visibleGroups();
-  const t = rows.reduce((a,g)=>{
-    const m = platMetrics(g, activePlatform);
-    a.v+=m.v; a.l+=m.l; a.c+=m.c; a.s+=m.s; return a;
-  },{v:0,l:0,c:0,s:0});
-  const cards = [['Videos', rows.length],['Total views', fmt(t.v)],['Total likes', fmt(t.l)],
-                 ['Total comments', fmt(t.c)],['Total shares', fmt(t.s)]];
-  document.getElementById('cards').innerHTML = cards.map(([l,n])=>
-    `<div class="card"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
-}
-
-function renderTabs(){
-  PLATS.forEach(p=>{
-    const n = GROUPS.filter(g=>g.platforms[p]).length;
-    document.querySelector(`#t-${p} .cnt`).textContent = n;
-  });
-  document.querySelector('#t-All .cnt').textContent = GROUPS.length;
-  [...document.querySelectorAll('.ptab')].forEach(el=>{
-    el.classList.toggle('active', el.dataset.p===activePlatform);
-    el.onclick = ()=>{ activePlatform = el.dataset.p; render(); };
-  });
-}
-
-function metricRow(label, m, indent){
-  const link = m.u ? `<a class="vlink" href="${m.u}" target="_blank" rel="noopener">view</a>` : '';
-  const pad = indent ? 'padding-left:22px;color:var(--sub);font-size:11.5px;' : '';
-  return `<tr><td style="${pad}">${label}</td><td class="num">${fmt(m.v)}</td><td class="num">${fmt(m.l)}</td>
-    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td>${formatDate(m.d)} &nbsp; ${link}</td></tr>`;
-}
-
-function breakdownRow(p, entries, rowId){
-  if(!entries || entries.length===0) return `<tr><td>${p}</td><td colspan="5" style="text-align:left;color:var(--sub)">not posted here</td></tr>`;
-  if(entries.length === 1){
-    return metricRow(p, entries[0]);
-  }
-  const tot = entries.reduce((a,e)=>({v:a.v+e.v,l:a.l+e.l,c:a.c+e.c,s:a.s+e.s}),{v:0,l:0,c:0,s:0});
-  const subId = `sub-${p}-${rowId}`;
-  const head = `<tr class="yt-toggle" data-target="${subId}" style="cursor:pointer">
+          function breakdownRow(p, entries, rowId) {
+            if (!entries || entries.length === 0)
+              return `<tr><td>${p}</td><td colspan="6" style="text-align:left;color:var(--sub)">not posted here</td></tr>`;
+            if (entries.length === 1) {
+              return metricRow(p, entries[0]);
+            }
+            const tot = entries.reduce(
+              (a, e) => ({
+                v: a.v + e.v,
+                l: a.l + e.l,
+                c: a.c + e.c,
+                s: a.s + e.s,
+              }),
+              { v: 0, l: 0, c: 0, s: 0 },
+            );
+            const subId = `sub-${p}-${rowId}`;
+            const head = `<tr class="yt-toggle" data-target="${subId}" style="cursor:pointer">
       <td><span class="car" style="display:inline-block;width:10px">▶</span>${p} — ${entries.length} versions</td>
       <td class="num">${fmt(tot.v)}</td><td class="num">${fmt(tot.l)}</td>
-      <td class="num">${fmt(tot.c)}</td><td class="num">${fmt(tot.s)}</td><td></td></tr>`;
-  const subRows = entries.map(e => metricRow(e.label || p, e, true)).join('');
-  return head + `<tbody class="${subId}" style="display:none">${subRows}</tbody>`;
-}
+      <td class="num">${fmt(tot.c)}</td><td class="num">${fmt(tot.s)}</td><td class="num">${fmtPct(engRate(tot))}</td><td></td></tr>`;
+            const subRows = entries
+              .map((e) => metricRow(e.label || p, e, true))
+              .join("");
+            return (
+              head +
+              `<tbody class="${subId}" style="display:none">${subRows}</tbody>`
+            );
+          }
 
-function renderList(){
-  const rows = visibleGroups();
-  const list = document.getElementById('list');
-  if(rows.length===0){ list.innerHTML = `<div class="empty">No videos match these filters.</div>`; return; }
-  list.innerHTML = rows.map((g,i)=>{
-    const dots = PLATS.filter(p=>g.platforms[p]).map(p=>`<span class="dot ${p}" title="${p}"></span>`).join('');
-    const bd = PLATS.map(p=>breakdownRow(p, g.platforms[p], i)).join('');
-    const m = platMetrics(g, activePlatform); // reflects the active tab, not always the combined total
-    return `<div class="row" id="row${i}">
+          function renderList() {
+            const rows = visibleGroups();
+            const list = document.getElementById("list");
+            if (rows.length === 0) {
+              list.innerHTML = `<div class="empty">No videos match these filters.</div>`;
+              return;
+            }
+            list.innerHTML = rows
+              .map((g, i) => {
+                const dots = PLATS.filter((p) => g.platforms[p])
+                  .map((p) => `<span class="dot ${p}" title="${p}"></span>`)
+                  .join("");
+                const bd = PLATS.map((p) =>
+                  breakdownRow(p, g.platforms[p], i),
+                ).join("");
+                const m = platMetrics(g, activePlatform); // reflects the active tab, not always the combined total
+                return `<div class="row" id="row${i}">
       <div class="row-head" onclick="toggle(${i})">
         <span class="car">▶</span>
         <span class="vtitle">${g.title}</span>
@@ -7000,44 +7356,64 @@ function renderList(){
         <span class="num">${fmt(m.l)}</span>
         <span class="num">${fmt(m.c)}</span>
         <span class="num">${fmt(m.s)}</span>
-        <span class="plats">${dots}<span class="pchip">${g.n_platforms} platform${g.n_platforms>1?'s':''}</span></span>
+        <span class="num">${fmtPct(m.er)}</span>
+        <span class="plats">${dots}<span class="pchip">${g.n_platforms} platform${g.n_platforms > 1 ? "s" : ""}</span></span>
       </div>
       <div class="breakdown"><table class="bd-table">
-        <tr><th style="text-align:left">Platform</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th style="text-align:left">Published</th></tr>
+        <tr><th style="text-align:left">Platform</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Eng. rate</th><th style="text-align:left">Published</th></tr>
         ${bd}
       </table></div>
     </div>`;
-  }).join('');
-  [...document.querySelectorAll('.yt-toggle')].forEach(el=>{
-    el.onclick = (e)=>{
-      e.stopPropagation();
-      const sub = document.querySelector('.' + el.dataset.target);
-      const car = el.querySelector('.car');
-      const open = sub.style.display !== 'none';
-      sub.style.display = open ? 'none' : 'table-row-group';
-      car.style.transform = open ? '' : 'rotate(90deg)';
-    };
-  });
-}
+              })
+              .join("");
+            [...document.querySelectorAll(".yt-toggle")].forEach((el) => {
+              el.onclick = (e) => {
+                e.stopPropagation();
+                const sub = document.querySelector("." + el.dataset.target);
+                const car = el.querySelector(".car");
+                const open = sub.style.display !== "none";
+                sub.style.display = open ? "none" : "table-row-group";
+                car.style.transform = open ? "" : "rotate(90deg)";
+              };
+            });
+          }
 
-function toggle(i){ document.getElementById('row'+i).classList.toggle('open'); }
+          function toggle(i) {
+            document.getElementById("row" + i).classList.toggle("open");
+          }
 
-function render(){ renderTabs(); renderCards(); renderList(); updateAsOf(); }
+          function render() {
+            renderTabs();
+            renderCards();
+            renderList();
+            updateAsOf();
+          }
 
-[...document.querySelectorAll('.colhead span[data-k]')].forEach(el=>{
-  el.onclick = ()=>{
-    const k = el.dataset.k;
-    if(sortKey===k) sortDir*=-1; else {sortKey=k; sortDir = k==='title'?1:-1;}
-    [...document.querySelectorAll('.colhead span')].forEach(s=>s.classList.remove('active'));
-    el.classList.add('active');
-    renderList();
-  };
-});
-document.getElementById('search').addEventListener('input', e=>{ search=e.target.value; render(); });
+          [...document.querySelectorAll(".colhead span[data-k]")].forEach(
+            (el) => {
+              el.onclick = () => {
+                const k = el.dataset.k;
+                if (sortKey === k) sortDir *= -1;
+                else {
+                  sortKey = k;
+                  sortDir = k === "title" ? 1 : -1;
+                }
+                [...document.querySelectorAll(".colhead span")].forEach((s) =>
+                  s.classList.remove("active"),
+                );
+                el.classList.add("active");
+                renderList();
+              };
+            },
+          );
+          document.getElementById("search").addEventListener("input", (e) => {
+            search = e.target.value;
+            render();
+          });
 
-render();
-</script>
-</body>
+          render();
+        </script>
+      </body>
+    </html>
+  </body>
 </html>
-
-</body></html>

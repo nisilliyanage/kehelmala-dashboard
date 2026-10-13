@@ -3224,6 +3224,53 @@
     "n_platforms": 3
   },
   {
+    "title": "Eat Cake Spill Tea",
+    "genre": "Untagged",
+    "platforms": {
+      "Facebook": [
+        {
+          "v": 993424,
+          "l": 62898,
+          "c": 2047,
+          "s": 1962,
+          "d": "06/14/2024",
+          "u": "https://www.facebook.com/kehelmalastudios/videos/1796260347528443/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "Instagram": [
+        {
+          "v": 8215,
+          "l": 2167,
+          "c": 51,
+          "s": 195,
+          "d": "06/14/2024",
+          "u": "https://www.instagram.com/reel/C8MjFpHBmy-/",
+          "asof": "2025-04-13",
+          "label": null
+        }
+      ],
+      "YouTube": [
+        {
+          "v": 51172,
+          "l": 0,
+          "c": 32,
+          "s": 309,
+          "d": "2025-03-31",
+          "u": "https://www.youtube.com/watch?v=-6O-5wtU9Vg",
+          "asof": "2026-09-28",
+          "label": null
+        }
+      ]
+    },
+    "tot_v": 1052811,
+    "tot_l": 65065,
+    "tot_c": 2130,
+    "tot_s": 2466,
+    "n_platforms": 3
+  },
+  {
     "title": "You And I",
     "genre": "Untagged",
     "platforms": {
@@ -3487,41 +3534,6 @@
     "tot_c": 1923,
     "tot_s": 2975,
     "n_platforms": 3
-  },
-  {
-    "title": "Eat Cake Spill Tea",
-    "genre": "Untagged",
-    "platforms": {
-      "Facebook": [
-        {
-          "v": 993424,
-          "l": 62898,
-          "c": 2047,
-          "s": 1962,
-          "d": "06/14/2024",
-          "u": "https://www.facebook.com/kehelmalastudios/videos/1796260347528443/",
-          "asof": "2025-04-13",
-          "label": null
-        }
-      ],
-      "Instagram": [
-        {
-          "v": 8215,
-          "l": 2167,
-          "c": 51,
-          "s": 195,
-          "d": "06/14/2024",
-          "u": "https://www.instagram.com/reel/C8MjFpHBmy-/",
-          "asof": "2025-04-13",
-          "label": null
-        }
-      ]
-    },
-    "tot_v": 1001639,
-    "tot_l": 65065,
-    "tot_c": 2098,
-    "tot_s": 2157,
-    "n_platforms": 2
   },
   {
     "title": "Tastiest",
@@ -6550,29 +6562,6 @@
     "tot_l": 552,
     "tot_c": 2,
     "tot_s": 35,
-    "n_platforms": 1
-  },
-  {
-    "title": "Wedding Cake",
-    "genre": "Untagged",
-    "platforms": {
-      "YouTube": [
-        {
-          "v": 51172,
-          "l": 0,
-          "c": 32,
-          "s": 309,
-          "d": "2025-03-31",
-          "u": "https://www.youtube.com/watch?v=-6O-5wtU9Vg",
-          "asof": "2026-09-28",
-          "label": null
-        }
-      ]
-    },
-    "tot_v": 51172,
-    "tot_l": 0,
-    "tot_c": 32,
-    "tot_s": 309,
     "n_platforms": 1
   },
   {

@@ -89,6 +89,98 @@
             margin: 0 auto;
             padding: 44px 24px 64px;
           }
+          /* Left sidebar: logo + nav between the two pages (Numbers / Charts).
+             Shared layout — the same block (minus which link is .active)
+             lives in analytics_template.html too. */
+          .app-shell {
+            display: flex;
+            min-height: 100vh;
+          }
+          .sidebar {
+            width: 190px;
+            flex: 0 0 190px;
+            background: #121212;
+            padding: 28px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+          }
+          .content {
+            flex: 1;
+            min-width: 0;
+            margin-left: 190px;
+          }
+          .sidebar .logo {
+            padding: 0 22px 24px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          }
+          .sidebar .logo img {
+            width: 100%;
+            height: auto;
+            display: block;
+          }
+          .sidenav {
+            display: flex;
+            flex-direction: column;
+          }
+          .sidenav-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 24px;
+            color: #9a968f;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            transition:
+              color 0.12s,
+              background 0.12s;
+          }
+          .sidenav-link:hover {
+            color: #fff;
+          }
+          .sidenav-link.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.07);
+          }
+          .sidenav-link .chev {
+            opacity: 0.55;
+            font-size: 13px;
+          }
+          @media (max-width: 860px) {
+            .app-shell {
+              flex-direction: column;
+            }
+            .sidebar {
+              position: static;
+              width: 100%;
+              flex: none;
+              padding: 14px 0;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+            .content {
+              margin-left: 0;
+            }
+            .sidebar .logo {
+              border-bottom: none;
+              margin-bottom: 0;
+              padding: 0 16px;
+              width: 150px;
+              flex: 0 0 150px;
+            }
+            .sidenav {
+              flex-direction: row;
+              padding-right: 10px;
+            }
+            .sidenav-link {
+              padding: 8px 12px;
+            }
+          }
           header {
             display: flex;
             justify-content: space-between;
@@ -123,7 +215,7 @@
           .updated {
             font-size: 12px;
             color: var(--sub);
-            text-align: right;
+            text-align: left;
           }
           .updated b {
             color: var(--ink);
@@ -371,63 +463,89 @@
         </style>
       </head>
       <body>
-        <div class="wrap">
-          <header>
-            <div>
-              <h1>Kehelmala Studios</h1>
-              <h2>Performance Dashboard</h2>
-              <div class="tag">
-                Videos combined across platforms — click a row for the breakdown
+        <div class="app-shell">
+          <aside class="sidebar">
+            <div class="logo">
+              <img
+                src="logo.png"
+                alt="Kehelmala Studios — Inspired Storytelling"
+              />
+            </div>
+            <nav class="sidenav">
+              <a class="sidenav-link active" href="dashboard.html"
+                >Numbers <span class="chev">›</span></a
+              >
+              <a class="sidenav-link" href="analytics.html"
+                >Charts <span class="chev">›</span></a
+              >
+            </nav>
+          </aside>
+          <div class="content">
+            <div class="wrap">
+              <header>
+                <div>
+                  <!-- <h1>Kehelmala Studios</h1>
+              <h2>Performance Dashboard</h2> -->
+                  <h1>Performance Dashboard</h1>
+                  <div class="tag">
+                    Videos combined across platforms — click a row for the
+                    breakdown
+                  </div>
+                </div>
+                <div class="updated">
+                  Data as of <b id="asof">—</b><br /><span id="asof-scope"
+                    >YouTube, Facebook, Instagram &amp; TikTok</span
+                  >
+                </div>
+              </header>
+
+              <div class="cards" id="cards"></div>
+
+              <div class="controls">
+                <div class="ptab" id="t-All" data-p="All">
+                  All <span class="cnt"></span>
+                </div>
+                <div class="ptab" id="t-YouTube" data-p="YouTube">
+                  YouTube <span class="cnt"></span>
+                </div>
+                <div class="ptab" id="t-Facebook" data-p="Facebook">
+                  Facebook <span class="cnt"></span>
+                </div>
+                <div class="ptab" id="t-Instagram" data-p="Instagram">
+                  Instagram <span class="cnt"></span>
+                </div>
+                <div class="ptab" id="t-TikTok" data-p="TikTok">
+                  TikTok <span class="cnt"></span>
+                </div>
+                <input
+                  type="search"
+                  id="search"
+                  placeholder="Search by title..."
+                />
               </div>
-            </div>
-            <div class="updated">
-              Data as of <b id="asof">—</b><br /><span id="asof-scope"
-                >YouTube, Facebook, Instagram &amp; TikTok</span
-              ><br /><a href="analytics.html" style="color:var(--accent2);font-size:12px;">View charts dashboard →</a>
-            </div>
-          </header>
 
-          <div class="cards" id="cards"></div>
+              <div class="colhead">
+                <span></span>
+                <span data-k="title">Video</span>
+                <span data-k="tot_v">Views</span>
+                <span data-k="tot_l">Likes</span>
+                <span data-k="tot_c">Comments</span>
+                <span data-k="tot_s">Shares</span>
+                <span data-k="er">Eng. rate</span>
+                <span>On</span>
+              </div>
+              <div class="list" id="list"></div>
 
-          <div class="controls">
-            <div class="ptab" id="t-All" data-p="All">
-              All <span class="cnt"></span>
+              <footer>
+                Combined by matching titles across YouTube, Facebook, Instagram
+                &amp; TikTok exports (automated title matching — a handful of
+                matches may be imprecise) · Totals sum each platform's own
+                metric definitions, which aren't identical · Eng. rate = (likes
+                + comments + shares) ÷ views, computed the same way for every
+                platform · Re-run exports and resend to refresh
+              </footer>
             </div>
-            <div class="ptab" id="t-YouTube" data-p="YouTube">
-              YouTube <span class="cnt"></span>
-            </div>
-            <div class="ptab" id="t-Facebook" data-p="Facebook">
-              Facebook <span class="cnt"></span>
-            </div>
-            <div class="ptab" id="t-Instagram" data-p="Instagram">
-              Instagram <span class="cnt"></span>
-            </div>
-            <div class="ptab" id="t-TikTok" data-p="TikTok">
-              TikTok <span class="cnt"></span>
-            </div>
-            <input type="search" id="search" placeholder="Search by title..." />
           </div>
-
-          <div class="colhead">
-            <span></span>
-            <span data-k="title">Video</span>
-            <span data-k="tot_v">Views</span>
-            <span data-k="tot_l">Likes</span>
-            <span data-k="tot_c">Comments</span>
-            <span data-k="tot_s">Shares</span>
-            <span data-k="er">Eng. rate</span>
-            <span>On</span>
-          </div>
-          <div class="list" id="list"></div>
-
-          <footer>
-            Combined by matching titles across YouTube, Facebook, Instagram
-            &amp; TikTok exports (automated title matching — a handful of
-            matches may be imprecise) · Totals sum each platform's own metric
-            definitions, which aren't identical · Eng. rate = (likes +
-            comments + shares) ÷ views, computed the same way for every
-            platform · Re-run exports and resend to refresh
-          </footer>
         </div>
 
         <script>
@@ -455,6 +573,25 @@
           }
           function fmtPct(n) {
             return n.toFixed(n >= 10 ? 1 : 2) + "%";
+          }
+
+          // Unify the "Published" date across platforms to DD/MM/YYYY.
+          // Each export hands back its own raw format - YouTube/TikTok give
+          // ISO (YYYY-MM-DD), Facebook/Instagram give US-style slashes
+          // (MM/DD/YYYY) - so this is display-only: it doesn't touch the
+          // underlying 'd' value, which stays in its original format
+          // because the unmerge/split logic keys off it.
+          function formatDate(d) {
+            if (!d) return null;
+            let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d); // ISO: YouTube, TikTok
+            if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+            m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(d); // US: Facebook, Instagram (MM/DD/YYYY)
+            if (m) {
+              const mm = m[1].padStart(2, "0"),
+                dd = m[2].padStart(2, "0");
+              return `${dd}/${mm}/${m[3]}`;
+            }
+            return d; // unrecognized format - show as-is rather than guess
           }
 
           // "Data as of" per platform - the most recent date actually present in
@@ -504,7 +641,8 @@
           // (e.g. YouTube's Standard + Short + Part N all count as YouTube).
           function platMetrics(g, p) {
             let m;
-            if (p === "All") m = { v: g.tot_v, l: g.tot_l, c: g.tot_c, s: g.tot_s };
+            if (p === "All")
+              m = { v: g.tot_v, l: g.tot_l, c: g.tot_c, s: g.tot_s };
             else {
               const entries = g.platforms[p] || [];
               m = entries.reduce(
@@ -596,7 +734,7 @@
               ? "padding-left:22px;color:var(--sub);font-size:11.5px;"
               : "";
             return `<tr><td style="${pad}">${label}</td><td class="num">${fmt(m.v)}</td><td class="num">${fmt(m.l)}</td>
-    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td class="num">${fmtPct(engRate(m))}</td><td>${m.d || "—"} &nbsp; ${link}</td></tr>`;
+    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td class="num">${fmtPct(engRate(m))}</td><td>${formatDate(m.d) || "—"} &nbsp; ${link}</td></tr>`;
           }
 
           function breakdownRow(p, entries, rowId) {

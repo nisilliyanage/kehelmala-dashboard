@@ -1,481 +1,1099 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Kehelmala Studios — Charts Dashboard</title>
-<style>
-:root{
-  --bg:#fafaf8; --panel:#ffffff; --ink:#181816; --sub:#8c8884;
-  --line:#ececea; --accent:#b8432f; --accent2:#2f4858; --chip:#f3f2ef;
-  box-sizing:border-box;
-}
-*{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;}
-.wrap{max-width:1360px;margin:0 auto;padding:32px 24px 64px;}
-header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--line);}
-h1{font-size:clamp(20px,2.6vw,26px);margin:0;font-weight:700;letter-spacing:-.01em;}
-.tag{color:var(--sub);font-size:13px;margin-top:5px;}
-.back{font-size:12.5px;color:var(--accent2);text-decoration:none;}
-.back:hover{text-decoration:underline;}
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Kehelmala Studios — Charts Dashboard</title>
+    <style>
+      :root {
+        --bg: #fafaf8;
+        --panel: #ffffff;
+        --ink: #181816;
+        --sub: #8c8884;
+        --line: #ececea;
+        --accent: #b8432f;
+        --accent2: #2f4858;
+        --chip: #f3f2ef;
+        box-sizing: border-box;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 1360px;
+        margin: 0 auto;
+        padding: 32px 24px 64px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--line);
+      }
+      /* h1 {
+        font-size: clamp(20px, 2.6vw, 26px);
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      } */
+      h1 {
+            /* font-size: clamp(20px, 2.6vw, 26px);
+            margin: 0;
+            font-weight: 700; */
+            letter-spacing: -0.01em;
+            font-size: 5rem !important;
+            color: #17223a !important;
+            font-weight: 800 !important;
+          }
+          h2 {
+            font-size: 1.5rem !important;
+            color: #17223a !important;
+            font-weight: 600 !important;
+            margin-top: 0.5rem !important;
+          }
+      .tag {
+        color: var(--sub);
+        font-size: 13px;
+        margin-top: 5px;
+      }
+      .back {
+        font-size: 12.5px;
+        color: var(--accent2);
+        text-decoration: none;
+      }
+      .back:hover {
+        text-decoration: underline;
+      }
 
-.layout{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start;}
-@media(max-width:860px){.layout{grid-template-columns:1fr;}}
+      /* Left sidebar: logo + nav between the two pages (Numbers / Charts). Same
+   block as dashboard_template.html, minus which link is .active. */
+      .app-shell {
+        display: flex;
+        min-height: 100vh;
+      }
+      .sidebar {
+        width: 190px;
+        flex: 0 0 190px;
+        background: #121212;
+        padding: 28px 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        overflow-y: auto;
+      }
+      .content {
+        flex: 1;
+        min-width: 0;
+        margin-left: 190px;
+      }
+      .sidebar .logo {
+        padding: 0 22px 24px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .sidebar .logo img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .sidenav {
+        display: flex;
+        flex-direction: column;
+      }
+      .sidenav-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 24px;
+        color: #9a968f;
+        text-decoration: none;
+        font-size: 13.5px;
+        font-weight: 600;
+        transition:
+          color 0.12s,
+          background 0.12s;
+      }
+      .sidenav-link:hover {
+        color: #fff;
+      }
+      .sidenav-link.active {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.07);
+      }
+      .sidenav-link .chev {
+        opacity: 0.55;
+        font-size: 13px;
+      }
+      @media (max-width: 860px) {
+        .app-shell {
+          flex-direction: column;
+        }
+        .sidebar {
+          position: static;
+          width: 100%;
+          flex: none;
+          padding: 14px 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .content {
+          margin-left: 0;
+        }
+        .sidebar .logo {
+          border-bottom: none;
+          margin-bottom: 0;
+          padding: 0 16px;
+          width: 150px;
+          flex: 0 0 150px;
+        }
+        .sidenav {
+          flex-direction: row;
+          padding-right: 10px;
+        }
+        .sidenav-link {
+          padding: 8px 12px;
+        }
+      }
 
-.slicer-panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;position:sticky;top:16px;}
-.slicer-label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--sub);font-weight:600;margin:0 0 10px;}
-.slicer-btn{display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:8px;border-radius:9px;border:1px solid var(--line);background:var(--chip);color:var(--sub);font-size:13px;font-weight:600;cursor:pointer;transition:background .12s,color .12s,border-color .12s;}
-.slicer-btn:last-child{margin-bottom:0;}
-.slicer-btn.on{color:#fff;border-color:transparent;}
+      .layout {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
 
-.main-col{display:flex;flex-direction:column;gap:24px;min-width:0;}
+      .slicer-panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        position: sticky;
+        top: 16px;
+      }
+      .slicer-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--sub);
+        font-weight: 600;
+        margin: 0 0 10px;
+      }
+      .slicer-btn {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        border-radius: 9px;
+        border: 1px solid var(--line);
+        background: var(--chip);
+        color: var(--sub);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background 0.12s,
+          color 0.12s,
+          border-color 0.12s;
+      }
+      .slicer-btn:last-child {
+        margin-bottom: 0;
+      }
+      .slicer-btn.on {
+        color: #fff;
+        border-color: transparent;
+      }
 
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
-.kpi{background:var(--panel);padding:18px 18px;}
-.kpi .n{font-size:24px;font-weight:800;letter-spacing:-.02em;}
-.kpi .l{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--sub);font-weight:600;margin-top:4px;}
+      .main-col {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        min-width: 0;
+      }
 
-section.block{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px 20px;}
-.block h3{margin:0 0 2px;font-size:14.5px;font-weight:700;}
-.block .sub{margin:0 0 14px;font-size:12px;color:var(--sub);}
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .kpi {
+        background: var(--panel);
+        padding: 18px 18px;
+      }
+      .kpi .n {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .kpi .l {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--sub);
+        font-weight: 600;
+        margin-top: 4px;
+      }
 
-.pie-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-@media(max-width:720px){.pie-row{grid-template-columns:1fr;}}
-.chart-card{min-width:0;}
-.chart-card h4{margin:0 0 8px;font-size:13px;font-weight:700;}
+      section.block {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px 20px 20px;
+      }
+      .block h3 {
+        margin: 0 0 2px;
+        font-size: 14.5px;
+        font-weight: 700;
+      }
+      .block .sub {
+        margin: 0 0 14px;
+        font-size: 12px;
+        color: var(--sub);
+      }
 
-.legend{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:10px;font-size:11.5px;color:var(--sub);}
-.legend .key{display:inline-flex;align-items:center;gap:5px;}
-.legend .sw{width:9px;height:9px;border-radius:2px;display:inline-block;}
+      .pie-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      @media (max-width: 720px) {
+        .pie-row {
+          grid-template-columns: 1fr;
+        }
+      }
+      .chart-card {
+        min-width: 0;
+      }
+      .chart-card h4 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        font-weight: 700;
+      }
 
-.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;}
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 10px;
+        font-size: 11.5px;
+        color: var(--sub);
+      }
+      .legend .key {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .legend .sw {
+        width: 9px;
+        height: 9px;
+        border-radius: 2px;
+        display: inline-block;
+      }
 
-select.vselect{width:100%;max-width:420px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13.5px;font-family:inherit;margin-bottom:16px;}
+      .grid4 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 18px;
+      }
 
-.empty-note{color:var(--sub);font-size:12.5px;text-align:center;padding:30px 0;}
+      select.vselect {
+        width: 100%;
+        max-width: 420px;
+        background: var(--panel);
+        color: var(--ink);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 13.5px;
+        font-family: inherit;
+        margin-bottom: 16px;
+      }
 
-footer{margin-top:28px;font-size:11.5px;color:var(--sub);text-align:center;line-height:1.6;}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>Kehelmala Studios</h1>
-      <div class="tag">Charts dashboard — filter by platform on the left</div>
+      .empty-note {
+        color: var(--sub);
+        font-size: 12.5px;
+        text-align: center;
+        padding: 30px 0;
+      }
+
+      footer {
+        margin-top: 28px;
+        font-size: 11.5px;
+        color: var(--sub);
+        text-align: center;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="logo">
+          <img src="logo.png" alt="Kehelmala Studios black and white logo" />
+        </div>
+        <nav class="sidenav">
+          <a class="sidenav-link" href="dashboard.html"
+            >Numbers <span class="chev">›</span></a
+          >
+          <a class="sidenav-link active" href="analytics.html"
+            >Charts <span class="chev">›</span></a
+          >
+        </nav>
+      </aside>
+      <div class="content">
+        <div class="wrap">
+          <header>
+            <div>
+              <h1>Charts Dashboard</h1>
+              <div class="tag">
+                Charts dashboard — filter by platform on the left
+              </div>
+            </div>
+          </header>
+
+          <div class="layout">
+            <aside class="slicer-panel">
+              <p class="slicer-label">Platforms</p>
+              <div id="platform-slicers"></div>
+            </aside>
+
+            <div class="main-col">
+              <div class="kpis" id="kpis"></div>
+
+              <section class="block">
+                <h3>Platform breakdown</h3>
+                <p class="sub">
+                  Legends at top · each pie uses its own colour scheme
+                </p>
+                <div class="pie-row">
+                  <div class="chart-card">
+                    <h4>Views by Platform</h4>
+                    <div id="pieViews"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Videos by Platform</h4>
+                    <div id="pieCount"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="block">
+                <h3>Metrics by platform — columns</h3>
+                <p class="sub">
+                  Views, likes, comments and shares each on their own scale
+                </p>
+                <div class="grid4">
+                  <div class="chart-card">
+                    <h4>Views</h4>
+                    <div id="colViews"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Likes</h4>
+                    <div id="colLikes"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Comments</h4>
+                    <div id="colComments"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Shares</h4>
+                    <div id="colShares"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="block">
+                <h3>Metrics by platform — bars</h3>
+                <p class="sub">Same data as above, horizontal</p>
+                <div class="grid4">
+                  <div class="chart-card">
+                    <h4>Views</h4>
+                    <div id="barViews"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Likes</h4>
+                    <div id="barLikes"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Comments</h4>
+                    <div id="barComments"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Shares</h4>
+                    <div id="barShares"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="block">
+                <h3>Engagement rate by platform</h3>
+                <p class="sub">
+                  (likes + comments + shares) ÷ views, per platform — the number
+                  that isn't skewed by one platform simply reaching more people
+                </p>
+                <div class="pie-row">
+                  <div class="chart-card">
+                    <h4>Column</h4>
+                    <div id="colEng"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Bar</h4>
+                    <div id="barEng"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="block">
+                <h3>Single video, by platform</h3>
+                <p class="sub">
+                  Pick a video to see how it performed on each platform
+                </p>
+                <select class="vselect" id="videoSelect"></select>
+                <div class="pie-row" style="margin-bottom: 18px">
+                  <div class="chart-card">
+                    <h4>Views by platform</h4>
+                    <div id="vidPie"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Totals</h4>
+                    <div
+                      id="vidTotals"
+                      style="
+                        font-size: 13px;
+                        color: var(--sub);
+                        line-height: 2;
+                        padding-top: 6px;
+                      "
+                    ></div>
+                  </div>
+                </div>
+                <div class="grid4">
+                  <div class="chart-card">
+                    <h4>Views (column)</h4>
+                    <div id="vidColViews"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Likes (column)</h4>
+                    <div id="vidColLikes"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Comments (column)</h4>
+                    <div id="vidColComments"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Shares (column)</h4>
+                    <div id="vidColShares"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Eng. rate (column)</h4>
+                    <div id="vidColEng"></div>
+                  </div>
+                </div>
+                <div class="grid4" style="margin-top: 18px">
+                  <div class="chart-card">
+                    <h4>Views (bar)</h4>
+                    <div id="vidBarViews"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Likes (bar)</h4>
+                    <div id="vidBarLikes"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Comments (bar)</h4>
+                    <div id="vidBarComments"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Shares (bar)</h4>
+                    <div id="vidBarShares"></div>
+                  </div>
+                  <div class="chart-card">
+                    <h4>Eng. rate (bar)</h4>
+                    <div id="vidBarEng"></div>
+                  </div>
+                </div>
+              </section>
+
+              <footer>
+                Figures reflect the platforms selected on the left · Charts are
+                drawn as plain inline SVG (no external chart library, nothing to
+                fail to load) · Re-run exports and resend to refresh
+              </footer>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <a class="back" href="dashboard.html">← Back to video list</a>
-  </header>
 
-  <div class="layout">
-    <aside class="slicer-panel">
-      <p class="slicer-label">Platforms</p>
-      <div id="platform-slicers"></div>
-    </aside>
+    <script>
+      const GROUPS = __DATA_PLACEHOLDER__;
+      const PLATS = ["YouTube", "Facebook", "Instagram", "TikTok"];
 
-    <div class="main-col">
-      <div class="kpis" id="kpis"></div>
+      // Scheme A — used for the Views pie, every column/bar chart, and the per-video
+      // charts, so a platform keeps one colour everywhere except the one pie that's
+      // deliberately given a second scheme (below), per the design-system palette
+      // method: fixed categorical order, validated with
+      // dataviz/scripts/validate_palette.js --pairs all (passes CVD + normal-vision
+      // floors for all 4 shown together, as a pie does).
+      const SCHEME_A = {
+        YouTube: "#0F172A",
+        Facebook: "#94A3B8",
+        Instagram: "#334155",
+        TikTok: "#E2E8F0",
+      };
+      // Scheme B — the "Videos by Platform" pie only, so the two pies are visually
+      // distinct at a glance, as requested. Also separately validated --pairs all.
+      const SCHEME_B = {
+        YouTube: "#0F172A",
+        Facebook: "#94A3B8",
+        Instagram: "#334155",
+        TikTok: "#E2E8F0",
+      };
 
-      <section class="block">
-        <h3>Platform breakdown</h3>
-        <p class="sub">Legends at top · each pie uses its own colour scheme</p>
-        <div class="pie-row">
-          <div class="chart-card">
-            <h4>Views by Platform</h4>
-            <div id="pieViews"></div>
-          </div>
-          <div class="chart-card">
-            <h4>Videos by Platform</h4>
-            <div id="pieCount"></div>
-          </div>
-        </div>
-      </section>
+      [...document.styleSheets].length; // no-op, keeps linters quiet
+      const root = document.documentElement.style;
+      root.setProperty("--c-youtube", SCHEME_A.YouTube);
+      root.setProperty("--c-facebook", SCHEME_A.Facebook);
+      root.setProperty("--c-instagram", SCHEME_A.Instagram);
+      root.setProperty("--c-tiktok", SCHEME_A.TikTok);
 
-      <section class="block">
-        <h3>Metrics by platform — columns</h3>
-        <p class="sub">Views, likes, comments and shares each on their own scale</p>
-        <div class="grid4">
-          <div class="chart-card"><h4>Views</h4><div id="colViews"></div></div>
-          <div class="chart-card"><h4>Likes</h4><div id="colLikes"></div></div>
-          <div class="chart-card"><h4>Comments</h4><div id="colComments"></div></div>
-          <div class="chart-card"><h4>Shares</h4><div id="colShares"></div></div>
-        </div>
-      </section>
+      let selected = new Set(PLATS); // multi-select platform slicer state
 
-      <section class="block">
-        <h3>Metrics by platform — bars</h3>
-        <p class="sub">Same data as above, horizontal</p>
-        <div class="grid4">
-          <div class="chart-card"><h4>Views</h4><div id="barViews"></div></div>
-          <div class="chart-card"><h4>Likes</h4><div id="barLikes"></div></div>
-          <div class="chart-card"><h4>Comments</h4><div id="barComments"></div></div>
-          <div class="chart-card"><h4>Shares</h4><div id="barShares"></div></div>
-        </div>
-      </section>
+      function fmt(n) {
+        return (n || 0).toLocaleString("en-US");
+      }
+      function abbrev(n) {
+        n = n || 0;
+        const sign = n < 0 ? "-" : "";
+        n = Math.abs(n);
+        if (n >= 1e6) return sign + (n / 1e6).toFixed(1) + "M";
+        if (n >= 1e3) return sign + (n / 1e3).toFixed(1) + "k";
+        return sign + String(n);
+      }
+      // Engagement rate = (likes + comments + shares) / views * 100, computed the
+      // same way for every platform. Raw totals favour whichever platform simply
+      // reaches the most people; this is the normalized number that doesn't.
+      function engRate(v, l, c, s) {
+        return v > 0 ? ((l + c + s) / v) * 100 : 0;
+      }
+      function pctFmt(n) {
+        return (n || 0).toFixed((n || 0) >= 10 ? 1 : 2) + "%";
+      }
+      // pick white or dark ink text on a colored fill, by the fill's luminance
+      function textOn(hex) {
+        const r = parseInt(hex.slice(1, 3), 16),
+          g = parseInt(hex.slice(3, 5), 16),
+          b = parseInt(hex.slice(5, 7), 16);
+        const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return lum > 0.62 ? "#181816" : "#ffffff";
+      }
 
-      <section class="block">
-        <h3>Engagement rate by platform</h3>
-        <p class="sub">(likes + comments + shares) ÷ views, per platform — the number that isn't skewed by one platform simply reaching more people</p>
-        <div class="pie-row">
-          <div class="chart-card">
-            <h4>Column</h4>
-            <div id="colEng"></div>
-          </div>
-          <div class="chart-card">
-            <h4>Bar</h4>
-            <div id="barEng"></div>
-          </div>
-        </div>
-      </section>
+      // ---------------------------------------------------------------------------
+      // Hand-rolled inline-SVG charts. No external chart library: nothing to fail
+      // to load, and the page is byte-for-byte what was tested. items = [{label,
+      // value, color}]. Every chart places its value labels INSIDE the mark, per
+      // the brief, and a legend (when asked for) sits above the chart.
+      // ---------------------------------------------------------------------------
 
-      <section class="block">
-        <h3>Single video, by platform</h3>
-        <p class="sub">Pick a video to see how it performed on each platform</p>
-        <select class="vselect" id="videoSelect"></select>
-        <div class="pie-row" style="margin-bottom:18px;">
-          <div class="chart-card">
-            <h4>Views by platform</h4>
-            <div id="vidPie"></div>
-          </div>
-          <div class="chart-card">
-            <h4>Totals</h4>
-            <div id="vidTotals" style="font-size:13px;color:var(--sub);line-height:2;padding-top:6px;"></div>
-          </div>
-        </div>
-        <div class="grid4">
-          <div class="chart-card"><h4>Views (column)</h4><div id="vidColViews"></div></div>
-          <div class="chart-card"><h4>Likes (column)</h4><div id="vidColLikes"></div></div>
-          <div class="chart-card"><h4>Comments (column)</h4><div id="vidColComments"></div></div>
-          <div class="chart-card"><h4>Shares (column)</h4><div id="vidColShares"></div></div>
-          <div class="chart-card"><h4>Eng. rate (column)</h4><div id="vidColEng"></div></div>
-        </div>
-        <div class="grid4" style="margin-top:18px;">
-          <div class="chart-card"><h4>Views (bar)</h4><div id="vidBarViews"></div></div>
-          <div class="chart-card"><h4>Likes (bar)</h4><div id="vidBarLikes"></div></div>
-          <div class="chart-card"><h4>Comments (bar)</h4><div id="vidBarComments"></div></div>
-          <div class="chart-card"><h4>Shares (bar)</h4><div id="vidBarShares"></div></div>
-          <div class="chart-card"><h4>Eng. rate (bar)</h4><div id="vidBarEng"></div></div>
-        </div>
-      </section>
+      function svgEl(tag, attrs) {
+        const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const k in attrs) el.setAttribute(k, attrs[k]);
+        return el;
+      }
 
-      <footer>Figures reflect the platforms selected on the left · Charts are drawn as plain inline SVG (no external chart library, nothing to fail to load) · Re-run exports and resend to refresh</footer>
-    </div>
-  </div>
-</div>
+      function renderLegend(container, items) {
+        const leg = document.createElement("div");
+        leg.className = "legend";
+        leg.innerHTML = items
+          .map(
+            (it) =>
+              `<span class="key"><span class="sw" style="background:${it.color}"></span>${it.label}</span>`,
+          )
+          .join("");
+        container.appendChild(leg);
+      }
 
-<script>
-const GROUPS = __DATA_PLACEHOLDER__;
-const PLATS = ['YouTube','Facebook','Instagram','TikTok'];
+      function renderPie(elId, items) {
+        const container = document.getElementById(elId);
+        container.innerHTML = "";
+        const shown = items.filter((it) => it.value > 0);
+        if (!shown.length) {
+          container.innerHTML =
+            '<div class="empty-note">No data for the selected platforms.</div>';
+          return;
+        }
 
-// Scheme A — used for the Views pie, every column/bar chart, and the per-video
-// charts, so a platform keeps one colour everywhere except the one pie that's
-// deliberately given a second scheme (below), per the design-system palette
-// method: fixed categorical order, validated with
-// dataviz/scripts/validate_palette.js --pairs all (passes CVD + normal-vision
-// floors for all 4 shown together, as a pie does).
-const SCHEME_A = { YouTube:'#6250d6', Facebook:'#eda100', Instagram:'#e87ba4', TikTok:'#008300' };
-// Scheme B — the "Videos by Platform" pie only, so the two pies are visually
-// distinct at a glance, as requested. Also separately validated --pairs all.
-const SCHEME_B = { YouTube:'#2a78d6', Facebook:'#eda100', Instagram:'#1baf7a', TikTok:'#e34948' };
+        renderLegend(container, shown); // legend ABOVE the chart, as requested
 
-[...document.styleSheets].length; // no-op, keeps linters quiet
-const root = document.documentElement.style;
-root.setProperty('--c-youtube', SCHEME_A.YouTube);
-root.setProperty('--c-facebook', SCHEME_A.Facebook);
-root.setProperty('--c-instagram', SCHEME_A.Instagram);
-root.setProperty('--c-tiktok', SCHEME_A.TikTok);
+        const size = 300,
+          cx = size / 2,
+          cy = size / 2 + 6,
+          r = 92;
+        const total = shown.reduce((a, it) => a + it.value, 0);
+        const svg = svgEl("svg", {
+          viewBox: `0 0 ${size} ${size + 12}`,
+          width: "100%",
+          height: "280",
+          role: "img",
+          "aria-label": "Pie chart",
+        });
 
-let selected = new Set(PLATS); // multi-select platform slicer state
+        let angle = -Math.PI / 2; // start at 12 o'clock
+        const outsideLabels = []; // small slices get a leader line instead of a cramped inside label
+        shown.forEach((it) => {
+          const frac = it.value / total;
+          const a0 = angle,
+            a1 = angle + frac * Math.PI * 2;
+          const x0 = cx + r * Math.cos(a0),
+            y0 = cy + r * Math.sin(a0);
+          const x1 = cx + r * Math.cos(a1),
+            y1 = cy + r * Math.sin(a1);
+          const large = a1 - a0 > Math.PI ? 1 : 0;
+          const d =
+            frac >= 0.9995
+              ? `M ${cx - r},${cy} A ${r},${r} 0 1 1 ${cx + r},${cy} A ${r},${r} 0 1 1 ${cx - r},${cy} Z`
+              : `M ${cx},${cy} L ${x0},${y0} A ${r},${r} 0 ${large} 1 ${x1},${y1} Z`;
+          svg.appendChild(
+            svgEl("path", {
+              d,
+              fill: it.color,
+              stroke: "#fff",
+              "stroke-width": 2,
+            }),
+          );
 
-function fmt(n){ return (n||0).toLocaleString('en-US'); }
-function abbrev(n){
-  n = n||0;
-  const sign = n<0 ? '-' : '';
-  n = Math.abs(n);
-  if(n >= 1e6) return sign+(n/1e6).toFixed(1)+'M';
-  if(n >= 1e3) return sign+(n/1e3).toFixed(1)+'k';
-  return sign+String(n);
-}
-// Engagement rate = (likes + comments + shares) / views * 100, computed the
-// same way for every platform. Raw totals favour whichever platform simply
-// reaches the most people; this is the normalized number that doesn't.
-function engRate(v,l,c,s){ return v>0 ? ((l+c+s)/v)*100 : 0; }
-function pctFmt(n){ return (n||0).toFixed((n||0)>=10?1:2)+'%'; }
-// pick white or dark ink text on a colored fill, by the fill's luminance
-function textOn(hex){
-  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  const lum = (0.299*r + 0.587*g + 0.114*b) / 255;
-  return lum > 0.62 ? '#181816' : '#ffffff';
-}
+          // Data label: inside the slice when it's wide enough to hold the
+          // text without crowding a neighbour; otherwise queued as an
+          // outside leader-line label (small adjacent slices - e.g. the
+          // last and first slice both meeting at 12 o'clock - would
+          // otherwise print their labels on top of each other).
+          const spanDeg = (frac * Math.PI * 2 * 180) / Math.PI;
+          const mid = (a0 + a1) / 2;
+          if (frac > 0.035) {
+            if (spanDeg >= 25) {
+              const lx = cx + r * 0.64 * Math.cos(mid),
+                ly = cy + r * 0.64 * Math.sin(mid);
+              const t = svgEl("text", {
+                x: lx,
+                y: ly,
+                fill: textOn(it.color),
+                "font-size": 12.5,
+                "font-weight": 700,
+                "text-anchor": "middle",
+                "dominant-baseline": "middle",
+                "font-family": "inherit",
+              });
+              t.textContent = abbrev(it.value);
+              svg.appendChild(t);
+            } else {
+              outsideLabels.push({ mid, value: it.value, color: it.color });
+            }
+          }
 
-// ---------------------------------------------------------------------------
-// Hand-rolled inline-SVG charts. No external chart library: nothing to fail
-// to load, and the page is byte-for-byte what was tested. items = [{label,
-// value, color}]. Every chart places its value labels INSIDE the mark, per
-// the brief, and a legend (when asked for) sits above the chart.
-// ---------------------------------------------------------------------------
+          angle = a1; // advance to where this slice ended, so the next one starts there instead of back at 12 o'clock
+        });
 
-function svgEl(tag, attrs){
-  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
-  for(const k in attrs) el.setAttribute(k, attrs[k]);
-  return el;
-}
+        // Outside labels: spread along the rim in angle order so two small
+        // slices next to each other never land on top of one another, each
+        // with a short leader line back to its own slice.
+        outsideLabels.sort((a, b) => a.mid - b.mid);
+        const minSep = (16 * Math.PI) / 180; // keep them at least ~16deg apart
+        outsideLabels.forEach((lab, i) => {
+          if (i > 0 && lab.mid - outsideLabels[i - 1].mid < minSep) {
+            lab.mid = outsideLabels[i - 1].mid + minSep;
+          }
+        });
+        outsideLabels.forEach((lab) => {
+          const lx1 = cx + (r - 2) * Math.cos(lab.mid),
+            ly1 = cy + (r - 2) * Math.sin(lab.mid);
+          const lx2 = cx + (r + 14) * Math.cos(lab.mid),
+            ly2 = cy + (r + 14) * Math.sin(lab.mid);
+          svg.appendChild(
+            svgEl("line", {
+              x1: lx1,
+              y1: ly1,
+              x2: lx2,
+              y2: ly2,
+              stroke: "var(--sub)",
+              "stroke-width": 1,
+            }),
+          );
+          const anchor =
+            Math.cos(lab.mid) > 0.15
+              ? "start"
+              : Math.cos(lab.mid) < -0.15
+                ? "end"
+                : "middle";
+          const t = svgEl("text", {
+            x: lx2 + Math.cos(lab.mid) * 3,
+            y: ly2 + Math.sin(lab.mid) * 3,
+            fill: "var(--ink)",
+            "font-size": 11.5,
+            "font-weight": 700,
+            "text-anchor": anchor,
+            "dominant-baseline": "middle",
+            "font-family": "inherit",
+          });
+          t.textContent = abbrev(lab.value);
+          svg.appendChild(t);
+        });
+        container.appendChild(svg);
+      }
 
-function renderLegend(container, items){
-  const leg = document.createElement('div');
-  leg.className = 'legend';
-  leg.innerHTML = items.map(it =>
-    `<span class="key"><span class="sw" style="background:${it.color}"></span>${it.label}</span>`).join('');
-  container.appendChild(leg);
-}
+      function renderColumns(elId, items, labelFmt) {
+        labelFmt = labelFmt || abbrev;
+        const container = document.getElementById(elId);
+        container.innerHTML = "";
+        const shown = items.filter((it) => true); // keep all selected platforms, even zero, for a stable layout
+        if (!shown.length) {
+          container.innerHTML =
+            '<div class="empty-note">No platforms selected.</div>';
+          return;
+        }
 
-function renderPie(elId, items){
-  const container = document.getElementById(elId);
-  container.innerHTML = '';
-  const shown = items.filter(it => it.value > 0);
-  if(!shown.length){ container.innerHTML = '<div class="empty-note">No data for the selected platforms.</div>'; return; }
+        const W = 300,
+          H = 210,
+          padTop = 10,
+          padBottom = 26,
+          padSide = 10;
+        const plotH = H - padTop - padBottom;
+        const max = Math.max(1, ...shown.map((it) => it.value));
+        const n = shown.length;
+        const gap = 14;
+        const barW = Math.min(44, (W - padSide * 2 - gap * (n - 1)) / n);
+        const totalW = barW * n + gap * (n - 1);
+        const startX = (W - totalW) / 2;
 
-  renderLegend(container, shown); // legend ABOVE the chart, as requested
+        const svg = svgEl("svg", {
+          viewBox: `0 0 ${W} ${H}`,
+          width: "100%",
+          height: "220",
+        });
+        svg.appendChild(
+          svgEl("line", {
+            x1: padSide,
+            y1: H - padBottom,
+            x2: W - padSide,
+            y2: H - padBottom,
+            stroke: "var(--line)",
+            "stroke-width": 1,
+          }),
+        );
 
-  const size = 260, cx = size/2, cy = size/2 + 6, r = 92;
-  const total = shown.reduce((a,it)=>a+it.value,0);
-  const svg = svgEl('svg', { viewBox:`0 0 ${size} ${size+12}`, width:'100%', height:'280', role:'img', 'aria-label':'Pie chart' });
+        shown.forEach((it, i) => {
+          const h = Math.max(2, (it.value / max) * plotH);
+          const x = startX + i * (barW + gap);
+          const y = H - padBottom - h;
+          const rx = Math.min(4, barW / 2);
+          const path = `M ${x},${y + h} L ${x},${y + rx} Q ${x},${y} ${x + rx},${y} L ${x + barW - rx},${y} Q ${x + barW},${y} ${x + barW},${y + rx} L ${x + barW},${y + h} Z`;
+          svg.appendChild(svgEl("path", { d: path, fill: it.color }));
+          if (h > 20) {
+            const t = svgEl("text", {
+              x: x + barW / 2,
+              y: y + 14,
+              fill: "#fff",
+              "font-size": 10.5,
+              "font-weight": 700,
+              "text-anchor": "middle",
+              "font-family": "inherit",
+            });
+            t.textContent = labelFmt(it.value);
+            svg.appendChild(t);
+          }
+          const lbl = svgEl("text", {
+            x: x + barW / 2,
+            y: H - padBottom + 14,
+            fill: "var(--sub)",
+            "font-size": 10,
+            "text-anchor": "middle",
+            "font-family": "inherit",
+          });
+          lbl.textContent = it.label;
+          svg.appendChild(lbl);
+        });
+        container.appendChild(svg);
+      }
 
-  let angle = -Math.PI/2; // start at 12 o'clock
-  shown.forEach(it=>{
-    const frac = it.value/total;
-    const a0 = angle, a1 = angle + frac*Math.PI*2;
-    const x0 = cx + r*Math.cos(a0), y0 = cy + r*Math.sin(a0);
-    const x1 = cx + r*Math.cos(a1), y1 = cy + r*Math.sin(a1);
-    const large = (a1-a0) > Math.PI ? 1 : 0;
-    const d = frac >= 0.9995
-      ? `M ${cx-r},${cy} A ${r},${r} 0 1 1 ${cx+r},${cy} A ${r},${r} 0 1 1 ${cx-r},${cy} Z`
-      : `M ${cx},${cy} L ${x0},${y0} A ${r},${r} 0 ${large} 1 ${x1},${y1} Z`;
-    svg.appendChild(svgEl('path', { d, fill: it.color, stroke:'#fff', 'stroke-width':2 }));
+      function renderBars(elId, items, labelFmt) {
+        labelFmt = labelFmt || abbrev;
+        const container = document.getElementById(elId);
+        container.innerHTML = "";
+        const shown = items;
+        if (!shown.length) {
+          container.innerHTML =
+            '<div class="empty-note">No platforms selected.</div>';
+          return;
+        }
 
-    // data label inside the slice, placed only if the slice is wide enough
-    // to hold it without crowding its neighbours
-    if(frac > 0.035){
-      const mid = (a0+a1)/2;
-      const lx = cx + r*0.64*Math.cos(mid), ly = cy + r*0.64*Math.sin(mid);
-      const t = svgEl('text', { x:lx, y:ly, fill: textOn(it.color), 'font-size':12.5, 'font-weight':700,
-        'text-anchor':'middle', 'dominant-baseline':'middle', 'font-family':'inherit' });
-      t.textContent = abbrev(it.value);
-      svg.appendChild(t);
-    }
-  });
-  container.appendChild(svg);
-}
+        const W = 320,
+          labelW = 62,
+          padRight = 14;
+        const rowH = 34,
+          gap = 10;
+        const n = shown.length;
+        const H = n * rowH + (n - 1) * gap + 10;
+        const plotW = W - labelW - padRight;
+        const max = Math.max(1, ...shown.map((it) => it.value));
 
-function renderColumns(elId, items, labelFmt){
-  labelFmt = labelFmt || abbrev;
-  const container = document.getElementById(elId);
-  container.innerHTML = '';
-  const shown = items.filter(it => true); // keep all selected platforms, even zero, for a stable layout
-  if(!shown.length){ container.innerHTML = '<div class="empty-note">No platforms selected.</div>'; return; }
+        const svg = svgEl("svg", {
+          viewBox: `0 0 ${W} ${H}`,
+          width: "100%",
+          height: Math.max(140, H),
+        });
 
-  const W = 300, H = 210, padTop = 10, padBottom = 26, padSide = 10;
-  const plotH = H - padTop - padBottom;
-  const max = Math.max(1, ...shown.map(it=>it.value));
-  const n = shown.length;
-  const gap = 14;
-  const barW = Math.min(44, (W - padSide*2 - gap*(n-1)) / n);
-  const totalW = barW*n + gap*(n-1);
-  const startX = (W - totalW)/2;
+        shown.forEach((it, i) => {
+          const y = i * (rowH + gap) + 4;
+          const w = Math.max(2, (it.value / max) * plotW);
+          const ry = Math.min(4, rowH / 2);
+          const x = labelW;
+          const path = `M ${x},${y} L ${x + w - ry},${y} Q ${x + w},${y} ${x + w},${y + ry} L ${x + w},${y + rowH - ry} Q ${x + w},${y + rowH} ${x + w - ry},${y + rowH} L ${x},${y + rowH} Z`;
+          svg.appendChild(svgEl("path", { d: path, fill: it.color }));
+          const lbl = svgEl("text", {
+            x: labelW - 8,
+            y: y + rowH / 2 + 4,
+            fill: "var(--sub)",
+            "font-size": 11,
+            "text-anchor": "end",
+            "font-family": "inherit",
+          });
+          lbl.textContent = it.label;
+          svg.appendChild(lbl);
+          if (w > 36) {
+            const t = svgEl("text", {
+              x: x + 10,
+              y: y + rowH / 2 + 4,
+              fill: "#fff",
+              "font-size": 11,
+              "font-weight": 700,
+              "font-family": "inherit",
+            });
+            t.textContent = labelFmt(it.value);
+            svg.appendChild(t);
+          }
+        });
+        container.appendChild(svg);
+      }
 
-  const svg = svgEl('svg', { viewBox:`0 0 ${W} ${H}`, width:'100%', height:'220' });
-  svg.appendChild(svgEl('line', { x1:padSide, y1:H-padBottom, x2:W-padSide, y2:H-padBottom, stroke:'var(--line)', 'stroke-width':1 }));
+      // --- platform slicer (vertical, multi-select) ---
+      function renderSlicers() {
+        const el = document.getElementById("platform-slicers");
+        el.innerHTML = PLATS.map(
+          (p) =>
+            `<button class="slicer-btn ${selected.has(p) ? "on" : ""}" data-p="${p}" style="${selected.has(p) ? `background:${SCHEME_A[p]}` : ""}">${p}</button>`,
+        ).join("");
+        [...el.querySelectorAll(".slicer-btn")].forEach((btn) => {
+          btn.onclick = () => {
+            const p = btn.dataset.p;
+            if (selected.has(p)) {
+              if (selected.size > 1) selected.delete(p);
+            } // keep at least one selected
+            else selected.add(p);
+            renderSlicers();
+            renderAll();
+          };
+        });
+      }
 
-  shown.forEach((it,i)=>{
-    const h = Math.max(2, (it.value/max) * plotH);
-    const x = startX + i*(barW+gap);
-    const y = H - padBottom - h;
-    const rx = Math.min(4, barW/2);
-    const path = `M ${x},${y+h} L ${x},${y+rx} Q ${x},${y} ${x+rx},${y} L ${x+barW-rx},${y} Q ${x+barW},${y} ${x+barW},${y+rx} L ${x+barW},${y+h} Z`;
-    svg.appendChild(svgEl('path', { d: path, fill: it.color }));
-    if(h > 20){
-      const t = svgEl('text', { x:x+barW/2, y:y+14, fill:'#fff', 'font-size':10.5, 'font-weight':700, 'text-anchor':'middle', 'font-family':'inherit' });
-      t.textContent = labelFmt(it.value);
-      svg.appendChild(t);
-    }
-    const lbl = svgEl('text', { x:x+barW/2, y:H-padBottom+14, fill:'var(--sub)', 'font-size':10, 'text-anchor':'middle', 'font-family':'inherit' });
-    lbl.textContent = it.label;
-    svg.appendChild(lbl);
-  });
-  container.appendChild(svg);
-}
+      // --- aggregate helpers, respecting the current platform selection ---
+      function platformTotals(metric) {
+        const out = {};
+        PLATS.forEach((p) => (out[p] = 0));
+        GROUPS.forEach((g) => {
+          PLATS.forEach((p) => {
+            if (!selected.has(p)) return;
+            (g.platforms[p] || []).forEach((e) => {
+              out[p] += e[metric];
+            });
+          });
+        });
+        return out;
+      }
+      function platformVideoCounts() {
+        const out = {};
+        PLATS.forEach((p) => (out[p] = 0));
+        GROUPS.forEach((g) =>
+          PLATS.forEach((p) => {
+            if (selected.has(p) && g.platforms[p] && g.platforms[p].length)
+              out[p]++;
+          }),
+        );
+        return out;
+      }
+      function platformEngRate() {
+        const v = platformTotals("v"),
+          l = platformTotals("l"),
+          c = platformTotals("c"),
+          s = platformTotals("s");
+        const out = {};
+        PLATS.forEach((p) => (out[p] = engRate(v[p], l[p], c[p], s[p])));
+        return out;
+      }
+      function kpiTotals() {
+        let v = 0,
+          l = 0,
+          c = 0,
+          s = 0,
+          nVideos = 0;
+        GROUPS.forEach((g) => {
+          let any = false;
+          PLATS.forEach((p) => {
+            if (!selected.has(p)) return;
+            (g.platforms[p] || []).forEach((e) => {
+              v += e.v;
+              l += e.l;
+              c += e.c;
+              s += e.s;
+              any = true;
+            });
+          });
+          if (any) nVideos++;
+        });
+        return { v, l, c, s, nVideos };
+      }
 
-function renderBars(elId, items, labelFmt){
-  labelFmt = labelFmt || abbrev;
-  const container = document.getElementById(elId);
-  container.innerHTML = '';
-  const shown = items;
-  if(!shown.length){ container.innerHTML = '<div class="empty-note">No platforms selected.</div>'; return; }
+      function toItems(totalsByPlat, colors) {
+        return PLATS.filter((p) => selected.has(p)).map((p) => ({
+          label: p,
+          value: totalsByPlat[p] || 0,
+          color: colors[p],
+        }));
+      }
 
-  const W = 320, labelW = 62, padRight = 14;
-  const rowH = 34, gap = 10;
-  const n = shown.length;
-  const H = n*rowH + (n-1)*gap + 10;
-  const plotW = W - labelW - padRight;
-  const max = Math.max(1, ...shown.map(it=>it.value));
+      function renderKpis() {
+        const t = kpiTotals();
+        const cards = [
+          ["Total videos", t.nVideos],
+          ["Total views", fmt(t.v)],
+          ["Total likes", fmt(t.l)],
+          ["Total comments", fmt(t.c)],
+          ["Total shares", fmt(t.s)],
+          ["Eng. rate", pctFmt(engRate(t.v, t.l, t.c, t.s))],
+        ];
+        document.getElementById("kpis").innerHTML = cards
+          .map(
+            ([l, n]) =>
+              `<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div></div>`,
+          )
+          .join("");
+      }
 
-  const svg = svgEl('svg', { viewBox:`0 0 ${W} ${H}`, width:'100%', height: Math.max(140, H) });
+      function renderGeneralCharts() {
+        renderPie("pieViews", toItems(platformTotals("v"), SCHEME_A));
+        renderPie("pieCount", toItems(platformVideoCounts(), SCHEME_B));
+        [
+          ["v", "Views"],
+          ["l", "Likes"],
+          ["c", "Comments"],
+          ["s", "Shares"],
+        ].forEach(([m, label]) => {
+          const items = toItems(platformTotals(m), SCHEME_A);
+          renderColumns("col" + label, items);
+          renderBars("bar" + label, items);
+        });
+        const engItems = toItems(platformEngRate(), SCHEME_A);
+        renderColumns("colEng", engItems, pctFmt);
+        renderBars("barEng", engItems, pctFmt);
+      }
 
-  shown.forEach((it,i)=>{
-    const y = i*(rowH+gap) + 4;
-    const w = Math.max(2, (it.value/max) * plotW);
-    const ry = Math.min(4, rowH/2);
-    const x = labelW;
-    const path = `M ${x},${y} L ${x+w-ry},${y} Q ${x+w},${y} ${x+w},${y+ry} L ${x+w},${y+rowH-ry} Q ${x+w},${y+rowH} ${x+w-ry},${y+rowH} L ${x},${y+rowH} Z`;
-    svg.appendChild(svgEl('path', { d: path, fill: it.color }));
-    const lbl = svgEl('text', { x:labelW-8, y:y+rowH/2+4, fill:'var(--sub)', 'font-size':11, 'text-anchor':'end', 'font-family':'inherit' });
-    lbl.textContent = it.label;
-    svg.appendChild(lbl);
-    if(w > 36){
-      const t = svgEl('text', { x:x+10, y:y+rowH/2+4, fill:'#fff', 'font-size':11, 'font-weight':700, 'font-family':'inherit' });
-      t.textContent = labelFmt(it.value);
-      svg.appendChild(t);
-    }
-  });
-  container.appendChild(svg);
-}
+      // --- single-video section ---
+      let sortedGroups = [];
+      function renderVideoSelect() {
+        const sel = document.getElementById("videoSelect");
+        sortedGroups = [...GROUPS].sort((a, b) => b.tot_v - a.tot_v);
+        sel.innerHTML = sortedGroups
+          .map((g, i) => `<option value="${i}">${g.title}</option>`)
+          .join("");
+        sel.onchange = () => renderVideoCharts(sortedGroups[sel.value]);
+        if (sortedGroups.length) renderVideoCharts(sortedGroups[0]);
+      }
 
-// --- platform slicer (vertical, multi-select) ---
-function renderSlicers(){
-  const el = document.getElementById('platform-slicers');
-  el.innerHTML = PLATS.map(p =>
-    `<button class="slicer-btn ${selected.has(p)?'on':''}" data-p="${p}" style="${selected.has(p)?`background:${SCHEME_A[p]}`:''}">${p}</button>`).join('');
-  [...el.querySelectorAll('.slicer-btn')].forEach(btn=>{
-    btn.onclick = ()=>{
-      const p = btn.dataset.p;
-      if(selected.has(p)){ if(selected.size>1) selected.delete(p); } // keep at least one selected
-      else selected.add(p);
+      function renderVideoCharts(g) {
+        const byPlat = { v: {}, l: {}, c: {}, s: {} };
+        PLATS.forEach((p) => {
+          const entries = selected.has(p) ? g.platforms[p] || [] : [];
+          byPlat.v[p] = entries.reduce((a, e) => a + e.v, 0);
+          byPlat.l[p] = entries.reduce((a, e) => a + e.l, 0);
+          byPlat.c[p] = entries.reduce((a, e) => a + e.c, 0);
+          byPlat.s[p] = entries.reduce((a, e) => a + e.s, 0);
+        });
+
+        renderPie("vidPie", toItems(byPlat.v, SCHEME_A));
+
+        const er = {};
+        PLATS.forEach(
+          (p) =>
+            (er[p] = engRate(
+              byPlat.v[p],
+              byPlat.l[p],
+              byPlat.c[p],
+              byPlat.s[p],
+            )),
+        );
+
+        const onPlats = PLATS.filter(
+          (p) => selected.has(p) && g.platforms[p] && g.platforms[p].length,
+        );
+        const totV = onPlats.reduce((a, p) => a + byPlat.v[p], 0),
+          totL = onPlats.reduce((a, p) => a + byPlat.l[p], 0);
+        const totC = onPlats.reduce((a, p) => a + byPlat.c[p], 0),
+          totS = onPlats.reduce((a, p) => a + byPlat.s[p], 0);
+        document.getElementById("vidTotals").innerHTML =
+          `<div><b style="color:var(--ink)">${g.title}</b></div>` +
+          `<div>On: ${onPlats.join(", ") || "—"}</div>` +
+          `<div>Views: ${fmt(totV)}</div>` +
+          `<div>Likes: ${fmt(totL)}</div>` +
+          `<div>Comments: ${fmt(totC)}</div>` +
+          `<div>Shares: ${fmt(totS)}</div>` +
+          `<div>Eng. rate: ${pctFmt(engRate(totV, totL, totC, totS))}</div>`;
+
+        renderColumns("vidColViews", toItems(byPlat.v, SCHEME_A));
+        renderColumns("vidColLikes", toItems(byPlat.l, SCHEME_A));
+        renderColumns("vidColComments", toItems(byPlat.c, SCHEME_A));
+        renderColumns("vidColShares", toItems(byPlat.s, SCHEME_A));
+        renderColumns("vidColEng", toItems(er, SCHEME_A), pctFmt);
+        renderBars("vidBarViews", toItems(byPlat.v, SCHEME_A));
+        renderBars("vidBarLikes", toItems(byPlat.l, SCHEME_A));
+        renderBars("vidBarComments", toItems(byPlat.c, SCHEME_A));
+        renderBars("vidBarShares", toItems(byPlat.s, SCHEME_A));
+        renderBars("vidBarEng", toItems(er, SCHEME_A), pctFmt);
+      }
+
+      function renderAll() {
+        renderKpis();
+        renderGeneralCharts();
+        const sel = document.getElementById("videoSelect");
+        if (sortedGroups.length) renderVideoCharts(sortedGroups[sel.value]);
+      }
+
       renderSlicers();
+      renderVideoSelect();
       renderAll();
-    };
-  });
-}
-
-// --- aggregate helpers, respecting the current platform selection ---
-function platformTotals(metric){
-  const out = {}; PLATS.forEach(p=>out[p]=0);
-  GROUPS.forEach(g=>{
-    PLATS.forEach(p=>{
-      if(!selected.has(p)) return;
-      (g.platforms[p]||[]).forEach(e=>{ out[p]+=e[metric]; });
-    });
-  });
-  return out;
-}
-function platformVideoCounts(){
-  const out = {}; PLATS.forEach(p=>out[p]=0);
-  GROUPS.forEach(g=> PLATS.forEach(p=>{ if(selected.has(p) && g.platforms[p] && g.platforms[p].length) out[p]++; }));
-  return out;
-}
-function platformEngRate(){
-  const v = platformTotals('v'), l = platformTotals('l'), c = platformTotals('c'), s = platformTotals('s');
-  const out = {};
-  PLATS.forEach(p=> out[p] = engRate(v[p], l[p], c[p], s[p]));
-  return out;
-}
-function kpiTotals(){
-  let v=0,l=0,c=0,s=0, nVideos=0;
-  GROUPS.forEach(g=>{
-    let any=false;
-    PLATS.forEach(p=>{
-      if(!selected.has(p)) return;
-      (g.platforms[p]||[]).forEach(e=>{ v+=e.v; l+=e.l; c+=e.c; s+=e.s; any=true; });
-    });
-    if(any) nVideos++;
-  });
-  return {v,l,c,s,nVideos};
-}
-
-function toItems(totalsByPlat, colors){
-  return PLATS.filter(p=>selected.has(p)).map(p=>({label:p, value:totalsByPlat[p]||0, color:colors[p]}));
-}
-
-function renderKpis(){
-  const t = kpiTotals();
-  const cards = [['Total videos', t.nVideos],['Total views', fmt(t.v)],['Total likes', fmt(t.l)],
-                 ['Total comments', fmt(t.c)],['Total shares', fmt(t.s)],
-                 ['Eng. rate', pctFmt(engRate(t.v, t.l, t.c, t.s))]];
-  document.getElementById('kpis').innerHTML = cards.map(([l,n])=>
-    `<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
-}
-
-function renderGeneralCharts(){
-  renderPie('pieViews', toItems(platformTotals('v'), SCHEME_A));
-  renderPie('pieCount', toItems(platformVideoCounts(), SCHEME_B));
-  [['v','Views'],['l','Likes'],['c','Comments'],['s','Shares']].forEach(([m,label])=>{
-    const items = toItems(platformTotals(m), SCHEME_A);
-    renderColumns('col'+label, items);
-    renderBars('bar'+label, items);
-  });
-  const engItems = toItems(platformEngRate(), SCHEME_A);
-  renderColumns('colEng', engItems, pctFmt);
-  renderBars('barEng', engItems, pctFmt);
-}
-
-// --- single-video section ---
-let sortedGroups = [];
-function renderVideoSelect(){
-  const sel = document.getElementById('videoSelect');
-  sortedGroups = [...GROUPS].sort((a,b)=>b.tot_v-a.tot_v);
-  sel.innerHTML = sortedGroups.map((g,i)=>`<option value="${i}">${g.title}</option>`).join('');
-  sel.onchange = ()=> renderVideoCharts(sortedGroups[sel.value]);
-  if(sortedGroups.length) renderVideoCharts(sortedGroups[0]);
-}
-
-function renderVideoCharts(g){
-  const byPlat = { v:{}, l:{}, c:{}, s:{} };
-  PLATS.forEach(p=>{
-    const entries = (selected.has(p) ? (g.platforms[p]||[]) : []);
-    byPlat.v[p] = entries.reduce((a,e)=>a+e.v,0);
-    byPlat.l[p] = entries.reduce((a,e)=>a+e.l,0);
-    byPlat.c[p] = entries.reduce((a,e)=>a+e.c,0);
-    byPlat.s[p] = entries.reduce((a,e)=>a+e.s,0);
-  });
-
-  renderPie('vidPie', toItems(byPlat.v, SCHEME_A));
-
-  const er = {};
-  PLATS.forEach(p=> er[p] = engRate(byPlat.v[p], byPlat.l[p], byPlat.c[p], byPlat.s[p]));
-
-  const onPlats = PLATS.filter(p=>selected.has(p) && g.platforms[p] && g.platforms[p].length);
-  const totV = onPlats.reduce((a,p)=>a+byPlat.v[p],0), totL = onPlats.reduce((a,p)=>a+byPlat.l[p],0);
-  const totC = onPlats.reduce((a,p)=>a+byPlat.c[p],0), totS = onPlats.reduce((a,p)=>a+byPlat.s[p],0);
-  document.getElementById('vidTotals').innerHTML =
-    `<div><b style="color:var(--ink)">${g.title}</b></div>` +
-    `<div>On: ${onPlats.join(', ') || '—'}</div>` +
-    `<div>Views: ${fmt(totV)}</div>` +
-    `<div>Likes: ${fmt(totL)}</div>` +
-    `<div>Comments: ${fmt(totC)}</div>` +
-    `<div>Shares: ${fmt(totS)}</div>` +
-    `<div>Eng. rate: ${pctFmt(engRate(totV, totL, totC, totS))}</div>`;
-
-  renderColumns('vidColViews', toItems(byPlat.v, SCHEME_A));
-  renderColumns('vidColLikes', toItems(byPlat.l, SCHEME_A));
-  renderColumns('vidColComments', toItems(byPlat.c, SCHEME_A));
-  renderColumns('vidColShares', toItems(byPlat.s, SCHEME_A));
-  renderColumns('vidColEng', toItems(er, SCHEME_A), pctFmt);
-  renderBars('vidBarViews', toItems(byPlat.v, SCHEME_A));
-  renderBars('vidBarLikes', toItems(byPlat.l, SCHEME_A));
-  renderBars('vidBarComments', toItems(byPlat.c, SCHEME_A));
-  renderBars('vidBarShares', toItems(byPlat.s, SCHEME_A));
-  renderBars('vidBarEng', toItems(er, SCHEME_A), pctFmt);
-}
-
-function renderAll(){
-  renderKpis();
-  renderGeneralCharts();
-  const sel = document.getElementById('videoSelect');
-  if(sortedGroups.length) renderVideoCharts(sortedGroups[sel.value]);
-}
-
-renderSlicers();
-renderVideoSelect();
-renderAll();
-</script>
-</body>
+    </script>
+  </body>
 </html>

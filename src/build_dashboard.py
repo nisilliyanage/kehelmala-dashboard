@@ -6,11 +6,14 @@ __DATA_PLACEHOLDER__ and writes dist/dashboard.html.
 """
 import json
 import os
+import shutil
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GROUPED_PATH = os.path.join(BASE, 'data', 'processed', 'grouped.json')
 TEMPLATE_PATH = os.path.join(BASE, 'templates', 'dashboard_template.html')
 OUT_PATH = os.path.join(BASE, 'dist', 'dashboard.html')
+LOGO_SRC = os.path.join(BASE, 'assets', 'logo.png')
+LOGO_OUT = os.path.join(BASE, 'dist', 'logo.png')
 
 
 def main():
@@ -30,6 +33,15 @@ def main():
     with open(OUT_PATH, 'w', encoding='utf-8') as f:
         f.write(out)
     print(f'Wrote {OUT_PATH} ({len(out)} bytes)')
+
+    # The sidebar logo (dashboard.html and analytics.html both reference
+    # "logo.png" as a sibling file) - copied fresh from assets/ on every
+    # build so dist/ never goes stale against it.
+    if os.path.exists(LOGO_SRC):
+        shutil.copyfile(LOGO_SRC, LOGO_OUT)
+        print(f'Copied {LOGO_SRC} -> {LOGO_OUT}')
+    else:
+        print(f'Note: {LOGO_SRC} not found - sidebar will show the "K" placeholder instead')
 
 
 if __name__ == '__main__':

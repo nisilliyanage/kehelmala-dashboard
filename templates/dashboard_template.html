@@ -472,7 +472,7 @@
               />
             </div>
             <nav class="sidenav">
-              <a class="sidenav-link active" href="dashboard.html"
+              <a class="sidenav-link active" href="index.html"
                 >Numbers <span class="chev">›</span></a
               >
               <a class="sidenav-link" href="analytics.html"
@@ -575,17 +575,15 @@
             return n.toFixed(n >= 10 ? 1 : 2) + "%";
           }
 
-          // Unify the "Published" date across platforms to DD/MM/YYYY.
-          // Each export hands back its own raw format - YouTube/TikTok give
-          // ISO (YYYY-MM-DD), Facebook/Instagram give US-style slashes
-          // (MM/DD/YYYY) - so this is display-only: it doesn't touch the
-          // underlying 'd' value, which stays in its original format
-          // because the unmerge/split logic keys off it.
+          // Show every date as DD/MM/YYYY. The pipeline stores dates as ISO
+          // (YYYY-MM-DD); the US-style branch only covers data built before
+          // that, and a TikTok date with no year (e.g. "April 24") is shown
+          // as-is rather than guessed.
           function formatDate(d) {
             if (!d) return null;
-            let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d); // ISO: YouTube, TikTok
+            let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d); // ISO
             if (m) return `${m[3]}/${m[2]}/${m[1]}`;
-            m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(d); // US: Facebook, Instagram (MM/DD/YYYY)
+            m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(d); // legacy US (MM/DD/YYYY)
             if (m) {
               const mm = m[1].padStart(2, "0"),
                 dd = m[2].padStart(2, "0");
@@ -596,8 +594,8 @@
 
           // "Data as of" per platform - the most recent date actually present in
           // that platform's own export (never today's date, never a guess: a
-          // platform with no determinable date shows "undefined" rather than
-          // inventing one). Computed once since the underlying data doesn't
+          // platform with no determinable date shows "Not available" rather
+          // than inventing one). Computed once since the underlying data doesn't
           // change at runtime; re-read on each tab switch by updateAsOf().
           const LATEST_BY_PLATFORM = {};
           PLATS.forEach((p) => {
@@ -615,7 +613,8 @@
             const scope = document.getElementById("asof-scope");
             if (activePlatform !== "All") {
               el.textContent =
-                LATEST_BY_PLATFORM[activePlatform] || "undefined";
+                formatDate(LATEST_BY_PLATFORM[activePlatform]) ||
+                "Not available";
               scope.textContent = activePlatform + " export";
               return;
             }
@@ -624,7 +623,8 @@
             // the same date. Platforms genuinely export on different days (e.g.
             // Facebook/Instagram exports often lag YouTube's), so showing one
             // blended "latest" would misrepresent platforms that are actually
-            // older - "undefined" is the honest answer when they disagree.
+            // older - "Varies by platform" is the honest answer when they
+            // disagree (each platform's tab shows its own date).
             const values = PLATS.map((p) => LATEST_BY_PLATFORM[p]).filter(
               (v) => v !== null,
             );
@@ -633,7 +633,9 @@
               values.every((v) => v === values[0]) &&
               values.length ===
                 PLATS.filter((p) => LATEST_BY_PLATFORM[p] !== null).length;
-            el.textContent = allAgree ? values[0] : "undefined";
+            el.textContent = allAgree
+              ? formatDate(values[0])
+              : "Varies by platform";
           }
 
           // Per-row metrics for the CURRENTLY ACTIVE platform tab. 'All' sums every

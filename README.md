@@ -4,8 +4,13 @@ Combines YouTube, Facebook, Instagram and TikTok analytics exports into one
 dashboard showing each real-world video's performance once, merged across
 platforms (not duplicated per-platform).
 
-Live dashboard: published as a Claude Artifact (link shared separately —
-ask Claude to re-share it, or open your last Claude conversation).
+The dashboard has two pages:
+
+- **Numbers** (`docs/index.html`) — every video, its views/likes/comments/
+  shares per platform and combined, searchable and filterable by platform.
+- **Charts** (`docs/analytics.html`) — chart-based view of the same data.
+
+Live dashboard: hosted on GitHub Pages from this repo's `docs/` folder.
 
 ## Quick start
 
@@ -15,25 +20,67 @@ python run.py
 ```
 
 This reads everything in `data/raw/{youtube,facebook,instagram,tiktok}/`,
-matches videos across platforms, and writes `dist/dashboard.html` — a
-single self-contained file you can open directly in a browser, or publish
-(see "Hosting" below).
+matches videos across platforms, and writes the finished site into `docs/`
+(`index.html`, `analytics.html`, `logo.png`). Open `docs/index.html` in a
+browser to check it.
 
 ## Updating with a fresh week's exports
 
 1. Export fresh data from each platform (see "Where each file comes from"
    below) and drop the files into the matching `data/raw/<platform>/`
-   folder. You can leave old files in place — exports with overlapping
-   date ranges are de-duplicated automatically (Facebook/Instagram, by
-   Post ID, keeping the most recent).
+   folder. You can leave old Facebook/Instagram/TikTok files in place —
+   exports with overlapping date ranges are de-duplicated automatically
+   (Facebook/Instagram by Post ID, keeping the most recent). For YouTube,
+   only the newest export is used.
 2. Run:
    ```bash
    python run.py
    ```
-3. Open `dist/dashboard.html` and spot-check it. If you spot two videos
-   that should be one but weren't merged automatically, use the merge
-   tool below — you don't need to touch any code.
-4. Publish the new `dist/dashboard.html` (see "Hosting").
+3. Open `docs/index.html` and spot-check it. If you spot two videos that
+   should be one but weren't merged automatically (or one that was merged
+   by mistake), use the merge/unmerge tools below — you don't need to touch
+   any code.
+4. Publish: commit and push. GitHub Pages serves `docs/` directly, so the
+   live dashboard updates a minute or two after the push.
+   ```bash
+   git add -A
+   git commit -m "Weekly update"
+   git push
+   ```
+
+## Where each file comes from
+
+| Folder | Source | Notes |
+|---|---|---|
+| `data/raw/youtube/` | YouTube Studio export (see below) | Only the newest export is used |
+| `data/raw/facebook/` | Meta Business Suite insights export (CSV) | Only rows whose "Post type" is a video are kept |
+| `data/raw/instagram/` | Meta Business Suite insights export (CSV) | Only "IG reel" / video rows are kept |
+| `data/raw/tiktok/` | TikTok analytics export (CSV) | — |
+
+### YouTube Studio export
+
+1. YouTube Studio → **Analytics** → **Advanced mode**.
+2. Choose the **Content** view (per video), and set the date range to
+   **Lifetime** — otherwise views only cover the chosen period.
+3. Make sure these columns are included: **Views, Likes, Comments added,
+   Shares, Duration** (any missing column shows as 0 on the dashboard, and
+   a warning prints when you run `python run.py`).
+4. **Export current view** → **Comma-separated values (.csv)**.
+5. Unzip it and drop the **whole folder** into `data/raw/youtube/`. Keep the
+   folder's own name (e.g. `Content 2024-04-13_2026-10-19 Kehelmala Studios`)
+   — the end date in that name is where YouTube's "Data as of" date comes
+   from.
+
+The pipeline reads the `Table data.csv` inside the newest export folder
+(`Chart data.csv` / `Totals.csv` are ignored). Each video's link is built
+from its video ID.
+
+*Transition note:* until the first full Studio export (with Likes/Comments)
+is dropped in, the older combined workbook `youtube_export_with_shares.xlsx`
+(built by the API scripts in `legacy_scripts/`) is used instead, so the
+dashboard doesn't lose YouTube likes/comments in the meantime. Once a full
+Studio export is in place, the `.xlsx`, the old top-level `Table data.csv`
+and `legacy_scripts/` can be deleted.
 
 ## Merging two videos manually
 
@@ -55,7 +102,7 @@ It will:
 3. Ask which title the merged result should use (press Enter to accept
    the suggested default — whichever of the two has more views).
 4. Combine them (adds up views/likes/comments/shares, keeps every
-   platform entry from both) and rebuild `dist/dashboard.html`
+   platform entry from both) and rebuild both pages in `docs/`
    immediately so you can check the result.
 
 The merge is also written to `data/processed/manual_group_merges.json`,
@@ -72,17 +119,33 @@ If you'd rather hand-edit, the older mechanism still works too: add an
 entry to `MANUAL_TITLE_MERGES` in `config.py` (useful when you want to
 match on a short, distinctive substring rather than the full titles).
 
-## Where each file comes from
+## Undoing a wrong merge
 
-| Folder | Source | Notes |
-|---|---|---|
-| `data/raw/youtube/` | `legacy_scripts/yt_pull.py` + `yt_merge_shares.py` → a combined `.xlsx`, **or** YouTube Studio's own CSV export (`Table_data.csv`) as a fallback | The `.xlsx` includes likes/comments/a real "Data as of" date; the CSV-only fallback does not (likes/comments show 0, and the "as of" date is left blank) — a warning prints when this fallback is used |
-| `data/raw/facebook/` | Meta Business Suite insights export (CSV) | Only rows whose "Post type" is a video are kept |
-| `data/raw/instagram/` | Meta Business Suite insights export (CSV) | Only "IG reel" / video rows are kept |
-| `data/raw/tiktok/` | TikTok analytics export (CSV) | — |
+If the matcher (or an earlier manual merge) lumped together posts that are
+actually different videos, split them back apart:
+
+```bash
+python src/unmerge_videos_cli.py
+```
+
+It lists every video that has entries from more than one post, lets you
+pick one, shows each individual post inside it, and asks which ones to pull
+out into a separate video (and what to call it). Both pages in `docs/` are
+rebuilt immediately.
+
+The split is recorded in `data/processed/manual_group_splits.json` and
+those posts are never merged back together on future runs, however similar
+their titles look.
+
+Non-interactive form:
+```bash
+python src/unmerge_videos_cli.py --group "Title" --take "YouTube:1,Facebook:0" --new-title "New Title"
+```
 
 ## Other manual overrides (`config.py`)
 
+- `TITLE_RENAMES` — change how a video's title is displayed on the
+  dashboard (key = current title, value = the title you want).
 - `MANUAL_TITLE_MERGES` — force-merge by matching a substring in the raw
   title/caption (for titles with zero word overlap, e.g. different
   languages for the same video).
@@ -91,65 +154,71 @@ match on a short, distinctive substring rather than the full titles).
 - `MANUAL_TITLE_TEXT_FIXES` — replace a raw title/caption (e.g. one
   written in Sinhala/Tamil script) with a clean English display title.
 - `JACCARD_MATCH_THRESHOLD` / `STOPWORDS` / `CONTAINMENT_MIN_WORD_LEN` —
-  tuning knobs for the automatic title-matching heuristic, in
-  `src/cluster_videos.py`.
+  tuning knobs for the automatic title-matching heuristic.
 
 All of these survive a fresh `python run.py` — nothing here gets
 overwritten by re-running the pipeline.
 
+## Dates
+
+Every date on the dashboard is shown as **DD/MM/YYYY**. Internally the
+pipeline stores all dates as `YYYY-MM-DD`, whatever format each platform
+exports them in.
+
+TikTok's export gives no year. Each TikTok video's year is filled from the
+matching video's full date on another platform; a TikTok video with no
+match on another platform shows its date without a year (e.g. "April 24").
+
 ## "Data as of"
 
 Each platform's "as of" date comes only from that platform's own export
-data — never from today's date / when you happened to run the tool:
+— never from today's date / when you happened to run the tool:
 
-- **YouTube** — the "Data as of" column in the combined `.xlsx`.
+- **YouTube** — the end date in the Studio export's folder name.
 - **Facebook / Instagram** — the end date in the export's own filename
-  (e.g. `...Sep-28-2026-FB3.csv` → `2026-09-28`).
-- **TikTok** — the CSV's own "Post time" column, formatted as `DD/MM/YYYY`.
-  TikTok's export gives no year, so each TikTok video's year is filled from
-  the matching video's full date on another platform in the same group.
-  The export's `"Time"` value is used for the TikTok "as of" date.
+  (e.g. `...Sep-28-2026-FB3.csv` → 28/09/2026).
+- **TikTok** — the export's own "Time" column. It has no year, so the year
+  is the earliest one that puts it on or after the newest TikTok post.
 
 On the dashboard: viewing a specific platform tab shows that platform's
-own latest date. Viewing "All" shows a date only if every platform's
-latest date is identical; otherwise it shows "undefined" rather than
-blending dates that may not represent the same snapshot.
+own latest date ("Not available" if its export didn't include one).
+Viewing "All" shows a single date when every platform's latest date is the
+same, and "Varies by platform" otherwise — click a platform tab to see each
+one's date.
 
 ## Hosting the dashboard
 
-`dist/dashboard.html` is a single self-contained file — no server, no
-build step, no dependencies to host. Options:
+The site is served by GitHub Pages from the `docs/` folder of the `main`
+branch (repo **Settings → Pages → Build and deployment → Deploy from a
+branch → `main` / `/docs`**). `python run.py` writes straight into `docs/`,
+so publishing is just commit + push. `docs/.nojekyll` tells Pages to serve
+the files as-is.
 
-- **Just share the file** — email it or drop it in shared drive; anyone
-  can open it directly in a browser.
-- **GitHub Pages** — push this repo (or just `dist/dashboard.html`
-  renamed to `index.html`) to a GitHub repo, enable Pages in Settings,
-  get a public URL.
-- **Netlify Drop** (netlify.com/drop) — drag `dist/dashboard.html` onto
-  the page, get a shareable URL in seconds, no account required.
-- **Claude Artifact** — ask Claude to publish `dist/dashboard.html` as an
-  artifact; you'll get a shareable link that can be updated in place on
-  every re-run.
+GitHub Pages on a free account requires the repository to be public, which
+means the raw exports in `data/raw/` are publicly visible too.
 
 ## Project layout
 
 ```
 config.py                    Manual overrides (see above)
-run.py                       Runs the full pipeline (merge → cluster → build)
+run.py                       Runs the full pipeline (merge → cluster → build both pages)
 requirements.txt
+assets/
+  logo.png                   Sidebar logo, copied into docs/ on every build
 src/
   merge_platforms.py         Step 1: reads data/raw/*, writes data/processed/all_posts.json
   cluster_videos.py          Step 2: matches videos across platforms, writes data/processed/grouped.json
-  build_dashboard.py         Step 3: injects grouped.json into the template, writes dist/dashboard.html
-  merge_videos_cli.py        CLI tool to manually merge two videos (see above)
+  build_dashboard.py         Step 3: builds docs/index.html (Numbers page) + copies the logo
+  build_analytics.py         Step 4: builds docs/analytics.html (Charts page)
+  merge_videos_cli.py        CLI tool to manually merge two videos
+  unmerge_videos_cli.py      CLI tool to split a wrong merge back apart
 templates/
-  dashboard_template.html    The dashboard page (data-free; __DATA_PLACEHOLDER__ is replaced at build time)
+  dashboard_template.html    Numbers page (data-free; __DATA_PLACEHOLDER__ is replaced at build time)
+  analytics_template.html    Charts page (same placeholder mechanism)
 data/
   raw/{youtube,facebook,instagram,tiktok}/   Drop fresh exports here
-  processed/                 Intermediate JSON (all_posts.json, grouped.json, manual_group_merges.json)
-dist/
-  dashboard.html             The built, shareable dashboard
-legacy_scripts/
-  yt_pull.py, yt_export.py, yt_merge_shares.py   Original YouTube API scripts that build the combined .xlsx
-CHANGELOG.md                 Full history of changes made to this project
+  processed/                 Intermediate JSON (all_posts.json, grouped.json, manual merge/split records)
+docs/                        The built site that GitHub Pages serves — don't edit by hand, it's overwritten on every build
+legacy_scripts/              Original YouTube API scripts (only needed for the old .xlsx; see transition note above)
+CHANGELOG.md                 History of changes made to this project
 ```

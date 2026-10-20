@@ -22,6 +22,43 @@ RAW_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 OUT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'processed', 'all_posts.json')
 
 EXPORT_DATE_RE = re.compile(r'([A-Za-z]+-\d{1,2}-\d{4})_([A-Za-z]+-\d{1,2}-\d{4})')
+# YouTube Studio names its export folder/zip after the date range, e.g.
+# "Content 2024-04-13_2026-10-19 Kehelmala Studios".
+ISO_RANGE_RE = re.compile(r'(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})')
+
+
+def _to_iso(value):
+    """Normalises any full date the exports give us to YYYY-MM-DD, so every platform
+    stores dates the same way (the dashboard then shows them as DD/MM/YYYY).
+    Handles ISO, Meta's US-style 'MM/DD/YYYY hh:mm', and YouTube Studio's
+    'Jun 30, 2025'. Returns None for anything without a year (e.g. TikTok's
+    'April 24') so callers can keep the raw text instead of guessing."""
+    import datetime
+    if isinstance(value, (datetime.datetime, datetime.date)):
+        return value.strftime('%Y-%m-%d')
+    text = str(value or '').strip()
+    if not text:
+        return None
+    m = re.match(r'^(\d{4})-(\d{1,2})-(\d{1,2})', text)
+    if m:
+        return f'{int(m[1]):04d}-{int(m[2]):02d}-{int(m[3]):02d}'
+    m = re.match(r'^(\d{1,2})/(\d{1,2})/(\d{4})', text)
+    if m:
+        return f'{int(m[3]):04d}-{int(m[1]):02d}-{int(m[2]):02d}'
+    for fmt in ('%b %d, %Y', '%B %d, %Y', '%d %b %Y', '%d %B %Y'):
+        try:
+            return datetime.datetime.strptime(text, fmt).strftime('%Y-%m-%d')
+        except ValueError:
+            pass
+    return None
+
+
+def _to_int(value):
+    """Numbers in exports can be blank, floats ('12.0') or comma-grouped ('1,234')."""
+    try:
+        return int(float(str(value).replace(',', ''))) if value not in (None, '') else 0
+    except ValueError:
+        return 0
 
 
 def _asof_from_filename(filename):
@@ -40,14 +77,76 @@ def _asof_from_filename(filename):
         return None
 
 
+STUDIO_LIKES_COLS = ('Likes',)
+STUDIO_COMMENTS_COLS = ('Comments added', 'Comments')
+
+
+def _studio_tables():
+    """Every YouTube Studio 'Table data.csv' under data/raw/youtube/ (including inside
+    an unzipped export folder), newest export first. Studio's zip also contains
+    'Chart data.csv' and 'Totals.csv' — those are deliberately ignored."""
+    paths = glob.glob(os.path.join(RAW_DIR, 'youtube', '**', 'Table data*.csv'), recursive=True)
+
+    def sort_key(path):
+        return (_studio_asof(path) or '', os.path.getmtime(path))
+    return sorted(paths, key=sort_key, reverse=True)
+
+
+def _studio_asof(path):
+    """The end of the export's date range, taken from the export's own folder/file
+    name (Studio names it e.g. 'Content 2024-04-13_2026-10-19 ...'). None if the name
+    has no date range — never today's date."""
+    rel = os.path.relpath(path, os.path.join(RAW_DIR, 'youtube'))
+    m = ISO_RANGE_RE.search(rel)
+    if m:
+        return m.group(2)
+    return _asof_from_filename(rel)
+
+
+def _studio_headers(path):
+    with open(path, newline='', encoding='utf-8-sig') as f:
+        return next(csv.reader(f), [])
+
+
+def _first_col(row, names):
+    for n in names:
+        if n in row:
+            return row[n]
+    return None
+
+
 def load_youtube():
+    """YouTube comes from YouTube Studio's own export (Advanced mode -> Export ->
+    CSV), using the newest 'Table data.csv' found in data/raw/youtube/.
+
+    The older combined .xlsx (from legacy_scripts/yt_pull.py) is only used when the
+    newest Studio CSV predates the switch and has no Likes/Comments columns — so the
+    dashboard doesn't lose YouTube likes/comments until the first full Studio export
+    is dropped in."""
+    tables = _studio_tables()
+    newest = tables[0] if tables else None
+    has_engagement = bool(newest) and any(
+        c in _studio_headers(newest) for c in STUDIO_LIKES_COLS + STUDIO_COMMENTS_COLS)
+
+    xlsx_files = glob.glob(os.path.join(RAW_DIR, 'youtube', '*.xlsx'))
+    if newest and has_engagement:
+        return load_youtube_studio_csv(newest)
+    if xlsx_files:
+        print('NOTE: the YouTube Studio CSV has no Likes/Comments columns, so the older '
+              f'combined workbook ({os.path.basename(xlsx_files[0])}) is used for YouTube. '
+              'Drop in a full Studio export to switch over.')
+        return _load_youtube_legacy_xlsx(xlsx_files[0])
+    if newest:
+        return load_youtube_studio_csv(newest)
+    print('WARNING: no YouTube data found in data/raw/youtube/ (no "Table data.csv"). '
+          'YouTube will be missing from the dashboard.')
+    return []
+
+
+def _load_youtube_legacy_xlsx(xlsx_path):
     """Reads the Videos + Metrics sheets of the combined xlsx export (built by the
     legacy yt_pull.py / yt_merge_shares.py scripts). asof comes ONLY from the xlsx's
     own 'Data as of' column; None if that column is blank."""
-    xlsx_files = glob.glob(os.path.join(RAW_DIR, 'youtube', '*.xlsx'))
-    if not xlsx_files:
-        return load_youtube_from_studio_csv_only()
-
     # Pre-load durations and extra info from Studio CSV(s) if present
     durations_by_id = {}
     durations_by_title = {}
@@ -79,7 +178,7 @@ def load_youtube():
 
     import datetime
     import openpyxl
-    wb = openpyxl.load_workbook(xlsx_files[0], data_only=True)
+    wb = openpyxl.load_workbook(xlsx_path, data_only=True)
     posts = []
 
     if 'Metrics' in wb.sheetnames and 'Videos' in wb.sheetnames:
@@ -224,44 +323,46 @@ def load_youtube():
     return posts
 
 
-def load_youtube_from_studio_csv_only():
-    """Fallback when only YouTube Studio's Table data.csv is present (no combined xlsx
-    yet). Gives views/shares/duration but NOT likes/comments (0), and has NO date field
-    usable as 'Data as of', so asof is left as None rather than guessed."""
-    csv_files = glob.glob(os.path.join(RAW_DIR, 'youtube', '*.csv'))
+def load_youtube_studio_csv(path):
+    """Reads one YouTube Studio 'Table data.csv'. For the dashboard to show everything,
+    the export should use the 'Lifetime' date range and include the Views, Likes,
+    Comments added, Shares and Duration columns; any missing column just shows as 0."""
+    headers = _studio_headers(path)
+    missing = [label for label, cols in (('Likes', STUDIO_LIKES_COLS),
+                                         ('Comments', STUDIO_COMMENTS_COLS),
+                                         ('Shares', ('Shares',)))
+               if not any(c in headers for c in cols)]
+    if missing:
+        print(f'WARNING: the YouTube Studio export has no {", ".join(missing)} column(s) - '
+              'those will show as 0 for YouTube. Add them in Studio before exporting.')
+    asof = _studio_asof(path)
+    if asof is None:
+        print("WARNING: couldn't tell the YouTube export date (keep the export's own "
+              'folder name, e.g. "Content 2024-04-13_2026-10-19 ...", when you drop it in) - '
+              "YouTube's \"Data as of\" will show as not available.")
+    print(f'YouTube: reading {os.path.relpath(path, RAW_DIR)}')
+
     posts = []
-    if not csv_files:
-        print('WARNING: no YouTube data found in data/raw/youtube/ (no .xlsx or Table data.csv). '
-              'YouTube will be missing from the dashboard.')
-        return posts
-
-    print('WARNING: no combined .xlsx found for YouTube — falling back to Table data.csv only. '
-          'Likes and comments will show as 0 for YouTube until you re-run yt_pull.py / '
-          'yt_merge_shares.py and drop the .xlsx into data/raw/youtube/.')
-
-    with open(csv_files[0], newline='', encoding='utf-8-sig') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            title = row.get('Video title') or row.get('Content') or ''
-            if not title or row.get('Content', '').strip() == 'Total':
+    with open(path, newline='', encoding='utf-8-sig') as f:
+        for row in csv.DictReader(f):
+            cid = (row.get('Content') or '').strip()
+            title = (row.get('Video title') or '').strip()
+            if not title or cid == 'Total':
                 continue
-            duration = row.get('Duration')
-            try:
-                duration_sec = int(float(duration)) if duration else None
-            except ValueError:
-                duration_sec = None
+            url = row.get('Video URL') or (f'https://www.youtube.com/watch?v={cid}' if cid else '')
+            duration = _to_int(row.get('Duration')) or None
             posts.append({
                 'platform': 'YouTube',
-                'title': title.strip(),
-                'permalink': row.get('Video URL', ''),
-                'views': int(float(row.get('Views', 0) or 0)),
-                'likes': 0,
-                'comments': 0,
-                'shares': int(float(row.get('Shares', 0) or 0)) if 'Shares' in row else 0,
-                'date': (row.get('Video publish time') or '')[:10] or None,
-                'asof': None,
-                'duration_sec': duration_sec,
-                'post_id': row.get('Video URL') or row.get('Content') or title,
+                'title': title,
+                'permalink': url,
+                'views': _to_int(row.get('Views')),
+                'likes': _to_int(_first_col(row, STUDIO_LIKES_COLS)),
+                'comments': _to_int(_first_col(row, STUDIO_COMMENTS_COLS)),
+                'shares': _to_int(row.get('Shares')),
+                'date': _to_iso(row.get('Video publish time')),
+                'asof': asof,
+                'duration_sec': duration,
+                'post_id': url or title,
                 'post_type': 'video',
             })
     return posts
@@ -290,7 +391,7 @@ def _meta_posts(platform, subdir, video_type_values):
                     'likes': int(float(row.get('Likes') or row.get('Reactions') or 0)),
                     'comments': int(float(row.get('Comments') or 0)),
                     'shares': int(float(row.get('Shares') or 0)),
-                    'date': (row.get('Publish time') or row.get('Date') or '')[:10] or None,
+                    'date': _to_iso(row.get('Publish time') or row.get('Date')),
                     'asof': asof,
                     'post_id': pid,
                     'post_type': ptype,

@@ -14,7 +14,7 @@ It will:
      that cluster_videos.py re-applies every time you re-run the pipeline on fresh
      weekly exports, so you never have to redo a merge.
   5. Apply the merge to the current data/processed/grouped.json immediately and
-     rebuild dist/dashboard.html, so you can see the result right away.
+     rebuild the dashboard in docs/, so you can see the result right away.
 
 You can also run it non-interactively:
     python src/merge_videos_cli.py --a "Title One" --b "Title Two" --result "Title One"
@@ -92,8 +92,11 @@ def do_merge(groups, title_a, title_b, result_title):
 
 def rebuild_dashboard():
     import subprocess
-    result = subprocess.run([sys.executable, os.path.join(BASE, 'src', 'build_dashboard.py')], cwd=BASE)
-    return result.returncode == 0
+    for step in ('build_dashboard.py', 'build_analytics.py'):
+        result = subprocess.run([sys.executable, os.path.join(BASE, 'src', step)], cwd=BASE)
+        if result.returncode != 0:
+            return False
+    return True
 
 
 def run_interactive():
@@ -137,9 +140,9 @@ def run_interactive():
     ok = rebuild_dashboard()
     print(f'\nMerged. grouped.json updated, merge recorded in {os.path.relpath(MANUAL_GROUP_MERGES_PATH, BASE)}.')
     if ok:
-        print('dist/dashboard.html rebuilt — publish it to update the live dashboard.')
+        print('docs/ rebuilt — commit and push to update the live dashboard.')
     else:
-        print('Rebuild of dist/dashboard.html failed — check the error above.')
+        print('Rebuild of docs/ failed — check the error above.')
 
 
 def run_noninteractive(args):

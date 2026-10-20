@@ -13,4 +13,4 @@ for step in STEPS:
         print(f'{step} failed, stopping.')
         sys.exit(result.returncode)
 
-print('\nDone. Open dist/dashboard.html or publish it.')
+print('\nDone. Open docs/index.html to check it, then commit and push to publish.')

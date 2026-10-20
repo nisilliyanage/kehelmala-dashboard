@@ -75,6 +75,29 @@ def _resolve_tiktok_years(by_platform):
             post['date'] = date.replace(year=years.pop()).isoformat()
 
 
+def _resolve_tiktok_asof(groups):
+    """TikTok's export date ('Time', e.g. 'September 28') has no year either. The
+    export can't predate the newest post in it, so take the earliest year that puts
+    the export date on/after the latest TikTok post date already resolved above.
+    Left as-is if no TikTok post has a full date to anchor on."""
+    entries = [e for g in groups for e in g['platforms'].get('TikTok', [])]
+    post_dates = [d for d in (_date_parts(e.get('d')) for e in entries) if d and d.year != 2000]
+    if not post_dates:
+        return
+    newest = max(post_dates)
+    for e in entries:
+        asof = _date_parts(e.get('asof'))
+        if not asof or asof.year != 2000:
+            continue
+        try:
+            resolved = asof.replace(year=newest.year)
+            if resolved < newest:
+                resolved = asof.replace(year=newest.year + 1)
+        except ValueError:  # Feb 29 in a non-leap year
+            continue
+        e['asof'] = resolved.isoformat()
+
+
 def strip_hashtags(text):
     return HASHTAG_RE.sub('', text or '')
 
@@ -514,6 +537,7 @@ def main():
 
     clusters = cluster(posts)
     groups = build_groups(clusters)
+    _resolve_tiktok_asof(groups)
     groups = apply_manual_group_merges(groups)
     groups = apply_title_renames(groups)
     groups.sort(key=lambda g: -g['tot_v'])

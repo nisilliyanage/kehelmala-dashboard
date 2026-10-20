@@ -1,12 +1,59 @@
 # Changelog
 
-Record of every change made to the dashboard, kept so the local codebase
-(zip) can be regenerated with everything included whenever it's next
-requested, without re-deriving these from scratch.
+Record of changes made to the dashboard, newest first.
 
-This file is published alongside the dashboard as a second file in the
-same artifact, specifically so it survives independently of any one
-session's disk.
+## 2026-10-20
+
+- **The build now publishes straight to GitHub Pages' folder.** `python run.py`
+  writes `docs/index.html` (Numbers page), `docs/analytics.html` (Charts page)
+  and `docs/logo.png`, so publishing is just commit + push. The old `dist/`
+  folder is gone, and the sidebar links now point at `index.html` instead of
+  `dashboard.html`. Added `docs/.nojekyll` so Pages serves files as-is.
+- **The merge/unmerge CLIs now rebuild the Charts page too.** Before, they only
+  rebuilt the Numbers page, so the Charts page went stale after a manual merge
+  until the next full `python run.py`.
+- **YouTube now comes from YouTube Studio's own CSV export.**
+  - Reads the newest `Table data.csv` under `data/raw/youtube/` (an unzipped
+    Studio export folder works as-is); `Chart data.csv` / `Totals.csv` are
+    ignored.
+  - Picks up Likes, Comments added and Shares when they're in the export, and
+    warns about any that are missing.
+  - Builds each video's link from its ID (Studio's table has no URL column).
+  - Fixed publish dates: Studio writes them as `"Jun 30, 2025"`, which the old
+    fallback cut down to `"Jun 30, 20"`.
+  - "Data as of" comes from the end date in the export folder's name
+    (`Content 2024-04-13_2026-10-19 ...`).
+  - The old API-built `.xlsx` is still used until a Studio export with
+    Likes/Comments columns is dropped in, so YouTube likes/comments don't drop
+    to 0 during the switch.
+- **All dates now show as DD/MM/YYYY, including "Data as of".** Every date is
+  stored as `YYYY-MM-DD` in the pipeline. Facebook/Instagram used to be stored
+  as US-style `MM/DD/YYYY` and only reformatted for display. TikTok's yearless
+  export date (e.g. "September 28") now gets its year from the export's own post
+  dates, so it can be compared with the other platforms.
+- **"Data as of" wording:** "All" shows "Varies by platform" (instead of
+  "undefined") when the platforms' export dates differ. A single platform with
+  no export date shows "Not available".
+- Added `.gitignore` (Python caches, virtualenv, editor files) and stopped
+  tracking `__pycache__/`.
+- README: covers the Charts page, the unmerge tool, `TITLE_RENAMES`, the
+  YouTube Studio export steps and the GitHub Pages setup.
+
+## 2026-10-13
+
+- Added the Charts page (`templates/analytics_template.html`, built by
+  `src/build_analytics.py`) alongside the Numbers page, with sidebar navigation
+  and the studio logo.
+
+## 2026-10-09
+
+- Added `src/unmerge_videos_cli.py` to split a wrong merge back apart; splits
+  are recorded in `data/processed/manual_group_splits.json` and respected on
+  every future run.
+- Unified the dashboard's "Published" date display to DD/MM/YYYY; TikTok's
+  yearless dates take their year from the same video on another platform.
+- Added `TITLE_RENAMES` to `config.py` for changing display titles.
+- Moved the published dashboard to `docs/index.html` for GitHub Pages.
 
 ## 2026-10-07
 
@@ -32,9 +79,7 @@ session's disk.
     use (`cluster_videos._merge_two_groups`), so a CLI merge and a
     pipeline-applied merge produce an identical result.
   - No dashboard content changed with this update — it's a backend-only
-    addition, so the published dashboard itself is untouched. This entry
-    (and the full source) will be included the next time the zipped
-    codebase is sent.
+    addition, so the published dashboard itself is untouched.
 
 ## 2026-10-06 (later)
 

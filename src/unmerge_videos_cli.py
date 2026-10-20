@@ -13,7 +13,7 @@ It will:
      post / Instagram post / TikTok post it currently contains), numbered.
   4. Ask which entries to pull OUT into their own, separate group.
   5. Ask what title the new, split-off group should have.
-  6. Split them out, recompute both groups' totals, and rebuild dist/dashboard.html
+  6. Split them out, recompute both groups' totals, and rebuild the dashboard in docs/
      immediately so you can check the result.
 
 The split is recorded in data/processed/manual_group_splits.json as a block-list:
@@ -148,8 +148,11 @@ def _clean_stale_merge_record(original_title):
 
 def rebuild_dashboard():
     import subprocess
-    result = subprocess.run([sys.executable, os.path.join(BASE, 'src', 'build_dashboard.py')], cwd=BASE)
-    return result.returncode == 0
+    for step in ('build_dashboard.py', 'build_analytics.py'):
+        result = subprocess.run([sys.executable, os.path.join(BASE, 'src', step)], cwd=BASE)
+        if result.returncode != 0:
+            return False
+    return True
 
 
 def do_split(groups, group_title, entries_to_move, new_title):
@@ -219,9 +222,9 @@ def run_interactive():
           f'({new_group["tot_v"]:,} views).')
     print(f'Recorded in {os.path.relpath(MANUAL_GROUP_SPLITS_PATH, BASE)} so this split survives future runs.')
     if ok:
-        print('dist/dashboard.html rebuilt — publish it to update the live dashboard.')
+        print('docs/ rebuilt — commit and push to update the live dashboard.')
     else:
-        print('Rebuild of dist/dashboard.html failed — check the error above.')
+        print('Rebuild of docs/ failed — check the error above.')
 
 
 def run_noninteractive(args):

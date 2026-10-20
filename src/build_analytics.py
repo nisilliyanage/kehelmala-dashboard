@@ -2,7 +2,7 @@
 Builds the second, chart-based analytics page.
 
 Reads data/processed/grouped.json (same data the main list dashboard uses) and
-injects it into templates/analytics_template.html, writing dist/analytics.html.
+injects it into templates/analytics_template.html, writing docs/analytics.html.
 Run as part of run.py, right after build_dashboard.py.
 """
 import json
@@ -11,7 +11,7 @@ import os
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GROUPED_PATH = os.path.join(BASE, 'data', 'processed', 'grouped.json')
 TEMPLATE_PATH = os.path.join(BASE, 'templates', 'analytics_template.html')
-OUT_PATH = os.path.join(BASE, 'dist', 'analytics.html')
+OUT_PATH = os.path.join(BASE, 'docs', 'analytics.html')
 
 
 def main():

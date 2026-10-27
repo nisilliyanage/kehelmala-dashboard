@@ -429,7 +429,50 @@ def load_tiktok():
                     'post_id': row.get('Video link') or title,
                     'post_type': 'video',
                 })
+    return _merge_tiktok_public(posts, load_tiktok_public())
+
+
+def load_tiktok_public():
+    """TikTok's own export only lists the top 15 videos, so the rest come from the
+    channel's public profile, saved as data/raw/tiktok/public/tiktok_public_<date>.json
+    (one file per collection date). Only the newest file is used; older ones are kept
+    as dated backups. asof is the date in that filename."""
+    files = sorted(glob.glob(os.path.join(RAW_DIR, 'tiktok', 'public', 'tiktok_public_*.json')))
+    if not files:
+        return []
+    path = files[-1]
+    m = re.search(r'(\d{4}-\d{2}-\d{2})', os.path.basename(path))
+    asof = m.group(1) if m else None
+    with open(path, encoding='utf-8') as f:
+        items = json.load(f)
+    posts = []
+    for it in items:
+        link = it.get('link') or f'https://www.tiktok.com/@kehelmalastudios/video/{it["id"]}'
+        posts.append({
+            'platform': 'TikTok',
+            'title': it.get('title') or '',
+            'permalink': link,
+            'views': _to_int(it.get('views')),
+            'likes': _to_int(it.get('likes')),
+            'comments': _to_int(it.get('comments')),
+            'shares': _to_int(it.get('shares')),
+            'date': it.get('date'),
+            'asof': asof,
+            'post_id': link,
+            'post_type': 'video',
+            'source': 'public profile',
+        })
     return posts
+
+
+def _merge_tiktok_public(export_posts, public_posts):
+    """A video in both the official export and the public profile keeps the export's
+    numbers: the public page rounds anything over ~10K (1,592,137 shows as 1.6M), the
+    export is exact."""
+    by_link = {p['permalink']: p for p in public_posts}
+    for p in export_posts:
+        by_link[p['permalink']] = p
+    return list(by_link.values())
 
 
 def _dedupe_by_pid(posts):

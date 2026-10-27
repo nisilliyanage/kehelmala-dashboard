@@ -16,8 +16,11 @@ It will:
   5. Apply the merge to the current data/processed/grouped.json immediately and
      rebuild the dashboard in docs/, so you can see the result right away.
 
+After the second video it offers to add more (3+ videos can be merged in one go).
+
 You can also run it non-interactively:
     python src/merge_videos_cli.py --a "Title One" --b "Title Two" --result "Title One"
+    python src/merge_videos_cli.py --a "One" --b "Two" --also "Three" --result "One"
 """
 import argparse
 import json
@@ -84,8 +87,17 @@ def resolve_title(groups, token, label):
     return None
 
 
-def do_merge(groups, title_a, title_b, result_title):
-    groups = cluster_videos._merge_two_groups(groups, title_a, title_b, result_title)
+def do_merge(groups, titles, result_title):
+    """Merges every group in `titles` into one called `result_title`. Each step is
+    logged as (previous result, next title) so replaying the log never depends on an
+    intermediate title that no longer exists."""
+    log = load_merge_log()
+    current = titles[0]
+    for nxt in titles[1:]:
+        groups = cluster_videos._merge_two_groups(groups, current, nxt, result_title)
+        log.append({'title_a': current, 'title_b': nxt, 'result_title': result_title})
+        current = result_title
+    save_merge_log(log)
     groups.sort(key=lambda g: -g['tot_v'])
     return groups
 
@@ -117,25 +129,36 @@ def run_interactive():
         print('Those are the same group already — nothing to merge.')
         return
 
-    ga = next(g for g in groups if g['title'].lower() == title_a.lower())
-    gb = next(g for g in groups if g['title'].lower() == title_b.lower())
-    default_result = title_a if ga['tot_v'] >= gb['tot_v'] else title_b
+    titles = [title_a, title_b]
+    while True:
+        tok = input('Another video to add to this merge? (number/title, blank to finish): ').strip()
+        if not tok:
+            break
+        t = resolve_title(groups, tok, 'the next video')
+        if not t:
+            continue
+        if t.lower() in (x.lower() for x in titles):
+            print('Already in this merge.')
+            continue
+        titles.append(t)
 
-    print(f'\nMerging:\n  A) {title_a}  ({ga["tot_v"]:,} views)\n  B) {title_b}  ({gb["tot_v"]:,} views)')
+    by_title = {g['title'].lower(): g for g in groups}
+    gs = [by_title[t.lower()] for t in titles]
+    default_result = max(gs, key=lambda g: g['tot_v'])['title']
+
+    print('\nMerging:')
+    for t, g in zip(titles, gs):
+        print(f'  - {t}  ({g["tot_v"]:,} views)')
     result_title = input(f'Resulting title to use [{default_result}]: ').strip() or default_result
 
-    confirm = input(f'\nMerge "{title_a}" + "{title_b}" -> "{result_title}"? [y/N] ').strip().lower()
+    confirm = input(f'\nMerge {len(titles)} videos -> "{result_title}"? [y/N] ').strip().lower()
     if confirm != 'y':
         print('Cancelled.')
         return
 
-    groups = do_merge(groups, title_a, title_b, result_title)
+    groups = do_merge(groups, titles, result_title)
     with open(GROUPED_PATH, 'w', encoding='utf-8') as f:
         json.dump(groups, f, ensure_ascii=False, indent=2)
-
-    log = load_merge_log()
-    log.append({'title_a': title_a, 'title_b': title_b, 'result_title': result_title})
-    save_merge_log(log)
 
     ok = rebuild_dashboard()
     print(f'\nMerged. grouped.json updated, merge recorded in {os.path.relpath(MANUAL_GROUP_MERGES_PATH, BASE)}.')
@@ -147,22 +170,21 @@ def run_interactive():
 
 def run_noninteractive(args):
     groups = load_groups()
-    title_a = resolve_title(groups, args.a, '--a')
-    title_b = resolve_title(groups, args.b, '--b')
-    if not title_a or not title_b:
+    titles = [resolve_title(groups, t, label)
+              for t, label in [(args.a, '--a'), (args.b, '--b')] + [(t, '--also') for t in args.also]]
+    if not all(titles):
         sys.exit(1)
-    result_title = args.result or title_a
+    if len({t.lower() for t in titles}) != len(titles):
+        print('The same video was given more than once.')
+        sys.exit(1)
+    result_title = args.result or titles[0]
 
-    groups = do_merge(groups, title_a, title_b, result_title)
+    groups = do_merge(groups, titles, result_title)
     with open(GROUPED_PATH, 'w', encoding='utf-8') as f:
         json.dump(groups, f, ensure_ascii=False, indent=2)
 
-    log = load_merge_log()
-    log.append({'title_a': title_a, 'title_b': title_b, 'result_title': result_title})
-    save_merge_log(log)
-
     ok = rebuild_dashboard()
-    print(f'Merged "{title_a}" + "{title_b}" -> "{result_title}".')
+    print(f'Merged {" + ".join(chr(34) + t + chr(34) for t in titles)} -> "{result_title}".')
     if not ok:
         sys.exit(1)
 
@@ -171,6 +193,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--a', help='First video title (or list number) — skips interactive prompts')
     parser.add_argument('--b', help='Second video title (or list number)')
+    parser.add_argument('--also', action='append', default=[], help='Extra video to merge in (repeatable)')
     parser.add_argument('--result', help='Resulting title to use (defaults to --a)')
     args = parser.parse_args()
 

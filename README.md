@@ -55,7 +55,29 @@ browser to check it.
 | `data/raw/youtube/` | YouTube Studio export (see below) | Only the newest export is used |
 | `data/raw/facebook/` | Meta Business Suite insights export (CSV) | Only rows whose "Post type" is a video are kept |
 | `data/raw/instagram/` | Meta Business Suite insights export (CSV) | Only "IG reel" / video rows are kept |
-| `data/raw/tiktok/` | TikTok analytics export (CSV) | — |
+| `data/raw/tiktok/` | TikTok analytics export (CSV) | Only covers the top 15 videos |
+| `data/raw/tiktok/public/` | TikTok public profile (JSON) | Every other public video; newest file is used |
+
+### TikTok public profile data
+
+TikTok's analytics export only includes the 15 best-performing videos. The
+rest are read from the channel's public profile page
+(tiktok.com/@kehelmalastudios), one video page at a time, and saved as
+`data/raw/tiktok/public/tiktok_public_<date>.json`. That date becomes
+TikTok's "Data as of". Each file is a list of
+`{id, title, date, views, likes, comments, shares, saves}` (hashtags are
+dropped from titles; the link is built from the id).
+
+- Only the newest file is used; older ones stay as dated backups.
+- **Public numbers are rounded.** TikTok's public pages round anything
+  above roughly 10K to three significant figures (1,592,137 views shows as
+  1,600,000). Smaller counts are exact.
+- So when a video is in both the export and the profile file, the export's
+  exact numbers are used.
+- Posts TikTok hides from logged-out visitors aren't on the public profile,
+  so they still show "Data unavailable".
+- This is collected in a normal browser at a slow pace, and it backs off
+  when TikTok rate-limits.
 
 ### YouTube Studio export
 
@@ -81,6 +103,20 @@ is dropped in, the older combined workbook `youtube_export_with_shares.xlsx`
 dashboard doesn't lose YouTube likes/comments in the meantime. Once a full
 Studio export is in place, the `.xlsx`, the old top-level `Table data.csv`
 and `legacy_scripts/` can be deleted.
+
+## Dated backups
+
+Every `python run.py` also copies the processed data into
+`data/snapshots/<run date>/` (e.g. `data/snapshots/2026-10-27/`):
+
+- `all_posts.json` — every post from every platform, with its numbers on that date
+- `grouped.json` — the merged per-video data the dashboard was built from
+- `manual_group_merges.json` — the manual merges in effect at the time
+
+Re-running on the same day overwrites that day's folder; earlier dates are
+never touched. Snapshots are plain files committed with the rest of the
+repo, so pushing to GitHub is the off-site backup — no database needed.
+To compare two dates, open the same video in two snapshots' `grouped.json`.
 
 ## Merging two videos manually
 

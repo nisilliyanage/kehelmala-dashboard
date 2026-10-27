@@ -2,7 +2,68 @@
 
 Record of changes made to the dashboard, newest first.
 
+## 2026-10-27
+
+- **TikTok rows with no data say "Data unavailable"** instead of "Not posted
+  here". TikTok's export only includes the top 15 videos, so a missing row
+  doesn't mean the video wasn't posted there.
+- **TikTok videos beyond the top 15.** Stats for every other public video
+  are read from the public TikTok profile into
+  `data/raw/tiktok/public/tiktok_public_<date>.json` and merged with the
+  export. The TikTok tab's "Data as of" shows that date and says
+  "TikTok export + public profile". TikTok now appears on 130 of 145
+  videos, up from 15. Public numbers above ~10K are rounded by TikTok, so
+  the 15 videos in the export keep the export's exact figures.
+- Split the 2024 "The Morning After" TikTok out of the 2026 "Morning
+  After" group, and merged the 2026 "Fit on" TikTok into "Fit On".
+- **Split three over-merged films into separate videos on every platform.**
+  "Gift Box" (Jul 2024), "Santa's Gift" (Dec 2024) and "The Gift" (Aug 2025)
+  had been one row. So had "The Fit" (Oct 2025) and "Fit On" (Jun 2026).
+  The YouTube upload titled just "Gift" (13/10/2025) sits under The Gift.
+- **Fixed "Wrong Number" / "Interrogation".** The social posts call them
+  "Caller Unknown" and "Caller Unknown 2" (2024). YouTube calls them
+  "Wrong Number?" and "Interrogation (Wrong Number 2)" (2025). Both social
+  posts had been merged into one row and both YouTube uploads into another.
+  Two `MANUAL_TITLE_MERGES` rules in `config.py` now pair each film
+  correctly.
+- **Titles keep their punctuation.** Apostrophes, brackets, slashes, `?`,
+  `!` and commas used to be stripped, so titles showed as "You re my Garden
+  of Eden" or "Wrong Number". Each video now has a `display` title that
+  keeps them and drops only the Sinhala/Tamil translations. The stripped
+  `title` is still used for matching, renames and the merge/split records,
+  so existing fixes keep working. Both pages also escape titles before
+  inserting them.
+- **Dated backups.** Every `python run.py` now saves a copy of the processed
+  data to `data/snapshots/<run date>/` (see "Dated backups" in the README).
+
 ## 2026-10-20
+
+- **UI redesign of both pages (Apple-style).**
+  - Shared design tokens, softer card surfaces, and a smaller, tighter
+    heading that no longer wraps onto two lines.
+  - KPI numbers scale with their card, so totals like 238,710,067 no longer
+    get cut off.
+  - Numbers page: the platform tabs are now a segmented control with a
+    sliding thumb. The tabs, search and column headers stay pinned in a
+    translucent bar while you scroll. Rows expand smoothly, sort arrows show
+    the current order, and rows and headers work from the keyboard.
+  - Charts page: platform toggles have colour swatches and checkmarks, which
+    fixes the white-on-white TikTok button. Bars grow in on load and glide
+    when the selection changes. Value labels pick dark or white ink to stay
+    readable on light bars.
+  - Both pages respect reduced motion, reduced transparency and
+    increased-contrast settings. On narrow screens the nav becomes a sticky
+    top bar.
+  - Removed the stray nested `<html>` document wrapper in the Numbers
+    template.
+- **New pastel platform colours ("Peach & sky"), the same on both pages.**
+  YouTube `#E88761`, Facebook `#78BCEF`, Instagram `#A782E1`, TikTok
+  `#16CFA0`. They replace the warm dots on the Numbers page and the slate
+  greys on the Charts page, which didn't match each other, and the greys were
+  hard to tell apart. All four stay distinct from one another, including for
+  colourblind readers (checked with the dataviz palette validator). Labels
+  inside chart marks now pick dark or white text by contrast, so they stay
+  readable on the light fills.
 
 - **The build now publishes straight to GitHub Pages' folder.** `python run.py`
   writes `docs/index.html` (Numbers page), `docs/analytics.html` (Charts page)

@@ -80,7 +80,9 @@ def _resolve_tiktok_asof(groups):
     export can't predate the newest post in it, so take the earliest year that puts
     the export date on/after the latest TikTok post date already resolved above.
     Left as-is if no TikTok post has a full date to anchor on."""
-    entries = [e for g in groups for e in g['platforms'].get('TikTok', [])]
+    # Anchor only on the export's own posts - public-profile entries can be newer than
+    # the export and would push its date into the next year.
+    entries = [e for g in groups for e in g['platforms'].get('TikTok', []) if not e.get('src')]
     post_dates = [d for d in (_date_parts(e.get('d')) for e in entries) if d and d.year != 2000]
     if not post_dates:
         return
@@ -146,6 +148,40 @@ def clean_display_title(text):
     fallback = strip_hashtags(text).strip(' -:|;,._ \n\r\t')
     fallback = re.sub(r'\s+', ' ', fallback)
     return fallback or text.strip()
+
+
+# Sinhala and Tamil blocks, plus the zero-width joiners/variation selector they use.
+SCRIPT_RE = re.compile(r'[஀-௿඀-෿​-‍️]+')
+EMPTIED_BRACKETS_RE = re.compile(r'\(\s+\d*\s*\)|\(\s*\)')
+ORPHAN_PUNCT_RE = re.compile(r'(?<=\s)[,.:;…]+(?=\s|$)')
+
+
+def pretty_title(text):
+    """The title as shown on the dashboard. clean_display_title() keeps only letters,
+    digits and spaces (it's the matching key, so it can't change without breaking
+    TITLE_RENAMES and the merge log); this keeps the real punctuation - apostrophes,
+    brackets, slashes, ?, ! - and drops only the Sinhala/Tamil translations. Starts at
+    the first '|'-separated part with Latin letters and keeps following parts until one
+    is in another script, e.g.
+    'Interrogation (Caller Unknown 2) | දැඩි විමර්ශන (මාර ඇමතුම 2)' -> 'Interrogation (Caller Unknown 2)'
+    'Kehelmala Showreel | 2024' -> 'Kehelmala Showreel | 2024'."""
+    lines = [line.strip() for line in (text or '').splitlines() if line.strip()]
+    chosen = next((line for line in lines if strip_hashtags(line).strip()), '')
+    chosen = strip_hashtags(CHANNEL_SUFFIX_RE.sub('', chosen))
+    kept = []
+    for part in chosen.split('|'):
+        has_script = bool(SCRIPT_RE.search(part))
+        if kept and has_script:
+            break
+        part = SCRIPT_RE.sub('', part)
+        if not kept and not re.search(r'[A-Za-z]', part):
+            continue
+        part = EMPTIED_BRACKETS_RE.sub('', part)
+        part = ORPHAN_PUNCT_RE.sub('', part)
+        part = re.sub(r'\s+', ' ', part).strip(' -:;,_…')
+        if part:
+            kept.append(part)
+    return ' | '.join(kept)
 
 
 def norm_words(text):
@@ -367,6 +403,7 @@ def build_groups(clusters):
                     'd': p.get('date'),
                     'u': p.get('permalink'),
                     'asof': p.get('asof'),
+                    'src': p.get('source'),
                     'label': label,
                 })
             platforms[plat] = entries
@@ -376,8 +413,13 @@ def build_groups(clusters):
         tot_c = sum(e['c'] for plist in platforms.values() for e in plist)
         tot_s = sum(e['s'] for plist in platforms.values() for e in plist)
 
+        # 'title' stays the punctuation-free matching key; 'display' is what the pages show.
+        key = c['title'].strip().lower()
+        display = next((pretty_title(p['title']) for p in c['posts']
+                        if clean_display_title(p['title']).strip().lower() == key), '')
         groups.append({
             'title': clean_display_title(c['title']),
+            'display': display or pretty_title(c['title']) or clean_display_title(c['title']),
             'genre': 'Untagged',
             'platforms': platforms,
             'tot_v': tot_v,
@@ -393,10 +435,16 @@ def _merge_two_groups(groups, title_a, title_b, result_title):
     """Merge group title_a into title_b (or vice versa), combining per-platform entry
     lists and recomputing totals. Matching is case-insensitive exact title match.
     Returns the (possibly unchanged) groups list."""
+    # Titles in the merge log are the ones shown in the dashboard, i.e. after
+    # TITLE_RENAMES. Merges are replayed before renames run, so match either form.
+    renames = {str(k).strip().lower(): str(v).strip().lower()
+               for k, v in getattr(config, 'TITLE_RENAMES', {}).items() if k and v}
+
     def find(t):
         tl = (t or '').strip().lower()
         for g in groups:
-            if g['title'].strip().lower() == tl:
+            gt = g['title'].strip().lower()
+            if gt == tl or renames.get(gt) == tl:
                 return g
         return None
 
@@ -406,12 +454,12 @@ def _merge_two_groups(groups, title_a, title_b, result_title):
 
     for plat, entries in gb['platforms'].items():
         ga['platforms'].setdefault(plat, []).extend(entries)
-    ga['title'] = clean_display_title(result_title)
-    ga['tot_v'] += gb['tot_v']
-    ga['tot_l'] += gb['tot_l']
-    ga['tot_c'] += gb['tot_c']
-    ga['tot_s'] += gb['tot_s']
-    ga['n_platforms'] = len(ga['platforms'])
+    # Used verbatim (not clean_display_title): cleaning strips characters like "/" that
+    # the user typed, which made later merge-log entries unable to find this title.
+    ga['title'] = (result_title or '').strip() or ga['title']
+    ga['display'] = ga['title']
+    _relabel_platform_entries(ga['platforms'])
+    _recompute_totals(ga)
 
     groups.remove(gb)
     return groups
@@ -509,7 +557,7 @@ def apply_title_renames(groups):
     for g in groups:
         key = g['title'].strip().lower()
         if key in lookup:
-            g['title'] = lookup[key]
+            g['title'] = g['display'] = lookup[key]
 
     # If any renames combined two groups under the same title, merge them
     merged = []

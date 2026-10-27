@@ -32,6 +32,10 @@ CONTAINMENT_MIN_WORD_LEN = 4
 MANUAL_TITLE_MERGES = [
     {'match': ['snake bag', 'handbag problems'], 'title': 'Snake Bag (Handbag Problems)'},
     {'match': ['#younglove', 'sneaking in'], 'title': 'Sneaking In'},
+    # Social posts call these "Caller Unknown" (2024), YouTube calls them "Wrong Number"
+    # (2025). The sequel comes first so "Caller Unknown 2" doesn't hit the plain rule.
+    {'match': ['interrogation', 'caller unknown 2', 'wrong number 2'], 'title': 'Interrogation (Wrong Number 2)'},
+    {'match': ['caller unknown', 'wrong number'], 'title': 'Wrong Number'},
 ]
 
 # Permalinks to exclude outright (pass the Post-type filter but aren't original video content).
@@ -61,4 +65,8 @@ TITLE_RENAMES = {
     'Pinipa pt 2': 'Pinipa',
     "What's with Su Trick or Treat" : "What's with Su (Trick or Treat)",
     "Who s winning": "Who's winning",
+    'Gift': 'The Gift',
+    'Santa s Gift': "Santa's Gift",
+    'Face Off Produced in partnership with Closeup': 'Face Off',
+    'Wrong Number': 'Wrong Number (Caller Unknown)',
 }   

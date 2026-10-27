@@ -1,855 +1,1451 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf8" />
+    <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width,initial-scale=1,viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
+    <title>Kehelmala Studios — Performance Dashboard</title>
     <style>
+      /* ------------------------------------------------------------------
+         Design tokens. Shared with analytics_template.html (keep in sync).
+         ------------------------------------------------------------------ */
       :root {
         color-scheme: light;
+        --bg: #f5f5f7;
+        --panel: #ffffff;
+        --ink: #1d1d1f;
+        --ink-strong: #17223a;
+        --sub: #6e6e73;
+        --faint: #a1a1a6;
+        --line: rgba(0, 0, 0, 0.08);
+        --fill: rgba(118, 118, 128, 0.12);
+        --fill-strong: rgba(118, 118, 128, 0.2);
+        --accent: #b8432f;
+        --accent2: #2f4858;
+        --link: #0a66c2;
+        --good: #3c7a52;
+        /* Platform colours ("Peach & sky" pastels). One colour per platform
+           everywhere on both pages. Validated with
+           dataviz/scripts/validate_palette.js --pairs all on #f5f5f7: CVD
+           worst ΔE 8.1, normal-vision worst ΔE 15.2. Pastels sit below 3:1
+           against the background, so charts must keep their direct value
+           labels (in dark ink). Keep in sync with SCHEME_A/SCHEME_B in
+           analytics_template.html. */
+        --c-youtube: #e88761;
+        --c-facebook: #78bcef;
+        --c-instagram: #a782e1;
+        --c-tiktok: #16cfa0;
+        --radius-lg: 20px;
+        --radius-md: 14px;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.04),
+          0 6px 24px rgba(0, 0, 0, 0.05);
+        --material: rgba(245, 245, 247, 0.72);
+        --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+        --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui,
+          "Helvetica Neue", Arial, sans-serif;
+        --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+          system-ui, "Helvetica Neue", Arial, sans-serif;
+      }
+      * {
         box-sizing: border-box;
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-bottom: env(safe-area-inset-bottom, 0px);
       }
       html {
         scroll-padding-top: env(safe-area-inset-top, 0px);
+        -webkit-text-size-adjust: 100%;
       }
       body {
         margin: 0;
-        padding: 0;
-        font:
-          14px -apple-system,
-          BlinkMacSystemFont,
-          sans-serif;
-        background: #faf9f5;
-        color: #141413;
+        background: var(--bg);
+        color: var(--ink);
+        font: 14px/1.45 var(--font);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-optical-sizing: auto;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
       }
       img {
         max-width: 100%;
       }
+      button {
+        font: inherit;
+        color: inherit;
+      }
       [hidden]:not([hidden="until-found" i]) {
         display: none !important;
+      }
+      :focus-visible {
+        outline: 3px solid rgba(10, 102, 194, 0.45);
+        outline-offset: 2px;
+        border-radius: 8px;
+      }
+
+      /* ------------------------------------------------------------------
+         App shell: dark sidebar = the heavier, structural material.
+         Same block lives in analytics_template.html (minus .active link).
+         ------------------------------------------------------------------ */
+      .app-shell {
+        display: flex;
+        min-height: 100vh;
+      }
+      .sidebar {
+        width: 212px;
+        flex: 0 0 212px;
+        background: #111113;
+        padding: calc(28px + env(safe-area-inset-top, 0px)) 12px 28px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        overflow-y: auto;
+        z-index: 20;
+      }
+      .content {
+        flex: 1;
+        min-width: 0;
+        margin-left: 212px;
+      }
+      .sidebar .logo {
+        padding: 0 12px 22px;
+        margin-bottom: 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .sidebar .logo img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .sidenav {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .sidenav-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.35);
+        padding: 4px 12px 8px;
+      }
+      .sidenav-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: 10px;
+        color: rgba(255, 255, 255, 0.62);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: -0.005em;
+        transition:
+          color 160ms ease,
+          background-color 160ms ease,
+          transform 100ms ease-out;
+      }
+      .sidenav-link svg {
+        flex: none;
+        opacity: 0.85;
+      }
+      .sidenav-link:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .sidenav-link:active {
+        transform: scale(0.97);
+        transition-duration: 0ms;
+      }
+      .sidenav-link.active {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.12);
+      }
+      @media (max-width: 860px) {
+        .app-shell {
+          flex-direction: column;
+        }
+        .sidebar {
+          position: sticky;
+          width: 100%;
+          flex: none;
+          bottom: auto;
+          padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: rgba(17, 17, 19, 0.9);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
+          backdrop-filter: blur(20px) saturate(180%);
+        }
+        .content {
+          margin-left: 0;
+        }
+        .sidebar .logo {
+          border-bottom: none;
+          margin-bottom: 0;
+          padding: 0 4px;
+          width: 104px;
+          flex: 0 0 104px;
+        }
+        .sidenav {
+          flex-direction: row;
+        }
+        .sidenav-label {
+          display: none;
+        }
+        .sidenav-link {
+          padding: 8px 12px;
+        }
+      }
+
+      /* ------------------------------------------------------------------
+         Page
+         ------------------------------------------------------------------ */
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 48px 28px 72px;
+      }
+      header.page-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 16px 24px;
+        margin-bottom: 32px;
+      }
+      .eyebrow {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 0;
+        margin: 0 0 6px;
+      }
+      h1 {
+        font-family: var(--font-display);
+        font-size: clamp(2.25rem, 4.6vw, 3.5rem);
+        line-height: 1.04;
+        letter-spacing: -0.035em; /* large type: tighten */
+        font-weight: 800;
+        color: var(--ink-strong);
+        margin: 0;
+      }
+      .tag {
+        color: var(--sub);
+        font-size: 15px;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
+        margin-top: 10px;
+      }
+      .asof {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--panel);
+        border-radius: 999px;
+        padding: 8px 16px 8px 12px;
+        box-shadow: var(--shadow-md);
+        font-size: 12.5px;
+        color: var(--sub);
+        line-height: 1.3;
+      }
+      .asof .pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--good);
+        box-shadow: 0 0 0 4px rgba(60, 122, 82, 0.15);
+        flex: none;
+      }
+      .asof b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      /* KPI cards */
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+      @media (max-width: 600px) {
+        .cards {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+        }
+      }
+      .card {
+        background: var(--panel);
+        border-radius: var(--radius-lg);
+        padding: 18px 20px 20px;
+        box-shadow: var(--shadow-md);
+        container-type: inline-size;
+        min-width: 0;
+      }
+      .card .l {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--sub);
+        letter-spacing: -0.005em;
+        margin-bottom: 6px;
+      }
+      .card .n {
+        font-family: var(--font-display);
+        /* Scales with the card itself, so the longest total never clips */
+        font-size: clamp(1.3rem, 12.5cqi, 2.25rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        color: var(--ink-strong);
+      }
+      .card.accent .n {
+        color: var(--accent);
+      }
+
+      /* Sticky translucent toolbar (segmented control + search + column
+         heads). Content scrolls underneath; the edge hairline only appears
+         once it is actually floating over rows. */
+      .sentinel {
+        height: 1px;
+        margin-top: -1px;
+      }
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        margin: 0 -28px;
+        padding: 12px 28px 0;
+        background: var(--material);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        backdrop-filter: blur(20px) saturate(180%);
+        transition: box-shadow 200ms ease;
+      }
+      .toolbar.stuck {
+        box-shadow: 0 1px 0 var(--line);
+      }
+      @media (max-width: 860px) {
+        .toolbar {
+          top: var(--nav-h, 0px);
+        }
+      }
+      .controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      /* Segmented control — the thumb is moved by a spring (interruptible,
+         starts from wherever it currently is). */
+      .segmented {
+        position: relative;
+        display: flex;
+        padding: 3px;
+        border-radius: 12px;
+        background: var(--fill);
+        overflow-x: auto;
+        scrollbar-width: none;
+        max-width: 100%;
+      }
+      .segmented::-webkit-scrollbar {
+        display: none;
+      }
+      .seg-thumb {
+        position: absolute;
+        top: 3px;
+        bottom: 3px;
+        left: 0;
+        width: 0;
+        border-radius: 9px;
+        background: var(--panel);
+        box-shadow:
+          0 3px 8px rgba(0, 0, 0, 0.08),
+          0 1px 1px rgba(0, 0, 0, 0.04),
+          0 0 0 0.5px rgba(0, 0, 0, 0.04);
+        will-change: transform, width;
+        pointer-events: none;
+      }
+      .ptab {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 0;
+        background: transparent;
+        padding: 7px 14px;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--sub);
+        white-space: nowrap;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition:
+          color 160ms ease,
+          transform 100ms ease-out;
+      }
+      .ptab:hover {
+        color: var(--ink);
+      }
+      .ptab:active {
+        transform: scale(0.96);
+        transition-duration: 0ms;
+      }
+      .ptab.active {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .ptab .pdot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+      }
+      .ptab .cnt {
+        font-size: 11.5px;
+        font-weight: 500;
+        color: var(--faint);
+        font-variant-numeric: tabular-nums;
+      }
+      .ptab.active .cnt {
+        color: var(--sub);
+      }
+
+      .search {
+        position: relative;
+        flex: 1;
+        min-width: 180px;
+      }
+      .search svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--faint);
+        pointer-events: none;
+      }
+      input[type="search"] {
+        width: 100%;
+        background: var(--fill);
+        color: var(--ink);
+        border: 0;
+        border-radius: 12px;
+        padding: 10px 14px 10px 34px;
+        font: inherit;
+        font-size: 14px;
+        -webkit-appearance: none;
+        appearance: none;
+        transition:
+          background-color 160ms ease,
+          box-shadow 160ms ease;
+      }
+      input[type="search"]::placeholder {
+        color: var(--faint);
+      }
+      input[type="search"]:focus {
+        outline: none;
+        background: var(--panel);
+        box-shadow:
+          0 0 0 1px rgba(10, 102, 194, 0.5),
+          0 0 0 4px rgba(10, 102, 194, 0.14);
+      }
+
+      /* Column heads + rows share one grid */
+      .colhead,
+      .row-head {
+        display: grid;
+        grid-template-columns:
+          24px minmax(160px, 2.4fr) repeat(5, minmax(70px, 1fr))
+          minmax(96px, 1.1fr) 1.3fr;
+        gap: 10px;
+        align-items: center;
+      }
+      .colhead {
+        padding: 8px 17px 10px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--sub);
+        letter-spacing: 0.01em;
+      }
+      .colhead span[data-k] {
+        cursor: pointer;
+        user-select: none;
+        border-radius: 6px;
+        transition: color 120ms ease;
+      }
+      .colhead span[data-k]:hover {
+        color: var(--ink);
+      }
+      .colhead span:not(:first-child):not([data-k="title"]) {
+        text-align: right;
+      }
+      .colhead span.active {
+        color: var(--ink);
+      }
+      .colhead .arrow {
+        display: inline-block;
+        width: 0.9em;
+        font-size: 10px;
+        opacity: 0;
+        transition:
+          opacity 160ms ease,
+          transform 240ms var(--ease-out);
+      }
+      .colhead span.active .arrow {
+        opacity: 1;
+      }
+      .colhead span.asc .arrow {
+        transform: rotate(180deg);
+      }
+
+      .list {
+        border-radius: var(--radius-lg);
+        background: var(--panel);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        margin-top: 2px;
+      }
+      .row + .row {
+        border-top: 1px solid var(--line);
+      }
+      .row-head {
+        padding: 14px 16px;
+        cursor: pointer;
+        font-size: 13.5px;
+        -webkit-tap-highlight-color: transparent;
+        transition: background-color 160ms ease;
+      }
+      .row-head:hover {
+        background: rgba(0, 0, 0, 0.022);
+      }
+      /* respond on press, not on release */
+      .row-head:active {
+        background: rgba(0, 0, 0, 0.05);
+        transition-duration: 0ms;
+      }
+      .row.open > .row-head {
+        background: rgba(0, 0, 0, 0.022);
+      }
+      .car {
+        color: var(--faint);
+        display: inline-block;
+        transition: transform 320ms var(--ease-out);
+      }
+      .row.open > .row-head .car {
+        transform: rotate(90deg);
+        color: var(--ink);
+      }
+      .vtitle {
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .row-head .num.primary {
+        font-weight: 600;
+      }
+      .row-head .rel {
+        color: var(--sub);
+        white-space: nowrap;
+      }
+      /* Marks a row whose platforms/versions went out on noticeably different
+         dates; the full range is in its tooltip and the breakdown table. */
+      .rel .spread {
+        color: var(--faint);
+        margin-left: 2px;
+        font-weight: 600;
+        cursor: help;
+      }
+      .plats {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+      .dot.YouTube {
+        background: var(--c-youtube);
+      }
+      .dot.Facebook {
+        background: var(--c-facebook);
+      }
+      .dot.Instagram {
+        background: var(--c-instagram);
+      }
+      .dot.TikTok {
+        background: var(--c-tiktok);
+      }
+      .pchip {
+        font-size: 11px;
+        background: var(--fill);
+        border-radius: 999px;
+        padding: 2px 8px;
+        margin-left: 4px;
+        color: var(--sub);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      /* Breakdown: height animates 0fr -> 1fr so the row opens in place
+         instead of popping. Re-clicking mid-way reverses from where it is. */
+      .breakdown {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 420ms var(--ease-out);
+      }
+      .row.open > .breakdown {
+        grid-template-rows: 1fr;
+      }
+      .breakdown > .bd-clip {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .bd-inner {
+        /* padding: 2px 16px 16px 50px; */
+        padding: 25px 50px 25px 50px;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition:
+          opacity 220ms ease,
+          transform 420ms var(--ease-out);
+      }
+      .row.open .bd-inner {
+        opacity: 1;
+        transform: none;
+      }
+      .bd-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        background: var(--bg);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+      .bd-table th {
+        text-align: right;
+        color: var(--sub);
+        font-weight: 600;
+        font-size: 11.5px;
+        padding: 10px 12px 8px;
+      }
+      .bd-table th:first-child,
+      .bd-table td:first-child {
+        text-align: left;
+      }
+      .bd-table td {
+        padding: 9px 12px;
+        text-align: right;
+        border-top: 1px solid var(--line);
+        font-variant-numeric: tabular-nums;
+      }
+      .bd-table td.pub {
+        text-align: left;
+        white-space: nowrap;
+        color: var(--sub);
+      }
+      .bd-table .platname {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+      }
+      .yt-toggle {
+        cursor: pointer;
+        transition: background-color 160ms ease;
+      }
+      .yt-toggle:hover {
+        background: rgba(0, 0, 0, 0.025);
+      }
+      .yt-toggle .car {
+        margin-right: 6px;
+      }
+      .not-here {
+        color: var(--faint) !important;
+        font-style: italic;
+      }
+      a.vlink {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        margin-left: 10px;
+        color: var(--link);
+        text-decoration: none;
+        font-weight: 500;
+      }
+      a.vlink:hover {
+        text-decoration: underline;
+      }
+      .empty {
+        padding: 56px 20px;
+        text-align: center;
+        color: var(--sub);
+        font-size: 14px;
+      }
+      .empty b {
+        display: block;
+        color: var(--ink);
+        font-size: 16px;
+        margin-bottom: 4px;
+      }
+      footer {
+        margin: 36px auto 0;
+        max-width: 720px;
+        font-size: 12px;
+        color: var(--faint);
+        text-align: center;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 720px) {
+        .wrap {
+          padding: 32px 16px 56px;
+        }
+        .toolbar {
+          margin: 0 -16px;
+          padding: 10px 16px 0;
+        }
+        .row-head,
+        .colhead {
+          grid-template-columns: 18px 1.6fr repeat(2, 1fr) 0.9fr;
+        }
+        .colhead {
+          padding: 8px 13px 10px;
+        }
+        .row-head {
+          padding: 13px 12px;
+        }
+        .row-head span:nth-child(5),
+        .row-head span:nth-child(6),
+        .row-head span:nth-child(7),
+        .row-head span:nth-child(8),
+        .colhead span:nth-child(5),
+        .colhead span:nth-child(6),
+        .colhead span:nth-child(7),
+        .colhead span:nth-child(8) {
+          display: none;
+        }
+        .pchip {
+          display: none;
+        }
+        .bd-inner {
+          padding: 2px 8px 12px;
+          overflow-x: auto;
+        }
+        .search {
+          flex-basis: 100%;
+        }
+      }
+
+      /* ------------------------------------------------------------------
+         Accessibility preferences
+         ------------------------------------------------------------------ */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-property: opacity, color, background-color !important;
+          transition-duration: 150ms !important;
+        }
+        .bd-inner {
+          transform: none !important;
+        }
+      }
+      @media (prefers-reduced-transparency: reduce) {
+        .toolbar {
+          background: var(--bg);
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+        }
+        .sidebar {
+          background: #111113 !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+        }
+      }
+      @media (prefers-contrast: more) {
+        :root {
+          --sub: #48484a;
+          --faint: #6e6e73;
+          --line: rgba(0, 0, 0, 0.25);
+        }
+        .card,
+        .list,
+        .asof {
+          box-shadow: 0 0 0 1px var(--line);
+        }
       }
     </style>
   </head>
   <body>
-    <!doctype html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, viewport-fit=cover"
-        />
-        <title>Kehelmala Studios — Performance Dashboard</title>
-        <style>
-          :root {
-            --bg: #fafaf8;
-            --panel: #ffffff;
-            --ink: #181816;
-            --sub: #8c8884;
-            --line: #ececea;
-            --accent: #b8432f;
-            --accent2: #2f4858;
-            --chip: #f3f2ef;
-            --good: #3c7a52;
-            box-sizing: border-box;
-            padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-          }
-          /* @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#15130f; --panel:#1e1b16; --ink:#f1ede5; --sub:#a39d92;
-    --line:#332e26; --chip:#2a2620; --accent:#e2694f; --accent2:#7fa3ba; --good:#6fbf8b;
-  }
-} */
-          /* :root[data-theme="dark"]{
-  --bg:#15130f; --panel:#1e1b16; --ink:#f1ede5; --sub:#a39d92;
-  --line:#332e26; --chip:#2a2620; --accent:#e2694f; --accent2:#7fa3ba; --good:#6fbf8b;
-} */
-          html {
-            scroll-padding-top: env(safe-area-inset-top, 0px);
-          }
-          * {
-            box-sizing: border-box;
-          }
-          body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--ink);
-            font-family:
-              -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial,
-              sans-serif;
-            -webkit-font-smoothing: antialiased;
-          }
-          .wrap {
-            max-width: 1180px;
-            margin: 0 auto;
-            padding: 44px 24px 64px;
-          }
-          /* Left sidebar: logo + nav between the two pages (Numbers / Charts).
-             Shared layout — the same block (minus which link is .active)
-             lives in analytics_template.html too. */
-          .app-shell {
-            display: flex;
-            min-height: 100vh;
-          }
-          .sidebar {
-            width: 190px;
-            flex: 0 0 190px;
-            background: #121212;
-            padding: 28px 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            overflow-y: auto;
-          }
-          .content {
-            flex: 1;
-            min-width: 0;
-            margin-left: 190px;
-          }
-          .sidebar .logo {
-            padding: 0 22px 24px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          }
-          .sidebar .logo img {
-            width: 100%;
-            height: auto;
-            display: block;
-          }
-          .sidenav {
-            display: flex;
-            flex-direction: column;
-          }
-          .sidenav-link {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 11px 24px;
-            color: #9a968f;
-            text-decoration: none;
-            font-size: 13.5px;
-            font-weight: 600;
-            transition:
-              color 0.12s,
-              background 0.12s;
-          }
-          .sidenav-link:hover {
-            color: #fff;
-          }
-          .sidenav-link.active {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.07);
-          }
-          .sidenav-link .chev {
-            opacity: 0.55;
-            font-size: 13px;
-          }
-          @media (max-width: 860px) {
-            .app-shell {
-              flex-direction: column;
-            }
-            .sidebar {
-              position: static;
-              width: 100%;
-              flex: none;
-              padding: 14px 0;
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-            }
-            .content {
-              margin-left: 0;
-            }
-            .sidebar .logo {
-              border-bottom: none;
-              margin-bottom: 0;
-              padding: 0 16px;
-              width: 150px;
-              flex: 0 0 150px;
-            }
-            .sidenav {
-              flex-direction: row;
-              padding-right: 10px;
-            }
-            .sidenav-link {
-              padding: 8px 12px;
-            }
-          }
-          header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 36px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--line);
-          }
-          h1 {
-            /* font-size: clamp(20px, 2.6vw, 26px);
-            margin: 0;
-            font-weight: 700; */
-            letter-spacing: -0.01em;
-            font-size: 5rem !important;
-            color: #17223a !important;
-            font-weight: 800 !important;
-          }
-          h2 {
-            font-size: 1.5rem !important;
-            color: #17223a !important;
-            font-weight: 600 !important;
-            margin-top: 0.5rem !important;
-          }
-          .tag {
-            color: var(--sub);
-            font-size: 13px;
-            margin-top: 5px;
-            font-weight: 400;
-          }
-          .updated {
-            font-size: 12px;
-            color: var(--sub);
-            text-align: left;
-          }
-          .updated b {
-            color: var(--ink);
-            font-weight: 600;
-          }
-          .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1px;
-            margin-bottom: 32px;
-            background: var(--line);
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            overflow: hidden;
-          }
-          .card {
-            background: var(--panel);
-            padding: 22px 20px;
-          }
-          .card .n {
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            line-height: 1.05;
-          }
-          .card .l {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            color: var(--sub);
-            font-weight: 600;
-            margin-top: 6px;
-          }
-          .controls {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-bottom: 18px;
-          }
-          input[type="search"] {
-            background: var(--panel);
-            color: var(--ink);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 9px 12px;
-            font-size: 13.5px;
-            font-family: inherit;
-            flex: 1;
-            min-width: 160px;
-          }
-          input[type="search"]:focus {
-            outline: none;
-            border-color: var(--sub);
-          }
-          .ptab {
-            padding: 7px 14px;
-            border-radius: 999px;
-            border: 1px solid transparent;
-            background: var(--chip);
-            color: var(--sub);
-            font-size: 12.5px;
-            font-weight: 500;
-            cursor: pointer;
-            transition:
-              background 0.12s,
-              color 0.12s;
-          }
-          .ptab:hover {
-            background: var(--line);
-          }
-          .ptab.active {
-            background: var(--ink);
-            color: var(--bg);
-          }
-          .ptab .cnt {
-            opacity: 0.65;
-            margin-left: 4px;
-          }
-          .list {
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            background: var(--panel);
-            overflow: hidden;
-          }
-          .row {
-            border-bottom: 1px solid var(--line);
-          }
-          .row:last-child {
-            border-bottom: none;
-          }
-          .row-head {
-            display: grid;
-            grid-template-columns:
-              28px minmax(160px, 2.4fr) repeat(5, minmax(70px, 1fr))
-              1.3fr;
-            align-items: center;
-            gap: 8px;
-            padding: 14px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: background 0.12s;
-          }
-          .row-head:hover {
-            background: var(--chip);
-          }
-          .car {
-            color: var(--sub);
-            transition: transform 0.15s;
-            font-size: 10px;
-          }
-          .row.open .car {
-            transform: rotate(90deg);
-          }
-          .vtitle {
-            color: var(--ink);
-            font-size: 13.5px;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-          .num {
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-          }
-          .plats {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-          }
-          .dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 3px;
-          }
-          .dot.YouTube {
-            background: #e2694f;
-          }
-          .dot.Facebook {
-            background: #2f4858;
-          }
-          .dot.Instagram {
-            background: #b8432f;
-          }
-          .dot.TikTok {
-            background: #3c7a52;
-          }
-          .pchip {
-            font-size: 10.5px;
-            background: var(--chip);
-            border-radius: 999px;
-            padding: 3px 9px;
-            color: var(--sub);
-            font-weight: 500;
-          }
-          .breakdown {
-            display: none;
-            padding: 2px 14px 18px 50px;
-          }
-          .row.open .breakdown {
-            display: block;
-          }
-          .bd-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12.5px;
-          }
-          .bd-table th {
-            text-align: right;
-            color: var(--sub);
-            font-weight: 600;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            padding: 8px;
-          }
-          .bd-table th:first-child,
-          .bd-table td:first-child {
-            text-align: left;
-          }
-          .bd-table td {
-            padding: 8px;
-            text-align: right;
-            border-top: 1px solid var(--line);
-          }
-          a.vlink {
-            color: var(--accent2);
-            text-decoration: none;
-            font-weight: 500;
-          }
-          a.vlink:hover {
-            text-decoration: underline;
-          }
-          .empty {
-            padding: 48px 20px;
-            text-align: center;
-            color: var(--sub);
-            font-size: 13.5px;
-          }
-          .colhead {
-            display: grid;
-            grid-template-columns:
-              28px minmax(160px, 2.4fr) repeat(5, minmax(70px, 1fr))
-              1.3fr;
-            gap: 8px;
-            padding: 10px 14px;
-            font-size: 10.5px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--sub);
-            font-weight: 600;
-            border-bottom: 1px solid var(--line);
-          }
-          .colhead span:not(:first-child) {
-            text-align: right;
-            cursor: pointer;
-          }
-          .colhead span.active {
-            color: var(--ink);
-          }
-          footer {
-            margin-top: 32px;
-            font-size: 11.5px;
-            color: var(--sub);
-            text-align: center;
-            line-height: 1.6;
-          }
-          @media (max-width: 720px) {
-            .row-head,
-            .colhead {
-              grid-template-columns: 22px 1.6fr repeat(2, 1fr) 0.9fr;
-            }
-            .row-head span:nth-child(5),
-            .row-head span:nth-child(6),
-            .row-head span:nth-child(7),
-            .colhead span:nth-child(5),
-            .colhead span:nth-child(6),
-            .colhead span:nth-child(7) {
-              display: none;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="app-shell">
-          <aside class="sidebar">
-            <div class="logo">
-              <img
-                src="logo.png"
-                alt="Kehelmala Studios — Inspired Storytelling"
-              />
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="logo">
+          <img src="logo.png" alt="Kehelmala Studios — Inspired Storytelling" />
+        </div>
+        <nav class="sidenav" aria-label="Pages">
+          <div class="sidenav-label">Dashboard</div>
+          <a class="sidenav-link active" href="index.html" aria-current="page">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M2.5 4h11M2.5 8h11M2.5 12h11"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                fill="none"
+              /></svg
+            >Numbers</a
+          >
+          <a class="sidenav-link" href="analytics.html">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M3 13V8.5M8 13V3M13 13V6"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+                fill="none"
+              /></svg
+            >Charts</a
+          >
+        </nav>
+      </aside>
+      <main class="content">
+        <div class="wrap">
+          <header class="page-head">
+            <div>
+              <p class="eyebrow">Kehelmala Studios</p>
+              <h1>Performance Dashboard</h1>
+              <div class="tag">
+                Every video combined across platforms. Click a row for its
+                breakdown.
+              </div>
             </div>
-            <nav class="sidenav">
-              <a class="sidenav-link active" href="index.html"
-                >Numbers <span class="chev">›</span></a
+            <div class="asof" role="status">
+              <span class="pulse" aria-hidden="true"></span>
+              <span
+                >Data as of <b id="asof">—</b><br /><span id="asof-scope"
+                  >YouTube, Facebook, Instagram &amp; TikTok</span
+                ></span
               >
-              <a class="sidenav-link" href="analytics.html"
-                >Charts <span class="chev">›</span></a
+            </div>
+          </header>
+
+          <div class="cards" id="cards"></div>
+
+          <div class="sentinel" id="sentinel"></div>
+          <div class="toolbar" id="toolbar">
+            <div class="controls">
+              <div
+                class="segmented"
+                id="segmented"
+                role="tablist"
+                aria-label="Platform"
               >
-            </nav>
-          </aside>
-          <div class="content">
-            <div class="wrap">
-              <header>
-                <div>
-                  <!-- <h1>Kehelmala Studios</h1>
-              <h2>Performance Dashboard</h2> -->
-                  <h1>Performance Dashboard</h1>
-                  <div class="tag">
-                    Videos combined across platforms — click a row for the
-                    breakdown
-                  </div>
-                </div>
-                <div class="updated">
-                  Data as of <b id="asof">—</b><br /><span id="asof-scope"
-                    >YouTube, Facebook, Instagram &amp; TikTok</span
-                  >
-                </div>
-              </header>
-
-              <div class="cards" id="cards"></div>
-
-              <div class="controls">
-                <div class="ptab" id="t-All" data-p="All">
+                <span class="seg-thumb" id="segThumb" aria-hidden="true"></span>
+                <button class="ptab" id="t-All" data-p="All" role="tab">
                   All <span class="cnt"></span>
-                </div>
-                <div class="ptab" id="t-YouTube" data-p="YouTube">
-                  YouTube <span class="cnt"></span>
-                </div>
-                <div class="ptab" id="t-Facebook" data-p="Facebook">
-                  Facebook <span class="cnt"></span>
-                </div>
-                <div class="ptab" id="t-Instagram" data-p="Instagram">
-                  Instagram <span class="cnt"></span>
-                </div>
-                <div class="ptab" id="t-TikTok" data-p="TikTok">
-                  TikTok <span class="cnt"></span>
-                </div>
+                </button>
+                <button class="ptab" id="t-YouTube" data-p="YouTube" role="tab">
+                  <span class="pdot dot YouTube"></span>YouTube
+                  <span class="cnt"></span>
+                </button>
+                <button
+                  class="ptab"
+                  id="t-Facebook"
+                  data-p="Facebook"
+                  role="tab"
+                >
+                  <span class="pdot dot Facebook"></span>Facebook
+                  <span class="cnt"></span>
+                </button>
+                <button
+                  class="ptab"
+                  id="t-Instagram"
+                  data-p="Instagram"
+                  role="tab"
+                >
+                  <span class="pdot dot Instagram"></span>Instagram
+                  <span class="cnt"></span>
+                </button>
+                <button class="ptab" id="t-TikTok" data-p="TikTok" role="tab">
+                  <span class="pdot dot TikTok"></span>TikTok
+                  <span class="cnt"></span>
+                </button>
+              </div>
+              <label class="search">
+                <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
+                  <circle
+                    cx="7"
+                    cy="7"
+                    r="4.75"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    fill="none"
+                  />
+                  <path
+                    d="m10.5 10.5 3 3"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  />
+                </svg>
                 <input
                   type="search"
                   id="search"
-                  placeholder="Search by title..."
+                  placeholder="Search videos"
+                  aria-label="Search videos by title"
                 />
-              </div>
-
-              <div class="colhead">
-                <span></span>
-                <span data-k="title">Video</span>
-                <span data-k="tot_v">Views</span>
-                <span data-k="tot_l">Likes</span>
-                <span data-k="tot_c">Comments</span>
-                <span data-k="tot_s">Shares</span>
-                <span data-k="er">Eng. rate</span>
-                <span>On</span>
-              </div>
-              <div class="list" id="list"></div>
-
-              <footer>
-                Combined by matching titles across YouTube, Facebook, Instagram
-                &amp; TikTok exports (automated title matching — a handful of
-                matches may be imprecise) · Totals sum each platform's own
-                metric definitions, which aren't identical · Eng. rate = (likes
-                + comments + shares) ÷ views, computed the same way for every
-                platform · Re-run exports and resend to refresh
-              </footer>
+              </label>
+            </div>
+            <div class="colhead">
+              <span></span>
+              <span data-k="title" role="button" tabindex="0"
+                >Video <i class="arrow">▼</i></span
+              >
+              <span data-k="tot_v" role="button" tabindex="0" class="active"
+                ><i class="arrow">▼</i> Views</span
+              >
+              <span data-k="tot_l" role="button" tabindex="0"
+                ><i class="arrow">▼</i> Likes</span
+              >
+              <span data-k="tot_c" role="button" tabindex="0"
+                ><i class="arrow">▼</i> Comments</span
+              >
+              <span data-k="tot_s" role="button" tabindex="0"
+                ><i class="arrow">▼</i> Shares</span
+              >
+              <span data-k="er" role="button" tabindex="0"
+                ><i class="arrow">▼</i> Eng. rate</span
+              >
+              <span data-k="rel" role="button" tabindex="0"
+                title="Earliest release date on the selected platform(s)"
+                ><i class="arrow">▼</i> Released</span
+              >
+              <span>On</span>
             </div>
           </div>
+          <div class="list" id="list"></div>
+
+          <footer>
+            Combined by matching titles across YouTube, Facebook, Instagram
+            &amp; TikTok exports (automated title matching — a handful of
+            matches may be imprecise) · Totals sum each platform's own metric
+            definitions, which aren't identical · Eng. rate = (likes + comments
+            + shares) ÷ views, computed the same way for every platform ·
+            Re-run exports and resend to refresh
+          </footer>
         </div>
+      </main>
+    </div>
 
-        <script>
-          const GROUPS = __DATA_PLACEHOLDER__;
-          const PLATS = ["YouTube", "Facebook", "Instagram", "TikTok"];
-          let activePlatform = "All",
-            search = "",
-            sortKey = "tot_v",
-            sortDir = -1;
+    <script>
+      const GROUPS = __DATA_PLACEHOLDER__;
+      // 'display' keeps the real punctuation ('title' is the stripped matching key).
+      // Escaped once here since titles can contain & < > and quotes.
+      GROUPS.forEach((g) => {
+        g.name = g.display || g.title;
+        g.nameHtml = g.name
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      });
+      const PLATS = ["YouTube", "Facebook", "Instagram", "TikTok"];
+      let activePlatform = "All",
+        search = "",
+        sortKey = "tot_v",
+        sortDir = -1;
 
-          function fmt(n) {
-            return (n || 0).toLocaleString("en-US");
-          }
+      const CHEVRON = `<svg class="car" width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-          // Engagement rate = (likes + comments + shares) / views * 100.
-          // Computed the same way for every platform (rather than trusting
-          // each platform's own self-reported "engagement" figure, which
-          // isn't defined the same way twice) so it's actually comparable
-          // across YouTube/Facebook/Instagram/TikTok. Views dominate raw
-          // totals for some platforms simply because they reach more
-          // people, not because the content lands better there - this is
-          // the number that isn't skewed by that.
-          function engRate(m) {
-            return m.v > 0 ? ((m.l + m.c + m.s) / m.v) * 100 : 0;
-          }
-          function fmtPct(n) {
-            return n.toFixed(n >= 10 ? 1 : 2) + "%";
-          }
-
-          // Show every date as DD/MM/YYYY. The pipeline stores dates as ISO
-          // (YYYY-MM-DD); the US-style branch only covers data built before
-          // that, and a TikTok date with no year (e.g. "April 24") is shown
-          // as-is rather than guessed.
-          function formatDate(d) {
-            if (!d) return null;
-            let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d); // ISO
-            if (m) return `${m[3]}/${m[2]}/${m[1]}`;
-            m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(d); // legacy US (MM/DD/YYYY)
-            if (m) {
-              const mm = m[1].padStart(2, "0"),
-                dd = m[2].padStart(2, "0");
-              return `${dd}/${mm}/${m[3]}`;
+      // ---------------------------------------------------------------------
+      // Tiny spring animator (critically damped by default). Each key keeps
+      // its live value + velocity, so re-targeting mid-flight continues from
+      // where it is on screen instead of jumping — i.e. it's interruptible.
+      // response = seconds to (roughly) reach the target, damping 1 = no bounce.
+      // ---------------------------------------------------------------------
+      const spring = (() => {
+        const states = new Map();
+        const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+        let raf = 0,
+          last = 0;
+        function tick(t) {
+          // Real elapsed time (capped), integrated in small fixed sub-steps so
+          // a dropped frame skips ahead instead of slowing the motion down.
+          const elapsed = Math.min(0.1, Math.max(0, (t - last) / 1000));
+          last = t;
+          let running = false;
+          states.forEach((s) => {
+            if (s.done) return;
+            const w = (2 * Math.PI) / s.response;
+            for (let left = elapsed; left > 0; left -= 0.004) {
+              const dt = Math.min(0.004, left);
+              const a = -w * w * (s.x - s.target) - 2 * s.damping * w * s.v;
+              s.v += a * dt;
+              s.x += s.v * dt;
             }
-            return d; // unrecognized format - show as-is rather than guess
-          }
-
-          // "Data as of" per platform - the most recent date actually present in
-          // that platform's own export (never today's date, never a guess: a
-          // platform with no determinable date shows "Not available" rather
-          // than inventing one). Computed once since the underlying data doesn't
-          // change at runtime; re-read on each tab switch by updateAsOf().
-          const LATEST_BY_PLATFORM = {};
-          PLATS.forEach((p) => {
-            let latest = null;
-            GROUPS.forEach((g) =>
-              (g.platforms[p] || []).forEach((e) => {
-                if (e.asof && (!latest || e.asof > latest)) latest = e.asof;
-              }),
-            );
-            LATEST_BY_PLATFORM[p] = latest; // null if this platform has no asof anywhere
+            if (Math.abs(s.v) < s.eps && Math.abs(s.x - s.target) < s.eps) {
+              s.x = s.target;
+              s.v = 0;
+              s.done = true;
+            } else running = true;
+            s.onFrame(s.x);
           });
-
-          function updateAsOf() {
-            const el = document.getElementById("asof");
-            const scope = document.getElementById("asof-scope");
-            if (activePlatform !== "All") {
-              el.textContent =
-                formatDate(LATEST_BY_PLATFORM[activePlatform]) ||
-                "Not available";
-              scope.textContent = activePlatform + " export";
-              return;
-            }
-            scope.textContent = "YouTube, Facebook, Instagram & TikTok";
-            // "All": only show one date if every platform that has data agrees on
-            // the same date. Platforms genuinely export on different days (e.g.
-            // Facebook/Instagram exports often lag YouTube's), so showing one
-            // blended "latest" would misrepresent platforms that are actually
-            // older - "Varies by platform" is the honest answer when they
-            // disagree (each platform's tab shows its own date).
-            const values = PLATS.map((p) => LATEST_BY_PLATFORM[p]).filter(
-              (v) => v !== null,
-            );
-            const allAgree =
-              values.length > 0 &&
-              values.every((v) => v === values[0]) &&
-              values.length ===
-                PLATS.filter((p) => LATEST_BY_PLATFORM[p] !== null).length;
-            el.textContent = allAgree
-              ? formatDate(values[0])
-              : "Varies by platform";
+          raf = running ? requestAnimationFrame(tick) : 0;
+        }
+        return function to(key, target, onFrame, opts = {}) {
+          let s = states.get(key);
+          if (!s) {
+            s = { x: opts.from ?? target, v: 0 };
+            states.set(key, s);
           }
-
-          // Per-row metrics for the CURRENTLY ACTIVE platform tab. 'All' sums every
-          // platform; a specific platform sums only that platform's own entries
-          // (e.g. YouTube's Standard + Short + Part N all count as YouTube).
-          function platMetrics(g, p) {
-            let m;
-            if (p === "All")
-              m = { v: g.tot_v, l: g.tot_l, c: g.tot_c, s: g.tot_s };
-            else {
-              const entries = g.platforms[p] || [];
-              m = entries.reduce(
-                (a, e) => ({
-                  v: a.v + e.v,
-                  l: a.l + e.l,
-                  c: a.c + e.c,
-                  s: a.s + e.s,
-                }),
-                { v: 0, l: 0, c: 0, s: 0 },
-              );
-            }
-            m.er = engRate(m);
-            return m;
+          Object.assign(s, {
+            target,
+            onFrame,
+            response: opts.response || 0.4,
+            damping: opts.damping ?? 1,
+            eps: opts.eps || 0.05,
+            done: false,
+          });
+          if (reduce.matches || opts.immediate) {
+            s.x = target;
+            s.v = 0;
+            s.done = true;
+            onFrame(target);
+            return;
           }
-
-          function visibleGroups() {
-            let rows = GROUPS;
-            if (activePlatform !== "All")
-              rows = rows.filter(
-                (g) =>
-                  g.platforms[activePlatform] &&
-                  g.platforms[activePlatform].length,
-              );
-            if (search)
-              rows = rows.filter((g) =>
-                g.title.toLowerCase().includes(search.toLowerCase()),
-              );
-            rows = [...rows].sort((a, b) => {
-              if (sortKey === "title")
-                return a.title.localeCompare(b.title) * sortDir;
-              const mkey = sortKey.replace("tot_", ""); // tot_v -> v, tot_l -> l, ...
-              const x = platMetrics(a, activePlatform)[mkey];
-              const y = platMetrics(b, activePlatform)[mkey];
-              return (x - y) * sortDir;
-            });
-            return rows;
+          onFrame(s.x);
+          if (!raf) {
+            last = performance.now();
+            raf = requestAnimationFrame(tick);
           }
+        };
+      })();
 
-          function renderCards() {
-            const rows = visibleGroups();
-            const t = rows.reduce(
-              (a, g) => {
-                const m = platMetrics(g, activePlatform);
-                a.v += m.v;
-                a.l += m.l;
-                a.c += m.c;
-                a.s += m.s;
-                return a;
-              },
-              { v: 0, l: 0, c: 0, s: 0 },
-            );
-            const cards = [
-              ["Videos", rows.length],
-              ["Total views", fmt(t.v)],
-              ["Total likes", fmt(t.l)],
-              ["Total comments", fmt(t.c)],
-              ["Total shares", fmt(t.s)],
-              ["Eng. rate", fmtPct(engRate(t))],
-            ];
-            document.getElementById("cards").innerHTML = cards
-              .map(
-                ([l, n]) =>
-                  `<div class="card"><div class="n">${n}</div><div class="l">${l}</div></div>`,
-              )
-              .join("");
+      function fmt(n) {
+        return (n || 0).toLocaleString("en-US");
+      }
+
+      // Engagement rate = (likes + comments + shares) / views * 100.
+      // Computed the same way for every platform (rather than trusting
+      // each platform's own self-reported "engagement" figure, which
+      // isn't defined the same way twice) so it's actually comparable
+      // across YouTube/Facebook/Instagram/TikTok. Views dominate raw
+      // totals for some platforms simply because they reach more
+      // people, not because the content lands better there - this is
+      // the number that isn't skewed by that.
+      function engRate(m) {
+        return m.v > 0 ? ((m.l + m.c + m.s) / m.v) * 100 : 0;
+      }
+      function fmtPct(n) {
+        return n.toFixed(n >= 10 ? 1 : 2) + "%";
+      }
+
+      // Show every date as DD/MM/YYYY. The pipeline stores dates as ISO
+      // (YYYY-MM-DD); the US-style branch only covers data built before
+      // that, and a TikTok date with no year (e.g. "April 24") is shown
+      // as-is rather than guessed.
+      function formatDate(d) {
+        if (!d) return null;
+        let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d); // ISO
+        if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+        m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(d); // legacy US (MM/DD/YYYY)
+        if (m) {
+          const mm = m[1].padStart(2, "0"),
+            dd = m[2].padStart(2, "0");
+          return `${dd}/${mm}/${m[3]}`;
+        }
+        return d; // unrecognized format - show as-is rather than guess
+      }
+
+      // "Data as of" per platform - the most recent date actually present in
+      // that platform's own export (never today's date, never a guess: a
+      // platform with no determinable date shows "Not available" rather
+      // than inventing one). Computed once since the underlying data doesn't
+      // change at runtime; re-read on each tab switch by updateAsOf().
+      const LATEST_BY_PLATFORM = {};
+      PLATS.forEach((p) => {
+        let latest = null;
+        GROUPS.forEach((g) =>
+          (g.platforms[p] || []).forEach((e) => {
+            if (e.asof && (!latest || e.asof > latest)) latest = e.asof;
+          }),
+        );
+        LATEST_BY_PLATFORM[p] = latest; // null if this platform has no asof anywhere
+      });
+
+      function updateAsOf() {
+        const el = document.getElementById("asof");
+        const scope = document.getElementById("asof-scope");
+        if (activePlatform !== "All") {
+          el.textContent =
+            formatDate(LATEST_BY_PLATFORM[activePlatform]) || "Not available";
+          // TikTok's export only covers its top 15 videos; the rest are read
+          // from the public profile, so say so when any of those are shown.
+          const fromProfile = GROUPS.some((g) =>
+            (g.platforms[activePlatform] || []).some((e) => e.src),
+          );
+          scope.textContent =
+            activePlatform + (fromProfile ? " export + public profile" : " export");
+          return;
+        }
+        scope.textContent = "YouTube, Facebook, Instagram & TikTok";
+        // "All": only show one date if every platform that has data agrees on
+        // the same date. Platforms genuinely export on different days (e.g.
+        // Facebook/Instagram exports often lag YouTube's), so showing one
+        // blended "latest" would misrepresent platforms that are actually
+        // older - "Varies by platform" is the honest answer when they
+        // disagree (each platform's tab shows its own date).
+        const values = PLATS.map((p) => LATEST_BY_PLATFORM[p]).filter(
+          (v) => v !== null,
+        );
+        const allAgree =
+          values.length > 0 &&
+          values.every((v) => v === values[0]) &&
+          values.length ===
+            PLATS.filter((p) => LATEST_BY_PLATFORM[p] !== null).length;
+        el.textContent = allAgree ? formatDate(values[0]) : "Varies by platform";
+      }
+
+      // Per-row metrics for the CURRENTLY ACTIVE platform tab. 'All' sums every
+      // platform; a specific platform sums only that platform's own entries
+      // (e.g. YouTube's Standard + Short + Part N all count as YouTube).
+      function platMetrics(g, p) {
+        let m;
+        if (p === "All") m = { v: g.tot_v, l: g.tot_l, c: g.tot_c, s: g.tot_s };
+        else {
+          const entries = g.platforms[p] || [];
+          m = entries.reduce(
+            (a, e) => ({
+              v: a.v + e.v,
+              l: a.l + e.l,
+              c: a.c + e.c,
+              s: a.s + e.s,
+            }),
+            { v: 0, l: 0, c: 0, s: 0 },
+          );
+        }
+        m.er = engRate(m);
+        return m;
+      }
+
+      // Release-date range for the active tab: 'All' spans every platform,
+      // a platform tab spans only that platform's own versions. Dates are ISO
+      // (YYYY-MM-DD), so plain string comparison orders them correctly. The
+      // row shows and sorts by `first` - when the video first went out.
+      const SPREAD_DAYS = 7;
+      function releaseSpan(g, p) {
+        const plats = p === "All" ? Object.keys(g.platforms) : [p];
+        const ds = plats
+          .flatMap((q) => (g.platforms[q] || []).map((e) => e.d))
+          .filter((d) => d && /^\d{4}-\d{2}-\d{2}$/.test(d))
+          .sort();
+        if (!ds.length) return { first: null, last: null, spread: false };
+        const first = ds[0],
+          last = ds[ds.length - 1];
+        const days = (Date.parse(last) - Date.parse(first)) / 86400000;
+        return { first, last, spread: days > SPREAD_DAYS };
+      }
+
+      function visibleGroups() {
+        let rows = GROUPS;
+        if (activePlatform !== "All")
+          rows = rows.filter(
+            (g) =>
+              g.platforms[activePlatform] && g.platforms[activePlatform].length,
+          );
+        if (search)
+          rows = rows.filter((g) =>
+            g.name.toLowerCase().includes(search.toLowerCase()),
+          );
+        rows = [...rows].sort((a, b) => {
+          if (sortKey === "title") return a.name.localeCompare(b.name) * sortDir;
+          if (sortKey === "rel") {
+            const x = releaseSpan(a, activePlatform).first;
+            const y = releaseSpan(b, activePlatform).first;
+            if (!x || !y) return !x - !y; // undated rows sink in either direction
+            return (x < y ? -1 : x > y ? 1 : 0) * sortDir;
           }
+          const mkey = sortKey.replace("tot_", ""); // tot_v -> v, tot_l -> l, ...
+          const x = platMetrics(a, activePlatform)[mkey];
+          const y = platMetrics(b, activePlatform)[mkey];
+          return (x - y) * sortDir;
+        });
+        return rows;
+      }
 
-          function renderTabs() {
-            PLATS.forEach((p) => {
-              const n = GROUPS.filter((g) => g.platforms[p]).length;
-              document.querySelector(`#t-${p} .cnt`).textContent = n;
-            });
-            document.querySelector("#t-All .cnt").textContent = GROUPS.length;
-            [...document.querySelectorAll(".ptab")].forEach((el) => {
-              el.classList.toggle("active", el.dataset.p === activePlatform);
-              el.onclick = () => {
-                activePlatform = el.dataset.p;
-                render();
-              };
-            });
-          }
+      function renderCards() {
+        const rows = visibleGroups();
+        const t = rows.reduce(
+          (a, g) => {
+            const m = platMetrics(g, activePlatform);
+            a.v += m.v;
+            a.l += m.l;
+            a.c += m.c;
+            a.s += m.s;
+            return a;
+          },
+          { v: 0, l: 0, c: 0, s: 0 },
+        );
+        const cards = [
+          ["Videos", fmt(rows.length)],
+          ["Total views", fmt(t.v), "accent"],
+          ["Total likes", fmt(t.l)],
+          ["Total comments", fmt(t.c)],
+          ["Total shares", fmt(t.s)],
+          ["Engagement rate", fmtPct(engRate(t))],
+        ];
+        document.getElementById("cards").innerHTML = cards
+          .map(
+            ([l, n, cls]) =>
+              `<div class="card ${cls || ""}"><div class="l">${l}</div><div class="n">${n}</div></div>`,
+          )
+          .join("");
+      }
 
-          function metricRow(label, m, indent) {
-            const link = m.u
-              ? `<a class="vlink" href="${m.u}" target="_blank" rel="noopener">view</a>`
-              : "";
-            const pad = indent
-              ? "padding-left:22px;color:var(--sub);font-size:11.5px;"
-              : "";
-            return `<tr><td style="${pad}">${label}</td><td class="num">${fmt(m.v)}</td><td class="num">${fmt(m.l)}</td>
-    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td class="num">${fmtPct(engRate(m))}</td><td>${formatDate(m.d) || "—"} &nbsp; ${link}</td></tr>`;
-          }
+      // Slide the segmented-control thumb to the active tab. X and width are
+      // separate springs (2D motion decomposed per axis).
+      function moveThumb(immediate) {
+        const active = document.querySelector(".ptab.active");
+        const thumb = document.getElementById("segThumb");
+        if (!active) return;
+        let x = 0,
+          w = 0;
+        const apply = () =>
+          (thumb.style.transform = `translateX(${x}px)`),
+          applyW = () => (thumb.style.width = w + "px");
+        spring("thumb-x", active.offsetLeft, (v) => ((x = v), apply()), {
+          response: 0.35,
+          immediate,
+        });
+        spring("thumb-w", active.offsetWidth, (v) => ((w = v), applyW()), {
+          response: 0.35,
+          immediate,
+        });
+      }
 
-          function breakdownRow(p, entries, rowId) {
-            if (!entries || entries.length === 0)
-              return `<tr><td>${p}</td><td colspan="6" style="text-align:left;color:var(--sub)">not posted here</td></tr>`;
-            if (entries.length === 1) {
-              return metricRow(p, entries[0]);
-            }
-            const tot = entries.reduce(
-              (a, e) => ({
-                v: a.v + e.v,
-                l: a.l + e.l,
-                c: a.c + e.c,
-                s: a.s + e.s,
-              }),
-              { v: 0, l: 0, c: 0, s: 0 },
-            );
-            const subId = `sub-${p}-${rowId}`;
-            const head = `<tr class="yt-toggle" data-target="${subId}" style="cursor:pointer">
-      <td><span class="car" style="display:inline-block;width:10px">▶</span>${p} — ${entries.length} versions</td>
+      function renderTabs() {
+        PLATS.forEach((p) => {
+          const n = GROUPS.filter((g) => g.platforms[p]).length;
+          document.querySelector(`#t-${p} .cnt`).textContent = n;
+        });
+        document.querySelector("#t-All .cnt").textContent = GROUPS.length;
+        [...document.querySelectorAll(".ptab")].forEach((el) => {
+          const on = el.dataset.p === activePlatform;
+          el.classList.toggle("active", on);
+          el.setAttribute("aria-selected", on);
+          // pointerdown = respond the instant it's pressed, not on release
+          el.onpointerdown = (e) => {
+            if (e.button !== 0 || activePlatform === el.dataset.p) return;
+            activePlatform = el.dataset.p;
+            render();
+          };
+          el.onclick = () => {
+            // keyboard activation (Enter/Space) arrives as click only
+            if (activePlatform === el.dataset.p) return;
+            activePlatform = el.dataset.p;
+            render();
+          };
+        });
+        moveThumb();
+      }
+
+      function metricRow(label, m, indent) {
+        const link = m.u
+          ? `<a class="vlink" href="${m.u}" target="_blank" rel="noopener">View ↗</a>`
+          : "";
+        const pad = indent
+          ? "padding-left:34px;color:var(--sub);font-size:12px;"
+          : "";
+        const name = indent
+          ? label
+          : `<span class="platname"><span class="dot ${label}"></span>${label}</span>`;
+        return `<tr><td style="${pad}">${name}</td><td class="num">${fmt(m.v)}</td><td class="num">${fmt(m.l)}</td>
+    <td class="num">${fmt(m.c)}</td><td class="num">${fmt(m.s)}</td><td class="num">${fmtPct(engRate(m))}</td><td class="pub">${formatDate(m.d) || "—"}${link}</td></tr>`;
+      }
+
+      function breakdownRow(p, entries, rowId) {
+        if (!entries || entries.length === 0)
+          return `<tr><td><span class="platname" style="opacity:.55"><span class="dot ${p}"></span>${p}</span></td><td colspan="6" class="not-here" style="text-align:left">${p === "TikTok" ? "Data unavailable" : "Not posted here"}</td></tr>`;
+        if (entries.length === 1) {
+          return metricRow(p, entries[0]);
+        }
+        const tot = entries.reduce(
+          (a, e) => ({
+            v: a.v + e.v,
+            l: a.l + e.l,
+            c: a.c + e.c,
+            s: a.s + e.s,
+          }),
+          { v: 0, l: 0, c: 0, s: 0 },
+        );
+        const subId = `sub-${p}-${rowId}`;
+        const head = `<tr class="yt-toggle" data-target="${subId}" aria-expanded="false">
+      <td><span class="platname">${CHEVRON}<span class="dot ${p}"></span>${p}<span class="pchip">${entries.length} versions</span></span></td>
       <td class="num">${fmt(tot.v)}</td><td class="num">${fmt(tot.l)}</td>
       <td class="num">${fmt(tot.c)}</td><td class="num">${fmt(tot.s)}</td><td class="num">${fmtPct(engRate(tot))}</td><td></td></tr>`;
-            const subRows = entries
-              .map((e) => metricRow(e.label || p, e, true))
-              .join("");
-            return (
-              head +
-              `<tbody class="${subId}" style="display:none">${subRows}</tbody>`
-            );
-          }
+        const subRows = entries
+          .map((e) => metricRow(e.label || p, e, true))
+          .join("");
+        return (
+          head + `<tbody class="${subId}" style="display:none">${subRows}</tbody>`
+        );
+      }
 
-          function renderList() {
-            const rows = visibleGroups();
-            const list = document.getElementById("list");
-            if (rows.length === 0) {
-              list.innerHTML = `<div class="empty">No videos match these filters.</div>`;
-              return;
-            }
-            list.innerHTML = rows
-              .map((g, i) => {
-                const dots = PLATS.filter((p) => g.platforms[p])
-                  .map((p) => `<span class="dot ${p}" title="${p}"></span>`)
-                  .join("");
-                const bd = PLATS.map((p) =>
-                  breakdownRow(p, g.platforms[p], i),
-                ).join("");
-                const m = platMetrics(g, activePlatform); // reflects the active tab, not always the combined total
-                return `<div class="row" id="row${i}">
-      <div class="row-head" onclick="toggle(${i})">
-        <span class="car">▶</span>
-        <span class="vtitle">${g.title}</span>
-        <span class="num">${fmt(m.v)}</span>
+      function renderList() {
+        const rows = visibleGroups();
+        const list = document.getElementById("list");
+        if (rows.length === 0) {
+          list.innerHTML = `<div class="empty"><b>No matching videos</b>Try a different search or platform.</div>`;
+          return;
+        }
+        list.innerHTML = rows
+          .map((g, i) => {
+            const dots = PLATS.filter((p) => g.platforms[p])
+              .map((p) => `<span class="dot ${p}" title="${p}"></span>`)
+              .join("");
+            const bd = PLATS.map((p) => breakdownRow(p, g.platforms[p], i)).join(
+              "",
+            );
+            const m = platMetrics(g, activePlatform); // reflects the active tab, not always the combined total
+            const rel = releaseSpan(g, activePlatform);
+            const spread = rel.spread
+              ? `<span class="spread" title="Released ${formatDate(rel.first)} – ${formatDate(rel.last)} across ${activePlatform === "All" ? "platforms" : "versions"}" aria-label="Release dates vary">+</span>`
+              : "";
+            return `<div class="row" id="row${i}">
+      <div class="row-head" role="button" tabindex="0" aria-expanded="false" data-i="${i}">
+        ${CHEVRON}
+        <span class="vtitle" title="${g.nameHtml}">${g.nameHtml}</span>
+        <span class="num primary">${fmt(m.v)}</span>
         <span class="num">${fmt(m.l)}</span>
         <span class="num">${fmt(m.c)}</span>
         <span class="num">${fmt(m.s)}</span>
         <span class="num">${fmtPct(m.er)}</span>
-        <span class="plats">${dots}<span class="pchip">${g.n_platforms} platform${g.n_platforms > 1 ? "s" : ""}</span></span>
+        <span class="num rel">${formatDate(rel.first) || "—"}${spread}</span>
+        <span class="plats">${dots}<span class="pchip">${g.n_platforms}</span></span>
       </div>
-      <div class="breakdown"><table class="bd-table">
+      <div class="breakdown"><div class="bd-clip"><div class="bd-inner"><table class="bd-table">
         <tr><th style="text-align:left">Platform</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Eng. rate</th><th style="text-align:left">Published</th></tr>
         ${bd}
-      </table></div>
+      </table></div></div></div>
     </div>`;
-              })
-              .join("");
-            [...document.querySelectorAll(".yt-toggle")].forEach((el) => {
-              el.onclick = (e) => {
-                e.stopPropagation();
-                const sub = document.querySelector("." + el.dataset.target);
-                const car = el.querySelector(".car");
-                const open = sub.style.display !== "none";
-                sub.style.display = open ? "none" : "table-row-group";
-                car.style.transform = open ? "" : "rotate(90deg)";
-              };
-            });
-          }
+          })
+          .join("");
+        [...list.querySelectorAll(".row-head")].forEach((el) => {
+          el.onclick = () => toggle(+el.dataset.i);
+          el.onkeydown = (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggle(+el.dataset.i);
+            }
+          };
+        });
+        [...list.querySelectorAll(".yt-toggle")].forEach((el) => {
+          el.onclick = (e) => {
+            e.stopPropagation();
+            const sub = document.querySelector("." + el.dataset.target);
+            const car = el.querySelector(".car");
+            const open = sub.style.display !== "none";
+            sub.style.display = open ? "none" : "table-row-group";
+            car.style.transform = open ? "" : "rotate(90deg)";
+            el.setAttribute("aria-expanded", !open);
+          };
+        });
+      }
 
-          function toggle(i) {
-            document.getElementById("row" + i).classList.toggle("open");
-          }
+      function toggle(i) {
+        const row = document.getElementById("row" + i);
+        const open = row.classList.toggle("open");
+        row.querySelector(".row-head").setAttribute("aria-expanded", open);
+      }
 
-          function render() {
-            renderTabs();
-            renderCards();
-            renderList();
-            updateAsOf();
-          }
+      function render() {
+        renderTabs();
+        renderCards();
+        renderList();
+        updateAsOf();
+      }
 
-          [...document.querySelectorAll(".colhead span[data-k]")].forEach(
-            (el) => {
-              el.onclick = () => {
-                const k = el.dataset.k;
-                if (sortKey === k) sortDir *= -1;
-                else {
-                  sortKey = k;
-                  sortDir = k === "title" ? 1 : -1;
-                }
-                [...document.querySelectorAll(".colhead span")].forEach((s) =>
-                  s.classList.remove("active"),
-                );
-                el.classList.add("active");
-                renderList();
-              };
-            },
+      function syncSortHeads() {
+        [...document.querySelectorAll(".colhead span[data-k]")].forEach((s) => {
+          const on = s.dataset.k === sortKey;
+          s.classList.toggle("active", on);
+          s.classList.toggle("asc", on && sortDir === 1);
+          s.setAttribute(
+            "aria-sort",
+            on ? (sortDir === 1 ? "ascending" : "descending") : "none",
           );
-          document.getElementById("search").addEventListener("input", (e) => {
-            search = e.target.value;
-            render();
-          });
+        });
+      }
+      [...document.querySelectorAll(".colhead span[data-k]")].forEach((el) => {
+        const sortBy = () => {
+          const k = el.dataset.k;
+          if (sortKey === k) sortDir *= -1;
+          else {
+            sortKey = k;
+            sortDir = k === "title" ? 1 : -1;
+          }
+          syncSortHeads();
+          renderList();
+        };
+        el.onclick = sortBy;
+        el.onkeydown = (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            sortBy();
+          }
+        };
+      });
+      document.getElementById("search").addEventListener("input", (e) => {
+        search = e.target.value;
+        renderCards();
+        renderList();
+      });
 
-          render();
-        </script>
-      </body>
-    </html>
+      // Hairline under the toolbar only while it is floating over content.
+      function syncStuck() {
+        const navH = parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue("--nav-h"),
+        ) || 0;
+        const top = document.getElementById("sentinel").getBoundingClientRect().top;
+        document.getElementById("toolbar").classList.toggle("stuck", top < navH);
+      }
+      addEventListener("scroll", syncStuck, { passive: true });
+      // On narrow screens the nav is a sticky top bar; park the toolbar under it.
+      function syncNavHeight() {
+        const nav = document.querySelector(".sidebar");
+        const h = matchMedia("(max-width: 860px)").matches ? nav.offsetHeight : 0;
+        document.documentElement.style.setProperty("--nav-h", h + "px");
+      }
+      addEventListener("resize", () => {
+        syncNavHeight();
+        moveThumb(true);
+      });
+      syncNavHeight();
+
+      syncSortHeads();
+      render();
+      moveThumb(true); // place the thumb without animating on first paint
+      document.fonts && document.fonts.ready.then(() => moveThumb(true));
+    </script>
   </body>
 </html>

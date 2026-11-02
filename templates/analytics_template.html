@@ -7,6 +7,8 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <title>Kehelmala Studios — Charts Dashboard</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="apple-touch-icon" href="favicon.png" />
     <style>
       /* ------------------------------------------------------------------
          Design tokens. Shared with dashboard_template.html (keep in sync).
@@ -31,7 +33,7 @@
            dataviz/scripts/validate_palette.js --pairs all on #f5f5f7: CVD
            worst ΔE 8.1, normal-vision worst ΔE 15.2. Pastels sit below 3:1
            against the background, so charts must keep their direct value
-           labels (in dark ink). Keep in sync with SCHEME_A/SCHEME_B in
+           labels (in dark ink). Keep in sync with SCHEME_A in
            analytics_template.html. */
         --c-youtube: #e88761;
         --c-facebook: #78bcef;
@@ -308,6 +310,17 @@
       .card.accent .n {
         color: var(--accent);
       }
+      .card .d {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--sub);
+        line-height: 1.35;
+        font-variant-numeric: tabular-nums;
+      }
+      .card .d b {
+        color: var(--good);
+        font-weight: 600;
+      }
       /* ------------------------------------------------------------------
          Charts page
          ------------------------------------------------------------------ */
@@ -323,8 +336,9 @@
         }
       }
 
-      /* Platform slicer — a floating panel (lighter material than the
-         sidebar). Each platform is a toggle with its chart colour swatch. */
+      /* Filter panel - a floating panel (lighter material than the sidebar).
+         Platforms are toggles with their chart colour swatch; the period is a
+         single choice. Both scope every number and chart on the page. */
       .slicer-panel {
         background: var(--panel);
         border-radius: var(--radius-lg);
@@ -339,7 +353,13 @@
         color: var(--sub);
         margin: 0 8px 8px;
       }
-      #platform-slicers {
+      .slicer-label.second {
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+      #platform-slicers,
+      #period-slicers {
         display: flex;
         flex-direction: column;
         gap: 2px;
@@ -412,7 +432,12 @@
           position: static;
           padding: 10px;
         }
-        #platform-slicers {
+        .slicer-label.second {
+          margin-top: 10px;
+          padding-top: 10px;
+        }
+        #platform-slicers,
+        #period-slicers {
           flex-direction: row;
           flex-wrap: wrap;
           gap: 6px;
@@ -425,6 +450,10 @@
         }
         .slicer-btn .check {
           display: none;
+        }
+        #period-slicers .slicer-btn.on {
+          background: var(--ink-strong);
+          color: #fff;
         }
         .slicer-hint {
           display: none;
@@ -471,13 +500,14 @@
         line-height: 1.45;
       }
 
-      .pie-row {
+      .two-col {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 20px;
+        gap: 14px;
+        margin-bottom: 16px;
       }
       @media (max-width: 720px) {
-        .pie-row {
+        .two-col {
           grid-template-columns: 1fr;
         }
         section.block {
@@ -502,8 +532,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: 6px 14px;
-        justify-content: center;
-        margin-bottom: 6px;
+        margin-bottom: 10px;
         font-size: 12px;
         color: var(--sub);
       }
@@ -520,86 +549,196 @@
         box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
       }
 
-      .grid4 {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 14px;
-      }
-
-      .select-wrap {
-        position: relative;
-        max-width: 460px;
-        margin-bottom: 18px;
-      }
-      .select-wrap svg {
-        position: absolute;
-        right: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        pointer-events: none;
-        color: var(--sub);
-      }
-      select.vselect {
-        width: 100%;
-        -webkit-appearance: none;
-        appearance: none;
-        background: var(--fill);
-        color: var(--ink);
-        border: 0;
-        border-radius: 12px;
-        padding: 11px 40px 11px 14px;
-        font: inherit;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition:
-          background-color 160ms ease,
-          box-shadow 160ms ease;
-      }
-      select.vselect:hover {
-        background: var(--fill-strong);
-      }
-      select.vselect:focus {
+      /* Hover layer: the hit area is a transparent rect/row bigger than the
+         painted mark; the hovered mark lifts with an outline. */
+      .hit {
+        fill: transparent;
+        cursor: default;
         outline: none;
+      }
+      .hit:focus-visible {
+        outline: none;
+      }
+      .mark-hover {
+        filter: brightness(1.04);
+        stroke: var(--ink);
+        stroke-width: 1;
+      }
+      .tip {
+        position: fixed;
+        z-index: 50;
+        pointer-events: none;
+        min-width: 150px;
+        max-width: 280px;
         background: var(--panel);
+        border-radius: 12px;
         box-shadow:
-          0 0 0 1px rgba(10, 102, 194, 0.5),
-          0 0 0 4px rgba(10, 102, 194, 0.14);
-      }
-
-      .vid-totals {
-        display: flex;
-        flex-direction: column;
-        font-size: 13.5px;
-      }
-      .vid-totals .vt-title {
-        font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 16px;
-        letter-spacing: -0.015em;
-        line-height: 1.25;
-        color: var(--ink-strong);
-        margin-bottom: 4px;
-      }
-      .vid-totals .vt-on {
-        color: var(--sub);
+          0 0 0 1px var(--line),
+          0 8px 28px rgba(0, 0, 0, 0.12);
+        padding: 10px 12px;
         font-size: 12.5px;
-        margin-bottom: 10px;
+        line-height: 1.35;
+        opacity: 0;
+        transition: opacity 120ms ease;
       }
-      .vid-totals .vt-row {
+      .tip.show {
+        opacity: 1;
+      }
+      .tip .tt {
+        color: var(--sub);
+        font-weight: 600;
+        margin-bottom: 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .tip .tr {
         display: flex;
-        justify-content: space-between;
-        padding: 9px 0;
-        border-top: 1px solid var(--line);
+        align-items: center;
+        gap: 8px;
+        padding: 2px 0;
       }
-      .vid-totals .vt-row span {
+      .tip .tr i {
+        width: 12px;
+        height: 3px;
+        border-radius: 2px;
+        flex: none;
+      }
+      .tip .tr span {
         color: var(--sub);
       }
-      .vid-totals .vt-row b {
-        font-weight: 600;
+      .tip .tr b {
+        margin-left: auto;
+        padding-left: 12px;
+        font-weight: 700;
+        color: var(--ink);
         font-variant-numeric: tabular-nums;
       }
+      .tip .tf {
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid var(--line);
+      }
 
+      /* Platform table - the table view of the comparison charts */
+      .tbl-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table.ptable {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .ptable th {
+        text-align: right;
+        font-weight: 600;
+        font-size: 12px;
+        color: var(--sub);
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      .ptable td {
+        text-align: right;
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      .ptable th:first-child,
+      .ptable td:first-child {
+        text-align: left;
+        padding-left: 0;
+      }
+      .ptable td:first-child {
+        font-weight: 600;
+      }
+      .ptable td:first-child .sw {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        margin-right: 8px;
+        vertical-align: -1px;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+      }
+      .ptable tr.total td {
+        font-weight: 700;
+        border-bottom: 0;
+      }
+
+      /* Top videos - HTML rows so long titles ellipsize cleanly */
+      .top-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .top-row {
+        display: grid;
+        grid-template-columns: 24px minmax(0, 220px) minmax(0, 1fr) 64px;
+        align-items: center;
+        gap: 10px;
+        padding: 5px 6px;
+        border-radius: 10px;
+        outline: none;
+        transition: background-color 160ms ease;
+      }
+      .top-row:hover,
+      .top-row:focus-visible {
+        background: var(--bg);
+      }
+      .top-row .rk {
+        color: var(--faint);
+        font-size: 12px;
+        font-weight: 600;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .top-row .nm {
+        font-size: 13px;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .top-row .track {
+        display: flex;
+        gap: 2px;
+        height: 18px;
+        min-width: 0;
+      }
+      .top-row .seg {
+        height: 100%;
+        min-width: 2px;
+      }
+      .top-row .seg:last-child {
+        border-radius: 0 4px 4px 0;
+      }
+      .top-row .vl {
+        font-size: 12.5px;
+        font-weight: 700;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      @media (max-width: 600px) {
+        .top-row {
+          grid-template-columns: 18px minmax(0, 1fr) 56px;
+          row-gap: 4px;
+        }
+        .top-row .track {
+          grid-column: 2 / 4;
+          grid-row: 2;
+        }
+      }
+
+      .chart-note {
+        margin: 6px 0 0;
+        font-size: 11.5px;
+        color: var(--faint);
+        line-height: 1.4;
+      }
       .empty-note {
         color: var(--sub);
         font-size: 13px;
@@ -693,9 +832,10 @@
               <p class="eyebrow">Kehelmala Studios</p>
               <h1>Charts Dashboard</h1>
               <div class="tag">
-                How each platform performs. Choose which platforms to include.
+                How we're doing, whether it's growing, and where it works.
               </div>
             </div>
+            <div class="asof" id="asof"></div>
           </header>
 
           <div class="layout">
@@ -707,179 +847,63 @@
                 aria-label="Platforms"
               ></div>
               <p class="slicer-hint">At least one platform stays selected.</p>
+              <p class="slicer-label second">Published</p>
+              <div
+                id="period-slicers"
+                role="radiogroup"
+                aria-label="Published"
+              ></div>
+              <p class="slicer-hint">
+                Filters by when a video went up. Views are lifetime totals.
+              </p>
             </aside>
 
             <div class="main-col">
               <div class="kpis" id="kpis"></div>
 
               <section class="block">
-                <h3>Platform breakdown</h3>
-                <p class="sub">Share of views and of videos, per platform</p>
-                <div class="pie-row">
-                  <div class="chart-card">
-                    <h4>Views by platform</h4>
-                    <div id="pieViews"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Videos by platform</h4>
-                    <div id="pieCount"></div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="block">
-                <h3>Metrics by platform — columns</h3>
+                <h3>Views by month published</h3>
                 <p class="sub">
-                  Views, likes, comments and shares, each on its own scale
+                  Lifetime views of each month's uploads, split by platform.
+                  Recent months are lower partly because those videos have had
+                  less time to collect views.
                 </p>
-                <div class="grid4">
-                  <div class="chart-card">
-                    <h4>Views</h4>
-                    <div id="colViews"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Likes</h4>
-                    <div id="colLikes"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Comments</h4>
-                    <div id="colComments"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Shares</h4>
-                    <div id="colShares"></div>
-                  </div>
-                </div>
+                <div id="monthly"></div>
               </section>
 
               <section class="block">
-                <h3>Metrics by platform — bars</h3>
-                <p class="sub">Same data as above, horizontal</p>
-                <div class="grid4">
-                  <div class="chart-card">
-                    <h4>Views</h4>
-                    <div id="barViews"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Likes</h4>
-                    <div id="barLikes"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Comments</h4>
-                    <div id="barComments"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Shares</h4>
-                    <div id="barShares"></div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="block">
-                <h3>Engagement rate by platform</h3>
+                <h3>Platform comparison</h3>
                 <p class="sub">
-                  (likes + comments + shares) ÷ views, per platform — the number
-                  that isn't skewed by one platform simply reaching more people
+                  Where the views come from, and where audiences engage most.
+                  Engagement rate is (likes + comments + shares) ÷ views, so it
+                  isn't skewed by one platform simply reaching more people.
                 </p>
-                <div class="pie-row">
+                <div class="two-col">
                   <div class="chart-card">
-                    <h4>Column</h4>
-                    <div id="colEng"></div>
+                    <h4>Share of views</h4>
+                    <div id="barShare"></div>
                   </div>
                   <div class="chart-card">
-                    <h4>Bar</h4>
+                    <h4>Engagement rate</h4>
                     <div id="barEng"></div>
                   </div>
                 </div>
+                <div class="tbl-wrap" id="ptable"></div>
               </section>
 
               <section class="block">
-                <h3>Single video, by platform</h3>
+                <h3>Top 10 videos</h3>
                 <p class="sub">
-                  Pick a video to see how it performed on each platform
+                  By combined views across the selected platforms. Hover a row
+                  for the per-platform split.
                 </p>
-                <div class="select-wrap">
-                  <select
-                    class="vselect"
-                    id="videoSelect"
-                    aria-label="Video"
-                  ></select>
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 16 16"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M3.5 6 8 10.5 12.5 6"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div class="pie-row" style="margin-bottom: 14px">
-                  <div class="chart-card">
-                    <h4>Views by platform</h4>
-                    <div id="vidPie"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Totals</h4>
-                    <div id="vidTotals" class="vid-totals"></div>
-                  </div>
-                </div>
-                <div class="grid4">
-                  <div class="chart-card">
-                    <h4>Views (column)</h4>
-                    <div id="vidColViews"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Likes (column)</h4>
-                    <div id="vidColLikes"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Comments (column)</h4>
-                    <div id="vidColComments"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Shares (column)</h4>
-                    <div id="vidColShares"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Eng. rate (column)</h4>
-                    <div id="vidColEng"></div>
-                  </div>
-                </div>
-                <div class="grid4" style="margin-top: 14px">
-                  <div class="chart-card">
-                    <h4>Views (bar)</h4>
-                    <div id="vidBarViews"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Likes (bar)</h4>
-                    <div id="vidBarLikes"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Comments (bar)</h4>
-                    <div id="vidBarComments"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Shares (bar)</h4>
-                    <div id="vidBarShares"></div>
-                  </div>
-                  <div class="chart-card">
-                    <h4>Eng. rate (bar)</h4>
-                    <div id="vidBarEng"></div>
-                  </div>
-                </div>
+                <div id="topVideos"></div>
               </section>
 
               <footer>
-                Figures reflect the platforms selected on the left · Charts are
-                drawn as plain inline SVG (no external chart library, nothing to
-                fail to load) · Re-run exports and resend to refresh
+                Figures reflect the platforms and period selected on the left ·
+                Week-on-week change compares against the previous saved
+                snapshot · Re-run exports and resend to refresh
               </footer>
             </div>
           </div>
@@ -889,6 +913,11 @@
 
     <script>
       const GROUPS = __DATA_PLACEHOLDER__;
+      // The last snapshot saved before this build: { date, posts: { url: [v, l, c, s] } },
+      // or null when there isn't one. Keyed by post URL so regrouping videos
+      // between runs doesn't throw the comparison off.
+      const PREV = __PREV_PLACEHOLDER__;
+      const BUILD_DATE = "__BUILD_DATE__";
       // 'display' keeps the real punctuation ('title' is the stripped matching key).
       // Escaped once here since titles can contain & < > and quotes.
       GROUPS.forEach((g) => {
@@ -900,21 +929,12 @@
       });
       const PLATS = ["YouTube", "Facebook", "Instagram", "TikTok"];
 
-      // Scheme A — used for the Views pie, every column/bar chart, and the per-video
-      // charts, so a platform keeps one colour everywhere ("Peach & sky", matching the
-      // --c-* tokens in the CSS), per the design-system palette
-      // method: fixed categorical order, validated with
-      // dataviz/scripts/validate_palette.js --pairs all (passes CVD + normal-vision
-      // floors for all 4 shown together, as a pie does).
+      // One colour per platform on every chart ("Peach & sky", matching the --c-*
+      // tokens in the CSS), per the design-system palette method: fixed
+      // categorical order, validated with dataviz/scripts/validate_palette.js
+      // --pairs all (passes CVD + normal-vision floors for all 4 shown together,
+      // as the stacked charts do).
       const SCHEME_A = {
-        YouTube: "#E88761",
-        Facebook: "#78BCEF",
-        Instagram: "#A782E1",
-        TikTok: "#16CFA0",
-      };
-      // Scheme B — the "Videos by Platform" pie. Kept as its own slot so it can be
-      // varied later; currently identical to Scheme A so colours follow the platform.
-      const SCHEME_B = {
         YouTube: "#E88761",
         Facebook: "#78BCEF",
         Instagram: "#A782E1",
@@ -927,7 +947,14 @@
       root.setProperty("--c-instagram", SCHEME_A.Instagram);
       root.setProperty("--c-tiktok", SCHEME_A.TikTok);
 
+      const PERIODS = [
+        ["all", "All time"],
+        [12, "Last 12 months"],
+        [6, "Last 6 months"],
+        [3, "Last 3 months"],
+      ];
       let selected = new Set(PLATS); // multi-select platform slicer state
+      let period = "all";
 
       // ---------------------------------------------------------------------
       // Tiny spring animator (critically damped by default). Each key keeps
@@ -1013,6 +1040,22 @@
       function pctFmt(n) {
         return (n || 0).toFixed((n || 0) >= 10 ? 1 : 2) + "%";
       }
+      const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
+      function dayFmt(iso) {
+        const [y, m, d] = iso.split("-").map(Number);
+        return `${d} ${MONTHS[m - 1]} ${y}`;
+      }
+      function monthFmt(key) {
+        const [y, m] = key.split("-").map(Number);
+        return `${MONTHS[m - 1]} ${y}`;
+      }
+      function addMonths(key, n) {
+        let [y, m] = key.split("-").map(Number);
+        m += n;
+        y += Math.floor((m - 1) / 12);
+        m = ((((m - 1) % 12) + 12) % 12) + 1;
+        return `${y}-${String(m).padStart(2, "0")}`;
+      }
       // Pick white or dark ink for text on a coloured fill - whichever has the
       // higher WCAG contrast against it (pastel fills almost always get dark ink).
       function textOn(hex) {
@@ -1027,11 +1070,112 @@
         return vsDark >= vsWhite ? "#1d1d1f" : "#ffffff";
       }
 
+      // ---------------------------------------------------------------------
+      // Filtered data. Every number on the page comes from rows(), so the KPIs,
+      // charts and table always agree with the slicers.
+      // ---------------------------------------------------------------------
+      function cutoffDate() {
+        if (period === "all") return null;
+        return addMonths(BUILD_DATE.slice(0, 7), -period) + BUILD_DATE.slice(7);
+      }
+      function rows() {
+        const cut = cutoffDate();
+        const out = [];
+        GROUPS.forEach((g) =>
+          PLATS.forEach((p) => {
+            if (!selected.has(p)) return;
+            (g.platforms[p] || []).forEach((e) => {
+              if (cut && !(e.d && e.d >= cut)) return;
+              out.push({ g, p, e });
+            });
+          }),
+        );
+        return out;
+      }
+      function sumBy(rs, keyFn) {
+        const out = {};
+        rs.forEach((r) => {
+          const k = keyFn(r);
+          const t = (out[k] = out[k] || { v: 0, l: 0, c: 0, s: 0, groups: new Set() });
+          t.v += r.e.v;
+          t.l += r.e.l;
+          t.c += r.e.c;
+          t.s += r.e.s;
+          t.groups.add(r.g);
+        });
+        return out;
+      }
+
+      // ---------------------------------------------------------------------
+      // Tooltip - one shared element. Names go in via textContent (titles come
+      // from platform exports, so they're untrusted).
+      // ---------------------------------------------------------------------
+      const tip = document.createElement("div");
+      tip.className = "tip";
+      tip.setAttribute("role", "tooltip");
+      document.body.appendChild(tip);
+      // lines = [{color, label, value}], foot = optional {label, value}
+      function showTip(x, y, title, lines, foot) {
+        tip.textContent = "";
+        const tt = document.createElement("div");
+        tt.className = "tt";
+        tt.textContent = title;
+        tip.appendChild(tt);
+        const addRow = (ln, cls) => {
+          const r = document.createElement("div");
+          r.className = "tr" + (cls ? " " + cls : "");
+          if (ln.color) {
+            const i = document.createElement("i");
+            i.style.background = ln.color;
+            r.appendChild(i);
+          }
+          const s = document.createElement("span");
+          s.textContent = ln.label;
+          const b = document.createElement("b");
+          b.textContent = ln.value;
+          r.append(s, b);
+          tip.appendChild(r);
+        };
+        lines.forEach((ln) => addRow(ln));
+        if (foot) addRow(foot, "tf");
+        tip.classList.add("show");
+        const w = tip.offsetWidth,
+          h = tip.offsetHeight;
+        let left = x + 14,
+          top = y + 14;
+        if (left + w > innerWidth - 8) left = x - w - 14;
+        if (top + h > innerHeight - 8) top = y - h - 14;
+        tip.style.left = Math.max(8, left) + "px";
+        tip.style.top = Math.max(8, top) + "px";
+      }
+      function hideTip() {
+        tip.classList.remove("show");
+      }
+      // Wire hover + keyboard focus on a hit target. content() returns the
+      // showTip args (minus position); mark (optional) gets the lift outline.
+      function bindTip(hit, content, marks) {
+        const on = (x, y) => {
+          showTip(x, y, ...content());
+          (marks || []).forEach((m) => m.classList.add("mark-hover"));
+        };
+        const off = () => {
+          hideTip();
+          (marks || []).forEach((m) => m.classList.remove("mark-hover"));
+        };
+        hit.addEventListener("pointermove", (ev) => on(ev.clientX, ev.clientY));
+        hit.addEventListener("pointerleave", off);
+        hit.addEventListener("focus", () => {
+          const r = hit.getBoundingClientRect();
+          on(r.left + r.width / 2, r.top + r.height / 2);
+        });
+        hit.addEventListener("blur", off);
+        hit.setAttribute("tabindex", "0");
+      }
+      addEventListener("scroll", hideTip, { passive: true });
+
       // ---------------------------------------------------------------------------
       // Hand-rolled inline-SVG charts. No external chart library: nothing to fail
-      // to load, and the page is byte-for-byte what was tested. items = [{label,
-      // value, color}]. Every chart places its value labels INSIDE the mark, per
-      // the brief, and a legend (when asked for) sits above the chart.
+      // to load, and the page is byte-for-byte what was tested.
       // ---------------------------------------------------------------------------
 
       function svgEl(tag, attrs) {
@@ -1052,257 +1196,41 @@
         container.appendChild(leg);
       }
 
-      function renderPie(elId, items) {
-        const container = document.getElementById(elId);
-        container.innerHTML = "";
-        const shown = items.filter((it) => it.value > 0);
-        if (!shown.length) {
-          container.innerHTML =
-            '<div class="empty-note">No data for the selected platforms.</div>';
-          return;
-        }
-
-        renderLegend(container, shown); // legend ABOVE the chart, as requested
-
-        const size = 300,
-          cx = size / 2,
-          cy = size / 2 + 6,
-          r = 92;
-        const total = shown.reduce((a, it) => a + it.value, 0);
-        const svg = svgEl("svg", {
-          viewBox: `0 0 ${size} ${size + 12}`,
-          width: "100%",
-          height: "280",
-          role: "img",
-          "aria-label": "Pie chart",
-        });
-
-        let angle = -Math.PI / 2; // start at 12 o'clock
-        const outsideLabels = []; // small slices get a leader line instead of a cramped inside label
-        shown.forEach((it) => {
-          const frac = it.value / total;
-          const a0 = angle,
-            a1 = angle + frac * Math.PI * 2;
-          const x0 = cx + r * Math.cos(a0),
-            y0 = cy + r * Math.sin(a0);
-          const x1 = cx + r * Math.cos(a1),
-            y1 = cy + r * Math.sin(a1);
-          const large = a1 - a0 > Math.PI ? 1 : 0;
-          const d =
-            frac >= 0.9995
-              ? `M ${cx - r},${cy} A ${r},${r} 0 1 1 ${cx + r},${cy} A ${r},${r} 0 1 1 ${cx - r},${cy} Z`
-              : `M ${cx},${cy} L ${x0},${y0} A ${r},${r} 0 ${large} 1 ${x1},${y1} Z`;
-          svg.appendChild(
-            svgEl("path", {
-              d,
-              fill: it.color,
-              stroke: "#f5f5f7",
-              "stroke-width": 2,
-              "stroke-linejoin": "round",
-            }),
-          );
-
-          // Data label: inside the slice when it's wide enough to hold the
-          // text without crowding a neighbour; otherwise queued as an
-          // outside leader-line label (small adjacent slices - e.g. the
-          // last and first slice both meeting at 12 o'clock - would
-          // otherwise print their labels on top of each other).
-          const spanDeg = (frac * Math.PI * 2 * 180) / Math.PI;
-          const mid = (a0 + a1) / 2;
-          if (frac > 0.035) {
-            if (spanDeg >= 25) {
-              const lx = cx + r * 0.64 * Math.cos(mid),
-                ly = cy + r * 0.64 * Math.sin(mid);
-              const t = svgEl("text", {
-                x: lx,
-                y: ly,
-                fill: textOn(it.color),
-                "font-size": 12.5,
-                "font-weight": 700,
-                "text-anchor": "middle",
-                "dominant-baseline": "middle",
-                "font-family": "inherit",
-              });
-              t.textContent = abbrev(it.value);
-              svg.appendChild(t);
-            } else {
-              outsideLabels.push({ mid, value: it.value, color: it.color });
-            }
-          }
-
-          angle = a1; // advance to where this slice ended, so the next one starts there instead of back at 12 o'clock
-        });
-
-        // Outside labels: spread along the rim in angle order so two small
-        // slices next to each other never land on top of one another, each
-        // with a short leader line back to its own slice.
-        outsideLabels.sort((a, b) => a.mid - b.mid);
-        const minSep = (16 * Math.PI) / 180; // keep them at least ~16deg apart
-        outsideLabels.forEach((lab, i) => {
-          if (i > 0 && lab.mid - outsideLabels[i - 1].mid < minSep) {
-            lab.mid = outsideLabels[i - 1].mid + minSep;
-          }
-        });
-        outsideLabels.forEach((lab) => {
-          const lx1 = cx + (r - 2) * Math.cos(lab.mid),
-            ly1 = cy + (r - 2) * Math.sin(lab.mid);
-          const lx2 = cx + (r + 14) * Math.cos(lab.mid),
-            ly2 = cy + (r + 14) * Math.sin(lab.mid);
-          svg.appendChild(
-            svgEl("line", {
-              x1: lx1,
-              y1: ly1,
-              x2: lx2,
-              y2: ly2,
-              stroke: "var(--sub)",
-              "stroke-width": 1,
-            }),
-          );
-          const anchor =
-            Math.cos(lab.mid) > 0.15
-              ? "start"
-              : Math.cos(lab.mid) < -0.15
-                ? "end"
-                : "middle";
-          const t = svgEl("text", {
-            x: lx2 + Math.cos(lab.mid) * 3,
-            y: ly2 + Math.sin(lab.mid) * 3,
-            fill: "var(--ink)",
-            "font-size": 11.5,
-            "font-weight": 700,
-            "text-anchor": anchor,
-            "dominant-baseline": "middle",
-            "font-family": "inherit",
-          });
-          t.textContent = abbrev(lab.value);
-          svg.appendChild(t);
-        });
-        container.appendChild(svg);
-      }
-
-      function renderColumns(elId, items, labelFmt) {
-        labelFmt = labelFmt || abbrev;
-        const container = document.getElementById(elId);
-        container.innerHTML = "";
-        const shown = items.filter((it) => true); // keep all selected platforms, even zero, for a stable layout
-        if (!shown.length) {
-          container.innerHTML =
-            '<div class="empty-note">No platforms selected.</div>';
-          return;
-        }
-
-        const W = 300,
-          H = 210,
-          padTop = 10,
-          padBottom = 26,
-          padSide = 10;
-        const plotH = H - padTop - padBottom;
-        const max = Math.max(1, ...shown.map((it) => it.value));
-        const n = shown.length;
-        const gap = 14;
-        const barW = Math.min(44, (W - padSide * 2 - gap * (n - 1)) / n);
-        const totalW = barW * n + gap * (n - 1);
-        const startX = (W - totalW) / 2;
-
-        const svg = svgEl("svg", {
-          viewBox: `0 0 ${W} ${H}`,
-          width: "100%",
-          height: "220",
-        });
-        svg.appendChild(
-          svgEl("line", {
-            x1: padSide,
-            y1: H - padBottom,
-            x2: W - padSide,
-            y2: H - padBottom,
-            stroke: "var(--line)",
-            "stroke-width": 1,
-          }),
-        );
-
-        shown.forEach((it, i) => {
-          const x = startX + i * (barW + gap);
-          const rx = Math.min(5, barW / 2);
-          const bar = svgEl("path", { fill: it.color });
-          svg.appendChild(bar);
-          let t = null;
-          if (Math.max(2, (it.value / max) * plotH) > 20) {
-            t = svgEl("text", {
-              x: x + barW / 2,
-              fill: textOn(it.color),
-              "font-size": 10.5,
-              "font-weight": 700,
-              "text-anchor": "middle",
-              "font-family": "inherit",
-            });
-            t.textContent = labelFmt(it.value);
-            svg.appendChild(t);
-          }
-          // Height is a spring keyed per chart + platform: bars grow in on
-          // first load, and re-target from their current height when the
-          // selection changes (even mid-animation).
-          spring(
-            `${elId}:${it.label}`,
-            it.value / max,
-            (f) => {
-              const h = Math.max(2, f * plotH);
-              const y = H - padBottom - h;
-              const r = Math.min(rx, h / 2);
-              bar.setAttribute(
-                "d",
-                `M ${x},${y + h} L ${x},${y + r} Q ${x},${y} ${x + r},${y} L ${x + barW - r},${y} Q ${x + barW},${y} ${x + barW},${y + r} L ${x + barW},${y + h} Z`,
-              );
-              if (t) {
-                t.setAttribute("y", y + 15);
-                t.setAttribute("opacity", h > 20 ? 1 : 0);
-              }
-            },
-            { from: 0, response: 0.55, eps: 0.0005 },
-          );
-          const lbl = svgEl("text", {
-            x: x + barW / 2,
-            y: H - padBottom + 14,
-            fill: "var(--sub)",
-            "font-size": 10,
-            "text-anchor": "middle",
-            "font-family": "inherit",
-          });
-          lbl.textContent = it.label;
-          svg.appendChild(lbl);
-        });
-        container.appendChild(svg);
-      }
-
+      // Horizontal bars, one per selected platform in fixed order. The value
+      // label sits inside the bar when it fits, otherwise just past its end.
+      // items = [{label, value, color, tip: [lines]}]
       function renderBars(elId, items, labelFmt) {
-        labelFmt = labelFmt || abbrev;
         const container = document.getElementById(elId);
         container.innerHTML = "";
-        const shown = items;
-        if (!shown.length) {
+        if (!items.length) {
           container.innerHTML =
             '<div class="empty-note">No platforms selected.</div>';
           return;
         }
 
-        const W = 320,
-          labelW = 62,
-          padRight = 14;
-        const rowH = 34,
+        // Drawn at the container's real pixel width, so text stays 11px
+        // instead of shrinking with the viewBox in a narrow card.
+        const W = Math.max(220, container.clientWidth),
+          labelW = 70,
+          padRight = 70;
+        const rowH = 30,
           gap = 10;
-        const n = shown.length;
-        const H = n * rowH + (n - 1) * gap + 10;
+        const n = items.length;
+        const H = n * rowH + (n - 1) * gap + 8;
         const plotW = W - labelW - padRight;
-        const max = Math.max(1, ...shown.map((it) => it.value));
+        const max = Math.max(1e-9, ...items.map((it) => it.value));
 
         const svg = svgEl("svg", {
           viewBox: `0 0 ${W} ${H}`,
           width: "100%",
-          height: Math.max(140, H),
+          role: "img",
+          "aria-label": items
+            .map((it) => `${it.label} ${labelFmt(it.value)}`)
+            .join(", "),
         });
 
-        shown.forEach((it, i) => {
+        items.forEach((it, i) => {
           const y = i * (rowH + gap) + 4;
-          const ry = Math.min(5, rowH / 2);
           const x = labelW;
           const bar = svgEl("path", { fill: it.color });
           svg.appendChild(bar);
@@ -1316,30 +1244,43 @@
           });
           lbl.textContent = it.label;
           svg.appendChild(lbl);
-          let t = null;
-          if (Math.max(2, (it.value / max) * plotW) > 36) {
-            t = svgEl("text", {
-              x: x + 10,
-              y: y + rowH / 2 + 4,
-              fill: textOn(it.color),
-              "font-size": 11,
-              "font-weight": 700,
-              "font-family": "inherit",
-            });
-            t.textContent = labelFmt(it.value);
-            svg.appendChild(t);
-          }
+          const text = labelFmt(it.value);
+          const need = text.length * 6.6 + 16;
+          const t = svgEl("text", {
+            y: y + rowH / 2 + 4,
+            "font-size": 11,
+            "font-weight": 700,
+            "font-family": "inherit",
+          });
+          t.textContent = text;
+          svg.appendChild(t);
+          const hit = svgEl("rect", {
+            class: "hit",
+            x: 0,
+            y: y - gap / 2,
+            width: W,
+            height: rowH + gap,
+          });
+          svg.appendChild(hit);
+          bindTip(hit, () => [it.label, it.tip], [bar]);
+
           spring(
             `${elId}:${it.label}`,
             it.value / max,
             (f) => {
               const w = Math.max(2, f * plotW);
-              const r = Math.min(ry, w / 2);
+              const r = Math.min(4, w / 2);
               bar.setAttribute(
                 "d",
                 `M ${x},${y} L ${x + w - r},${y} Q ${x + w},${y} ${x + w},${y + r} L ${x + w},${y + rowH - r} Q ${x + w},${y + rowH} ${x + w - r},${y + rowH} L ${x},${y + rowH} Z`,
               );
-              if (t) t.setAttribute("opacity", w > 36 ? 1 : 0);
+              if (w > need) {
+                t.setAttribute("x", x + 10);
+                t.setAttribute("fill", textOn(it.color));
+              } else {
+                t.setAttribute("x", x + w + 6);
+                t.setAttribute("fill", "var(--ink)");
+              }
             },
             { from: 0, response: 0.55, eps: 0.0005 },
           );
@@ -1347,7 +1288,192 @@
         container.appendChild(svg);
       }
 
-      // --- platform slicer (vertical, multi-select) ---
+      // Stacked columns: one column per month, one segment per platform
+      // (fixed order, bottom up), 2px surface gap between segments, rounded
+      // top on the topmost segment only. Hover a column for its breakdown.
+      function renderMonthly(rs) {
+        const container = document.getElementById("monthly");
+        container.innerHTML = "";
+        const dated = rs.filter((r) => r.e.d);
+        if (!dated.length) {
+          container.innerHTML =
+            '<div class="empty-note">No videos published in this period.</div>';
+          return;
+        }
+        const plats = PLATS.filter((p) => selected.has(p));
+        if (plats.length > 1)
+          renderLegend(
+            container,
+            plats.map((p) => ({ label: p, color: SCHEME_A[p] })),
+          );
+
+        const byMonth = {};
+        dated.forEach((r) => {
+          const k = r.e.d.slice(0, 7);
+          const m = (byMonth[k] = byMonth[k] || { posts: new Set() });
+          m[r.p] = (m[r.p] || 0) + r.e.v;
+          m.posts.add(r.g);
+        });
+        const keys = Object.keys(byMonth).sort();
+        const cut = cutoffDate();
+        let first = cut ? cut.slice(0, 7) : keys[0];
+        const lastKey = keys[keys.length - 1];
+        // All time: a stray early upload followed by a long quiet stretch
+        // (6+ empty months) would squeeze every real month into one corner,
+        // so start after the last such gap and say what was left out.
+        let skipped = 0;
+        if (!cut) {
+          for (let i = 1; i < keys.length; i++) {
+            if (keys[i] > addMonths(keys[i - 1], 6)) first = keys[i];
+          }
+          keys
+            .filter((k) => k < first)
+            .forEach((k) => (skipped += byMonth[k].posts.size));
+        }
+        const months = [];
+        for (let k = first; k <= lastKey; k = addMonths(k, 1)) months.push(k);
+
+        const W = Math.max(300, container.clientWidth),
+          H = 260,
+          padTop = 22,
+          padBottom = 26,
+          padLeft = 44,
+          padRight = 6;
+        const plotW = W - padLeft - padRight,
+          plotH = H - padTop - padBottom;
+        const totals = months.map((k) =>
+          plats.reduce((a, p) => a + ((byMonth[k] || {})[p] || 0), 0),
+        );
+        const rawMax = Math.max(1, ...totals);
+        // Round the axis top to a 1/2/5 step so gridlines land on clean numbers.
+        const mag = 10 ** Math.floor(Math.log10(rawMax / 4));
+        const step = [1, 2, 2.5, 5, 10].map((s) => s * mag).find((s) => rawMax / s <= 4);
+        const max = Math.ceil(rawMax / step) * step;
+
+        const svg = svgEl("svg", {
+          viewBox: `0 0 ${W} ${H}`,
+          width: "100%",
+          role: "img",
+          "aria-label": "Views by month published, stacked by platform",
+        });
+        for (let v = 0; v <= max + 1e-9; v += step) {
+          const y = padTop + plotH - (v / max) * plotH;
+          svg.appendChild(
+            svgEl("line", {
+              x1: padLeft,
+              x2: W - padRight,
+              y1: y,
+              y2: y,
+              stroke: "var(--line)",
+              "stroke-width": 1,
+            }),
+          );
+          const t = svgEl("text", {
+            x: padLeft - 8,
+            y: y + 3.5,
+            fill: "var(--faint)",
+            "font-size": 10,
+            "text-anchor": "end",
+            "font-family": "inherit",
+          });
+          t.textContent = abbrev(v);
+          svg.appendChild(t);
+        }
+
+        const slot = plotW / months.length;
+        const colW = Math.max(3, Math.min(28, slot * 0.66));
+        // Label months on a calendar step (every 1/2/3/6/12 months, counted
+        // from January) so labels never crowd; January always gets its year.
+        const fit = Math.max(2, Math.floor(plotW / 48));
+        const every = [1, 2, 3, 6, 12].find((n) => months.length / n <= fit) || 12;
+        const peakIdx = totals.indexOf(rawMax);
+
+        months.forEach((k, i) => {
+          const cx = padLeft + slot * i + slot / 2;
+          const x = cx - colW / 2;
+          const m = byMonth[k] || {};
+          const segs = [];
+          let yBase = padTop + plotH;
+          const present = plats.filter((p) => (m[p] || 0) > 0);
+          present.forEach((p, j) => {
+            const h = (m[p] / max) * plotH;
+            const isTop = j === present.length - 1;
+            const gapPx = j > 0 ? 2 : 0; // surface gap below every segment but the first
+            const hh = Math.max(1, h - gapPx);
+            const y = yBase - h;
+            const r = isTop ? Math.min(4, colW / 2, hh) : 0;
+            const seg = svgEl("path", {
+              fill: SCHEME_A[p],
+              d: `M ${x},${y + hh} L ${x},${y + r} Q ${x},${y} ${x + r},${y} L ${x + colW - r},${y} Q ${x + colW},${y} ${x + colW},${y + r} L ${x + colW},${y + hh} Z`,
+            });
+            svg.appendChild(seg);
+            segs.push(seg);
+            yBase = y;
+          });
+          if (i === peakIdx) {
+            const t = svgEl("text", {
+              x: cx,
+              y: yBase - 6,
+              fill: "var(--ink)",
+              "font-size": 10.5,
+              "font-weight": 700,
+              "text-anchor": "middle",
+              "font-family": "inherit",
+            });
+            t.textContent = abbrev(rawMax);
+            svg.appendChild(t);
+          }
+          const [yy, mm] = k.split("-");
+          if ((+mm - 1) % every === 0) {
+            const lbl = svgEl("text", {
+              x: cx,
+              y: H - padBottom + 15,
+              fill: "var(--sub)",
+              "font-size": 10,
+              "text-anchor": "middle",
+              "font-family": "inherit",
+            });
+            lbl.textContent =
+              mm === "01"
+                ? `${MONTHS[+mm - 1]} '${yy.slice(2)}`
+                : MONTHS[+mm - 1];
+            svg.appendChild(lbl);
+          }
+          const hit = svgEl("rect", {
+            class: "hit",
+            x: padLeft + slot * i,
+            y: padTop,
+            width: slot,
+            height: plotH,
+          });
+          svg.appendChild(hit);
+          bindTip(
+            hit,
+            () => [
+              monthFmt(k),
+              plats.map((p) => ({
+                color: SCHEME_A[p],
+                label: p,
+                value: fmt(m[p] || 0),
+              })),
+              {
+                label: `Total · ${m.posts ? m.posts.size : 0} videos`,
+                value: fmt(totals[i]),
+              },
+            ],
+            segs,
+          );
+        });
+        container.appendChild(svg);
+        if (skipped) {
+          const note = document.createElement("p");
+          note.className = "chart-note";
+          note.textContent = `${skipped} earlier video${skipped > 1 ? "s" : ""} (before ${monthFmt(first)}) not shown here, but counted in every other number on the page.`;
+          container.appendChild(note);
+        }
+      }
+
+      // --- slicers ---
       function renderSlicers() {
         const el = document.getElementById("platform-slicers");
         el.innerHTML = PLATS.map(
@@ -1365,188 +1491,225 @@
             renderAll();
           };
         });
+
+        const pel = document.getElementById("period-slicers");
+        pel.innerHTML = PERIODS.map(
+          ([v, label]) =>
+            `<button class="slicer-btn ${period == v ? "on" : ""}" data-v="${v}" role="radio" aria-checked="${period == v}">${label}<svg class="check" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`,
+        ).join("");
+        [...pel.querySelectorAll(".slicer-btn")].forEach((btn) => {
+          btn.onclick = () => {
+            period = btn.dataset.v === "all" ? "all" : Number(btn.dataset.v);
+            renderSlicers();
+            renderAll();
+          };
+        });
       }
 
-      // --- aggregate helpers, respecting the current platform selection ---
-      function platformTotals(metric) {
-        const out = {};
-        PLATS.forEach((p) => (out[p] = 0));
-        GROUPS.forEach((g) => {
-          PLATS.forEach((p) => {
-            if (!selected.has(p)) return;
-            (g.platforms[p] || []).forEach((e) => {
-              out[p] += e[metric];
-            });
-          });
-        });
-        return out;
-      }
-      function platformVideoCounts() {
-        const out = {};
-        PLATS.forEach((p) => (out[p] = 0));
+      function renderAsof() {
+        let latest = "";
         GROUPS.forEach((g) =>
-          PLATS.forEach((p) => {
-            if (selected.has(p) && g.platforms[p] && g.platforms[p].length)
-              out[p]++;
-          }),
+          Object.values(g.platforms).forEach((es) =>
+            es.forEach((e) => {
+              if (e.asof && e.asof > latest) latest = e.asof;
+            }),
+          ),
         );
-        return out;
+        document.getElementById("asof").innerHTML = latest
+          ? `<span class="pulse"></span><span>Data as of <b>${dayFmt(latest)}</b></span>`
+          : "";
       }
-      function platformEngRate() {
-        const v = platformTotals("v"),
-          l = platformTotals("l"),
-          c = platformTotals("c"),
-          s = platformTotals("s");
-        const out = {};
-        PLATS.forEach((p) => (out[p] = engRate(v[p], l[p], c[p], s[p])));
-        return out;
-      }
-      function kpiTotals() {
-        let v = 0,
-          l = 0,
-          c = 0,
-          s = 0,
-          nVideos = 0;
-        GROUPS.forEach((g) => {
-          let any = false;
-          PLATS.forEach((p) => {
-            if (!selected.has(p)) return;
-            (g.platforms[p] || []).forEach((e) => {
-              v += e.v;
-              l += e.l;
-              c += e.c;
-              s += e.s;
-              any = true;
-            });
-          });
-          if (any) nVideos++;
+
+      // Change since the previous snapshot, over the same filtered rows. A post
+      // that wasn't in the snapshot counts in full (it's new since then).
+      function deltaLine(rs, metricIdx, key) {
+        if (!PREV) return "";
+        let d = 0;
+        rs.forEach((r) => {
+          const old = PREV.posts[r.e.u];
+          d += r.e[key] - (old ? old[metricIdx] : 0);
         });
-        return { v, l, c, s, nVideos };
+        const since = dayFmt(PREV.date).replace(/ \d{4}$/, "");
+        return d
+          ? `<b>${d > 0 ? "+" : ""}${abbrev(d)}</b> since ${since}`
+          : `No change since ${since}`;
+      }
+      function newVideosLine(rs) {
+        if (!PREV) return "";
+        const fresh = new Set();
+        const seen = new Set();
+        rs.forEach((r) => {
+          if (PREV.posts[r.e.u]) seen.add(r.g);
+          else fresh.add(r.g);
+        });
+        seen.forEach((g) => fresh.delete(g));
+        const since = dayFmt(PREV.date).replace(/ \d{4}$/, "");
+        return fresh.size
+          ? `<b>+${fresh.size}</b> new since ${since}`
+          : `None new since ${since}`;
       }
 
-      function toItems(totalsByPlat, colors) {
-        return PLATS.filter((p) => selected.has(p)).map((p) => ({
-          label: p,
-          value: totalsByPlat[p] || 0,
-          color: colors[p],
-        }));
-      }
-
-      function renderKpis() {
-        const t = kpiTotals();
+      function renderKpis(rs) {
+        const t = sumBy(rs, () => "all").all || {
+          v: 0,
+          l: 0,
+          c: 0,
+          s: 0,
+          groups: new Set(),
+        };
         const cards = [
-          ["Videos", fmt(t.nVideos)],
-          ["Total views", fmt(t.v), "accent"],
-          ["Total likes", fmt(t.l)],
-          ["Total comments", fmt(t.c)],
-          ["Total shares", fmt(t.s)],
-          ["Engagement rate", pctFmt(engRate(t.v, t.l, t.c, t.s))],
+          ["Videos", fmt(t.groups.size), "", newVideosLine(rs)],
+          ["Total views", fmt(t.v), "accent", deltaLine(rs, 0, "v")],
+          ["Engagement rate", pctFmt(engRate(t.v, t.l, t.c, t.s)), "", ""],
+          ["Total likes", fmt(t.l), "", deltaLine(rs, 1, "l")],
+          ["Total comments", fmt(t.c), "", deltaLine(rs, 2, "c")],
+          ["Total shares", fmt(t.s), "", deltaLine(rs, 3, "s")],
         ];
         document.getElementById("kpis").innerHTML = cards
           .map(
-            ([l, n, cls]) =>
-              `<div class="card ${cls || ""}"><div class="l">${l}</div><div class="n">${n}</div></div>`,
+            ([l, n, cls, d]) =>
+              `<div class="card ${cls}"><div class="l">${l}</div><div class="n">${n}</div>${d ? `<div class="d">${d}</div>` : ""}</div>`,
           )
           .join("");
       }
 
-      function renderGeneralCharts() {
-        renderPie("pieViews", toItems(platformTotals("v"), SCHEME_A));
-        renderPie("pieCount", toItems(platformVideoCounts(), SCHEME_B));
-        [
-          ["v", "Views"],
-          ["l", "Likes"],
-          ["c", "Comments"],
-          ["s", "Shares"],
-        ].forEach(([m, label]) => {
-          const items = toItems(platformTotals(m), SCHEME_A);
-          renderColumns("col" + label, items);
-          renderBars("bar" + label, items);
-        });
-        const engItems = toItems(platformEngRate(), SCHEME_A);
-        renderColumns("colEng", engItems, pctFmt);
-        renderBars("barEng", engItems, pctFmt);
-      }
+      function renderPlatforms(rs) {
+        const by = sumBy(rs, (r) => r.p);
+        const plats = PLATS.filter((p) => selected.has(p));
+        const zero = { v: 0, l: 0, c: 0, s: 0, groups: new Set() };
+        const totalV = plats.reduce((a, p) => a + (by[p] || zero).v, 0);
+        const share = (p) => (totalV ? ((by[p] || zero).v / totalV) * 100 : 0);
+        const er = (p) => {
+          const t = by[p] || zero;
+          return engRate(t.v, t.l, t.c, t.s);
+        };
 
-      // --- single-video section ---
-      let sortedGroups = [];
-      function renderVideoSelect() {
-        const sel = document.getElementById("videoSelect");
-        sortedGroups = [...GROUPS].sort((a, b) => b.tot_v - a.tot_v);
-        sel.innerHTML = sortedGroups
-          .map((g, i) => `<option value="${i}">${g.nameHtml}</option>`)
-          .join("");
-        sel.onchange = () => renderVideoCharts(sortedGroups[sel.value]);
-        if (sortedGroups.length) renderVideoCharts(sortedGroups[0]);
-      }
-
-      function renderVideoCharts(g) {
-        const byPlat = { v: {}, l: {}, c: {}, s: {} };
-        PLATS.forEach((p) => {
-          const entries = selected.has(p) ? g.platforms[p] || [] : [];
-          byPlat.v[p] = entries.reduce((a, e) => a + e.v, 0);
-          byPlat.l[p] = entries.reduce((a, e) => a + e.l, 0);
-          byPlat.c[p] = entries.reduce((a, e) => a + e.c, 0);
-          byPlat.s[p] = entries.reduce((a, e) => a + e.s, 0);
-        });
-
-        renderPie("vidPie", toItems(byPlat.v, SCHEME_A));
-
-        const er = {};
-        PLATS.forEach(
-          (p) =>
-            (er[p] = engRate(
-              byPlat.v[p],
-              byPlat.l[p],
-              byPlat.c[p],
-              byPlat.s[p],
-            )),
+        renderBars(
+          "barShare",
+          plats.map((p) => ({
+            label: p,
+            value: share(p),
+            color: SCHEME_A[p],
+            tip: [
+              { label: "Views", value: fmt((by[p] || zero).v) },
+              { label: "Share", value: pctFmt(share(p)) },
+            ],
+          })),
+          (v) => v.toFixed(1) + "%",
+        );
+        renderBars(
+          "barEng",
+          plats.map((p) => {
+            const t = by[p] || zero;
+            return {
+              label: p,
+              value: er(p),
+              color: SCHEME_A[p],
+              tip: [
+                { label: "Engagement rate", value: pctFmt(er(p)) },
+                { label: "Interactions", value: fmt(t.l + t.c + t.s) },
+                { label: "Views", value: fmt(t.v) },
+              ],
+            };
+          }),
+          pctFmt,
         );
 
-        const onPlats = PLATS.filter(
-          (p) => selected.has(p) && g.platforms[p] && g.platforms[p].length,
-        );
-        const totV = onPlats.reduce((a, p) => a + byPlat.v[p], 0),
-          totL = onPlats.reduce((a, p) => a + byPlat.l[p], 0);
-        const totC = onPlats.reduce((a, p) => a + byPlat.c[p], 0),
-          totS = onPlats.reduce((a, p) => a + byPlat.s[p], 0);
-        document.getElementById("vidTotals").innerHTML =
-          `<div class="vt-title">${g.nameHtml}</div>` +
-          `<div class="vt-on">On ${onPlats.join(", ") || "—"}</div>` +
-          [
-            ["Views", fmt(totV)],
-            ["Likes", fmt(totL)],
-            ["Comments", fmt(totC)],
-            ["Shares", fmt(totS)],
-            ["Eng. rate", pctFmt(engRate(totV, totL, totC, totS))],
-          ]
-            .map(
-              ([k, v]) =>
-                `<div class="vt-row"><span>${k}</span><b>${v}</b></div>`,
+        const row = (name, sw, t, cls) => {
+          const n = t.groups.size;
+          return `<tr class="${cls || ""}"><td>${sw}${name}</td><td>${fmt(n)}</td><td>${fmt(t.v)}</td><td>${fmt(n ? Math.round(t.v / n) : 0)}</td><td>${fmt(t.l)}</td><td>${fmt(t.c)}</td><td>${fmt(t.s)}</td><td>${pctFmt(engRate(t.v, t.l, t.c, t.s))}</td></tr>`;
+        };
+        const all = sumBy(rs, () => "all").all || zero;
+        document.getElementById("ptable").innerHTML =
+          `<table class="ptable"><thead><tr><th>Platform</th><th>Videos</th><th>Views</th><th>Avg views / video</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Eng. rate</th></tr></thead><tbody>` +
+          plats
+            .map((p) =>
+              row(p, `<span class="sw" style="background:${SCHEME_A[p]}"></span>`, by[p] || zero),
             )
-            .join("");
+            .join("") +
+          (plats.length > 1 ? row("All selected", "", all, "total") : "") +
+          `</tbody></table>`;
+      }
 
-        renderColumns("vidColViews", toItems(byPlat.v, SCHEME_A));
-        renderColumns("vidColLikes", toItems(byPlat.l, SCHEME_A));
-        renderColumns("vidColComments", toItems(byPlat.c, SCHEME_A));
-        renderColumns("vidColShares", toItems(byPlat.s, SCHEME_A));
-        renderColumns("vidColEng", toItems(er, SCHEME_A), pctFmt);
-        renderBars("vidBarViews", toItems(byPlat.v, SCHEME_A));
-        renderBars("vidBarLikes", toItems(byPlat.l, SCHEME_A));
-        renderBars("vidBarComments", toItems(byPlat.c, SCHEME_A));
-        renderBars("vidBarShares", toItems(byPlat.s, SCHEME_A));
-        renderBars("vidBarEng", toItems(er, SCHEME_A), pctFmt);
+      function renderTopVideos(rs) {
+        const container = document.getElementById("topVideos");
+        container.innerHTML = "";
+        const byGroup = new Map();
+        rs.forEach((r) => {
+          let t = byGroup.get(r.g);
+          if (!t) byGroup.set(r.g, (t = { g: r.g, v: 0, p: {} }));
+          t.v += r.e.v;
+          t.p[r.p] = (t.p[r.p] || 0) + r.e.v;
+        });
+        const top = [...byGroup.values()]
+          .filter((t) => t.v > 0)
+          .sort((a, b) => b.v - a.v)
+          .slice(0, 10);
+        if (!top.length) {
+          container.innerHTML =
+            '<div class="empty-note">No videos published in this period.</div>';
+          return;
+        }
+        const plats = PLATS.filter((p) => selected.has(p));
+        if (plats.length > 1)
+          renderLegend(
+            container,
+            plats.map((p) => ({ label: p, color: SCHEME_A[p] })),
+          );
+        const max = top[0].v;
+        const list = document.createElement("div");
+        list.className = "top-list";
+        top.forEach((t, i) => {
+          const row = document.createElement("div");
+          row.className = "top-row";
+          const present = plats.filter((p) => t.p[p] > 0);
+          row.innerHTML =
+            `<span class="rk">${i + 1}</span>` +
+            `<span class="nm">${t.g.nameHtml}</span>` +
+            `<span class="track" style="width:${(t.v / max) * 100}%">` +
+            present
+              .map(
+                (p) =>
+                  `<span class="seg" style="flex:${t.p[p]} 1 0;background:${SCHEME_A[p]}"></span>`,
+              )
+              .join("") +
+            `</span>` +
+            `<span class="vl">${abbrev(t.v)}</span>`;
+          row.querySelector(".nm").title = t.g.display || t.g.title;
+          bindTip(row, () => [
+            t.g.display || t.g.title,
+            plats.map((p) => ({
+              color: SCHEME_A[p],
+              label: p,
+              value: t.p[p] ? fmt(t.p[p]) : "—",
+            })),
+            { label: "Total", value: fmt(t.v) },
+          ]);
+          list.appendChild(row);
+        });
+        container.appendChild(list);
       }
 
       function renderAll() {
-        renderKpis();
-        renderGeneralCharts();
-        const sel = document.getElementById("videoSelect");
-        if (sortedGroups.length) renderVideoCharts(sortedGroups[sel.value]);
+        const rs = rows();
+        renderKpis(rs);
+        renderMonthly(rs);
+        renderPlatforms(rs);
+        renderTopVideos(rs);
       }
 
+      // Charts are drawn at their container's width, so redraw on resize.
+      let resizeTimer = 0,
+        lastW = innerWidth;
+      addEventListener("resize", () => {
+        if (innerWidth === lastW) return; // ignore mobile URL-bar height changes
+        lastW = innerWidth;
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(renderAll, 150);
+      });
+
+      renderAsof();
       renderSlicers();
-      renderVideoSelect();
       renderAll();
     </script>
   </body>

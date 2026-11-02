@@ -2,6 +2,24 @@
 
 Record of changes made to the dashboard, newest first.
 
+## 2026-11-02
+
+- **Charts page restructured into a standard dashboard layout.** About 30
+  charts, many of them repeats, are now four sections: KPI tiles, views
+  by month published (stacked by platform), platform comparison (share of
+  views, engagement rate, and a table) and the top 10 videos. The duplicate
+  column/bar views, the pies and the single-video section are gone; the
+  Numbers page already covers per-video figures.
+- **"Published" period filter** (all time, last 12 / 6 / 3 months) next to
+  the platform filter. It filters by when a video went up; views are still
+  lifetime totals.
+- **Change since last week.** KPI tiles show the change since the most
+  recent snapshot in `data/snapshots/` dated before the build, matched by
+  post URL.
+- Charts have hover tooltips, which also work with keyboard focus.
+- **Favicon.** Both pages now show `assets/favicon.png` in the browser tab;
+  the build copies it into `docs/` alongside the logo.
+
 ## 2026-10-27
 
 - **TikTok rows with no data say "Data unavailable"** instead of "Not posted

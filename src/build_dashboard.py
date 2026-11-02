@@ -15,6 +15,8 @@ TEMPLATE_PATH = os.path.join(BASE, 'templates', 'dashboard_template.html')
 OUT_PATH = os.path.join(BASE, 'docs', 'index.html')
 LOGO_SRC = os.path.join(BASE, 'assets', 'logo.png')
 LOGO_OUT = os.path.join(BASE, 'docs', 'logo.png')
+FAVICON_SRC = os.path.join(BASE, 'assets', 'favicon.png')
+FAVICON_OUT = os.path.join(BASE, 'docs', 'favicon.png')
 
 
 def main():
@@ -43,6 +45,13 @@ def main():
         print(f'Copied {LOGO_SRC} -> {LOGO_OUT}')
     else:
         print(f'Note: {LOGO_SRC} not found - sidebar will show the "K" placeholder instead')
+
+    # Browser tab icon - both pages link "favicon.png" as a sibling file.
+    if os.path.exists(FAVICON_SRC):
+        shutil.copyfile(FAVICON_SRC, FAVICON_OUT)
+        print(f'Copied {FAVICON_SRC} -> {FAVICON_OUT}')
+    else:
+        print(f'Note: {FAVICON_SRC} not found - browser tab will show the default icon')
 
 
 if __name__ == '__main__':

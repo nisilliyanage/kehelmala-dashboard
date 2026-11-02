@@ -21,7 +21,7 @@ python run.py
 
 This reads everything in `data/raw/{youtube,facebook,instagram,tiktok}/`,
 matches videos across platforms, and writes the finished site into `docs/`
-(`index.html`, `analytics.html`, `logo.png`). Open `docs/index.html` in a
+(`index.html`, `analytics.html`, `logo.png`, `favicon.png`). Open `docs/index.html` in a
 browser to check it.
 
 ## Updating with a fresh week's exports
@@ -241,10 +241,11 @@ run.py                       Runs the full pipeline (merge → cluster → build
 requirements.txt
 assets/
   logo.png                   Sidebar logo, copied into docs/ on every build
+  favicon.png                Browser tab icon, copied into docs/ on every build
 src/
   merge_platforms.py         Step 1: reads data/raw/*, writes data/processed/all_posts.json
   cluster_videos.py          Step 2: matches videos across platforms, writes data/processed/grouped.json
-  build_dashboard.py         Step 3: builds docs/index.html (Numbers page) + copies the logo
+  build_dashboard.py         Step 3: builds docs/index.html (Numbers page) + copies the logo and favicon
   build_analytics.py         Step 4: builds docs/analytics.html (Charts page)
   merge_videos_cli.py        CLI tool to manually merge two videos
   unmerge_videos_cli.py      CLI tool to split a wrong merge back apart

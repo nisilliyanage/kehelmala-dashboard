@@ -493,6 +493,10 @@ def main():
     all_posts += _dedupe_by_pid(load_instagram())
     all_posts += load_tiktok()
 
+    phrases = [s.lower() for s in config.MANUAL_EXCLUDE_TITLE_PHRASES]
+    all_posts = [p for p in all_posts
+                 if not any(s in (p['title'] or '').lower() for s in phrases)]
+
     for p in all_posts:
         fix = config.MANUAL_TITLE_TEXT_FIXES.get(p['title'])
         if fix:

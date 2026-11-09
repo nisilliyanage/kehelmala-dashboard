@@ -36,12 +36,26 @@ MANUAL_TITLE_MERGES = [
     # (2025). The sequel comes first so "Caller Unknown 2" doesn't hit the plain rule.
     {'match': ['interrogation', 'caller unknown 2', 'wrong number 2'], 'title': 'Interrogation (Wrong Number 2)'},
     {'match': ['caller unknown', 'wrong number'], 'title': 'Wrong Number'},
+    # Granny's Story (2024) and Granny, No! (2025) are separate projects; the matcher
+    # pulls the curly-apostrophe "Granny’s Story" posts into Granny, No!.
+    {'match': ["granny's story", 'granny’s story'], 'title': "Granny's Story"},
+    # Chocolate is a 4-part series - one row per part. The matcher lumps them together
+    # (and Facebook's "last episode" ends up on its own), so each part is pinned here.
+    # TikTok's Part 3 is captioned only "Replying to @K_ax" (confirmed Part 3).
+    {'match': ['chocolate, final episode', 'chocolate - last episode'], 'title': 'Chocolate - Part 4'},
+    {'match': ['chocolate - part 3', 'chocolate, pt 3', 'replying to @k_ax'], 'title': 'Chocolate - Part 3'},
+    {'match': ['chocolate - part 2', 'chocolate, pt 2', 'chocolate, part 2'], 'title': 'Chocolate - Part 2'},
+    {'match': ['chocolate - part 1', 'chocolate, part 1', 'chocolate, part one'], 'title': 'Chocolate - Part 1'},
 ]
 
 # Permalinks to exclude outright (pass the Post-type filter but aren't original video content).
 MANUAL_EXCLUDE_PERMALINKS = {
     'https://www.facebook.com/kehelmalastudios/posts/pfbid02fyWYLobsYdJs11joqjvzkJdDN8GQa37rZJknE6cW6UVZMgTw3ZeyqPnVdz1ZrrQvl',
 }
+
+# Posts whose raw title/caption contains any of these (case-insensitive) are left out
+# on every platform - e.g. behind-the-scenes clips, which aren't the video itself.
+MANUAL_EXCLUDE_TITLE_PHRASES = ['behind the scenes']
 
 # Hand-fixed display titles, e.g. for posts whose only title is in Sinhala/Tamil script.
 # Key = the raw title/caption text exactly as it appears in the source export.
